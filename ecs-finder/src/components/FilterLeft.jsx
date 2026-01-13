@@ -15,12 +15,19 @@ function FilterLeft() {
                     <input type="radio" 
                     name="category" 
                     className="w-4 h-4 accent-blue-500 cursor:pointer"/>
-                    <span>Cuộc thi</span>
+                    <span>Cuộc thi (cho đối tượng thi) </span>
+                </label>
+
+                <label className="flex mb-2 gap-2 cursor-pointer">
+                    <input type="radio" 
+                    name="category" 
+                    className="w-4 h-4 accent-blue-500 cursor:pointer"/>
+                    <span>Cuộc thi (cho đối tượng tổ chức)</span>
                 </label>
 
                 <label className="flex gap-2 cursor-pointer">
                     <input type="radio" name="category" className="w-4 h-4 accent-blue-500"/>
-                    <span>Sự kiện/Workshop</span>
+                    <span>Sự kiện (Talkshows, Workshops,..)</span>
                 </label>
                 </div>
             <div>
