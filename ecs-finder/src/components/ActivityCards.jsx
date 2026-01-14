@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { MapPin, Clock } from "lucide-react";
 import { mockActivities } from "../data/mockActivities";
 
-function ActivityCards() {
+function ActivityCards( {searchQuery = ''} ) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
+
+    // filter activities based on search input 
+    const searchedActivities = mockActivities.filter(activity => activity.name.toLowerCase().includes(searchQuery.toLowerCase())  );
 
     const getTagColor = (type) => {
         const colors = {
@@ -25,7 +28,14 @@ function ActivityCards() {
     
     return (    
         <>
-        {mockActivities.map((activity) => (
+        {/* // if no search results found  */}
+        {searchedActivities.length === 0 && (
+            <div className="text-xl font-bold text-center text-gray-500 py-8">
+                Không tìm thấy kết quả nào phù hợp 
+            </div>
+        )}
+
+        {searchedActivities.map((activity) => (
             <div 
                     key={activity.id}
                     className="group bg-white rounded-lg shadow-md p-4 flex gap-4 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 mb-4 cursor-pointer" 
