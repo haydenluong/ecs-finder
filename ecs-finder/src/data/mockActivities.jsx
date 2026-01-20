@@ -5,13 +5,13 @@ export const mockActivities = [
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop",
     tags: [
       { label: "Cuộc thi", type: "category" },
-      { label: "Công nghệ", type: "topic" },
-      
+      { label: "STEM", type: "topic", subtopic: "Công nghệ" }  // ✅ Fixed: added subtopic
     ],
-    positions: ["HR", "Media", "Design"],
-    description: "asdasdasdasdasdasdasdasd",
+    positions: ["HR", "Media"],
+    description: "Cuộc thi sáng tạo về trí tuệ nhân tạo dành cho sinh viên...",
     location: "Online",
     deadline: "15/02/2025",
+    link: "https://example.com"
   },
   {
     id: 2,
@@ -19,23 +19,27 @@ export const mockActivities = [
     image: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=400&h=300&fit=crop",
     tags: [
       { label: "Dự án", type: "category" },
-      { label: "Môi trường", type: "topic" },
+      { label: "Xã hội", type: "topic", subtopic: "Môi trường" }  // ✅ Fixed
     ],
-    description: "Dự án bảo vệ môi trường đô thị",
+    positions: ["Tình nguyện viên"],
+    description: "Dự án bảo vệ môi trường đô thị với nhiều hoạt động thiết thực...",
     location: "TP. Hồ Chí Minh",
     deadline: "20/01/2025",
+    link: "https://example.com"
   },
   {
     id: 3,
     name: "Workshop Kỹ năng Lãnh đạo cho Học sinh THPT",
     image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
     tags: [
-      { label: "Workshop", type: "category" },
-      { label: "Giáo dục", type: "topic" },
+      { label: "Sự kiện/Workshop", type: "category" },
+      { label: "Xã hội", type: "topic", subtopic: "Giáo dục" }  // ✅ Fixed
     ],
-    description: "Workshop phát triển kỹ năng lãnh đạo",
+    positions: ["CTV Truyền Thông"],
+    description: "Workshop phát triển kỹ năng lãnh đạo dành cho học sinh...",
     location: "Online",
     deadline: "10/01/2025",
+    link: "https://example.com"
   },
   {
     id: 4,
@@ -43,10 +47,12 @@ export const mockActivities = [
     image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
     tags: [
       { label: "Cuộc thi", type: "category" },
-      { label: "Công nghệ", type: "topic" },
+      { label: "STEM", type: "topic", subtopic: "Công nghệ" }  // ✅ Fixed
     ],
-    description: "Hackathon về AI trong giáo dục",
-    location: "Online",
+    positions: ["Ban Chuyên Môn", "Ban Thiết Kế"],
+    description: "Hackathon về ứng dụng AI trong giáo dục...",
+    location: "Hà Nội",
     deadline: "28/02/2025",
-  },
+    link: "https://example.com"
+  }
 ];

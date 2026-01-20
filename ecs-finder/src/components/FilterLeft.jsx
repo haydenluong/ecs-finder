@@ -8,7 +8,7 @@ function FilterLeft() {
                     type="radio" 
                     name="category" 
                     className="w-4 h-4 accent-blue-500"/>
-                    <span>Dự án</span>
+                    <span>Dự án & CLB</span>
                 </label>
 
                 <label className="flex mb-2 gap-2 cursor-pointer">
