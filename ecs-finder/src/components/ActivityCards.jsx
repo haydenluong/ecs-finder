@@ -2,72 +2,89 @@ import { useState, useEffect } from 'react';
 import { MapPin, Clock } from "lucide-react";
 import { mockActivities } from "../data/mockActivities";
 
-function ActivityCards({ searchQuery = '', topicFilters = { topics: [], subtopics: [] } }) {
-    console.log('🎬 ActivityCards rendered with filters:', topicFilters);  // ADD THIS LINE
+function ActivityCards({ searchQuery = '', topicFilters = { topics: [], subtopics: [] }, categoryFilter = '', deadlineFilter = '', positionFilters = []}) {
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
 
-    // helper function to assign colors based on tag type
+    // function to assign colors based on tag type
     const getTagColor = (type) => {
         const colors = {
             category: 'bg-blue-100 text-blue-600',      // blue for categories like "cuộc thi", "dự án"
             topic: 'bg-pink-100 text-pink-600',         // pink for topics like "STEM", "xã hội"
-            position: 'bg-green-100 text-green-600'     // green for positions
+            subtopic: 'bg-green-100 text-green-600'     // green for positions
         };
         return colors[type] || 'bg-gray-100 text-gray-600'; // default gray if type not found
     };
 
-    // filter activities based on search input and selected topic filters
 // filter activities based on search input and selected topic filters
 const searchedActivities = mockActivities.filter(activity => {
     const matchesSearch = activity.name.toLowerCase().includes(searchQuery.toLowerCase());
     
+    // filter for category
+    const matchesCategory = !categoryFilter || 
+        activity.tags.some(tag => 
+            tag.type === 'category' && tag.label === categoryFilter
+        );
+
+    // filter for positions 
+    const matchesPosition = positionFilters.length === 0 || 
+    activity.positions.some(pos => positionFilters.includes(pos));
+
+    // filter for deadlines
+    let matchesDeadline = true; 
+    if (deadlineFilter) {
+        const today = new Date();
+        const deadlineParts = activity.deadline.split('/');
+        const activityDeadline = new Date(deadlineParts[2], deadlineParts[1]-1, deadlineParts[0]);
+        const daysDiff = Math.ceil((activityDeadline - today) / (1000 * 60 * 60 * 24));
+
+        if (deadlineFilter === '3') {
+            matchesDeadline = daysDiff <= 3 && daysDiff >= 0;
+        } else if (deadlineFilter === '7') {
+            matchesDeadline = daysDiff <= 7 && daysDiff >= 0;
+        } else if (deadlineFilter === '14') {
+            matchesDeadline = daysDiff <= 14 && daysDiff >= 0;
+        } else if (deadlineFilter === '30') {
+            matchesDeadline = daysDiff <= 30 && daysDiff >= 0;
+        } else if (deadlineFilter === '31') {
+            matchesDeadline = daysDiff > 30;
+        }
+    };
+
     let matchesTopic = true;
     
     if (topicFilters.topics.length > 0 || topicFilters.subtopics.length > 0) {
-        console.log('🔍 Filtering activity:', activity.name);
-        console.log('   Activity tags:', activity.tags);
-        console.log('   Looking for topics:', topicFilters.topics);
-        console.log('   Looking for subtopics:', topicFilters.subtopics);
         
         matchesTopic = activity.tags.some(tag => {
             if (tag.type !== 'topic') return false;
             
-            console.log('   Checking tag:', tag);
-            
+            // check if main topic is selected
             const mainTopicSelected = topicFilters.topics.includes(tag.label);
-            console.log('   Main topic match?', mainTopicSelected);
             
+            // check if this specific subtopic is selected
             const subtopicSelected = topicFilters.subtopics.some(item => {
-                const matches = item.parent === tag.label && item.subtopic === tag.subtopic;
-                console.log('      Comparing:', item, 'with', tag, '→', matches);
-                return matches;
+                return item.parent === tag.label && item.subtopic === tag.subtopic;
             });
-            console.log('   Subtopic match?', subtopicSelected);
             
+            // check if any subtopics are selected for this main topic
             const hasSubtopicsForThisTopic = topicFilters.subtopics.some(
                 item => item.parent === tag.label
             );
-            
+
+            // if main topic selected but no specific subtopics, show all under that topic
             if (mainTopicSelected && !hasSubtopicsForThisTopic) {
-                console.log('   ✅ Matched main topic (no subtopics specified)');
                 return true;
             }
             
-            if (subtopicSelected) {
-                console.log('   ✅ Matched subtopic');
-            }
+            // if subtopics are selected, only show matching subtopics
             return subtopicSelected;
         });
         
-        console.log('   Result:', matchesTopic ? '✅ PASS' : '❌ FAIL');
     }
 
-    return matchesSearch && matchesTopic;
+    return matchesSearch && matchesTopic && matchesCategory && matchesPosition && matchesDeadline;
 });
-
-console.log('🎯 Final filtered count:', searchedActivities.length);
 
     // prevent body scroll when modal is open
     useEffect(() => {
@@ -135,12 +152,22 @@ console.log('🎯 Final filtered count:', searchedActivities.length);
                     {/* tags with dynamic colors */}
                     <div className="flex gap-2 mt-2">
                         {activity.tags.map((tag, index) => (
-                            <span 
-                                key={index}
-                                className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
-                            >
-                                {tag.label}
-                            </span>
+                            <>
+                                <span 
+                                    key={`${index}-main`}
+                                    className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
+                                >
+                                    {tag.label}
+                                </span>
+                                {tag.subtopic && (
+                                    <span 
+                                        key={`${index}-sub`}
+                                        className={`${getTagColor('subtopic')} px-3 py-1 rounded-full text-xs font-medium`}
+                                    >
+                                        {tag.subtopic}
+                                    </span>
+                                )}
+                            </>
                         ))}
                     </div>
                 </div>
@@ -223,12 +250,22 @@ console.log('🎯 Final filtered count:', searchedActivities.length);
                             {/* tags repeated in modal */}
                             <div className="flex gap-2 mt-4">
                                 {selectedActivity.tags.map((tag, index) => (
-                                    <span 
-                                        key={index} 
-                                        className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
-                                    >
-                                        {tag.label}
-                                    </span>
+                                    <>
+                                        <span 
+                                            key={`${index}-main`}
+                                            className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
+                                        >
+                                            {tag.label}
+                                        </span>
+                                        {tag.subtopic && (
+                                            <span 
+                                                key={`${index}-sub`}
+                                                className={`${getTagColor('subtopic')} px-3 py-1 rounded-full text-xs font-medium`}
+                                            >
+                                                {tag.subtopic}
+                                            </span>
+                                        )}
+                                    </>
                                 ))}
                             </div>
                         </div>

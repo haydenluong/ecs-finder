@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-function FilterRight({ onFilterChange }) {  
+function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {  
     const [expandedCategories, setExpandedCategories] = useState({});
     const [selectedTopics, setSelectedTopics] = useState([]);  
-    const [selectedSubtopics, setSelectedSubtopics] = useState([]);  // ✅ ADD THIS LINE!
+    const [selectedSubtopics, setSelectedSubtopics] = useState([]);  
+    const [selectedPositions, setSelectedPositions] = useState([]);
 
     const categories = [
         {
@@ -60,8 +61,7 @@ function FilterRight({ onFilterChange }) {
         }
         
         setSelectedTopics(newSelectedTopics);
-        console.log('📤 FilterRight sending:', { topics: newSelectedTopics, subtopics: newSelectedSubtopics });
-        onFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
+        onTopicFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
     };
 
     // handle subtopic checkbox
@@ -85,8 +85,7 @@ function FilterRight({ onFilterChange }) {
         }
         
         setSelectedSubtopics(newSelectedSubtopics);
-        console.log('📤 FilterRight sending:', { topics: newSelectedTopics, subtopics: newSelectedSubtopics });
-        onFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
+        onTopicFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
     };
 
     // check if a subtopic is selected (needs both parent and name check)
@@ -94,6 +93,18 @@ function FilterRight({ onFilterChange }) {
         return selectedSubtopics.some(
             item => item.parent === parentTopic && item.subtopic === subtopic
         );
+    };
+
+    // position checkbox  
+    const handlePositionChange = (position, isChecked) => {
+        let newSelectedPositions;
+        if (isChecked) {
+            newSelectedPositions = [...selectedPositions, position];
+        } else { 
+            newSelectedPositions = selectedPositions.filter(p => p !== position);
+        }
+        setSelectedPositions(newSelectedPositions);
+        onPositionFilterChange?.(newSelectedPositions);
     };
 
     return ( 
@@ -160,7 +171,10 @@ function FilterRight({ onFilterChange }) {
                 <h3 className="font-bold mb-4 text-xl">Vị trí tuyển: </h3>
                 {viTriTuyen.map((viTri) => (
                     <label key={viTri} className="flex mb-2 gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 accent-blue-500"/>
+                        <input type="checkbox" className="w-4 h-4 accent-blue-500"
+                        checked={selectedPositions.includes(viTri)}
+                        onChange={(e) => handlePositionChange(viTri, e.target.checked)}
+                        />
                         <span>{viTri}</span>
                     </label>
                 ))}

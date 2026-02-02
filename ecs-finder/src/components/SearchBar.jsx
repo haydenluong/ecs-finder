@@ -4,9 +4,6 @@ import {useState} from 'react';
 function SearchBar( {onSearch} ) {
     const [searchTerm, setSearchTerm] = useState('')
 
-    console.log('🔤 SearchBar: searchTerm is:', searchTerm);  // Add this
-    console.log('🔤 SearchBar: onSearch exists?', typeof onSearch);  // Add this
-
     // handles when the user types 
     const handleSearch = (e) => {
         const value = e.target.value;
