@@ -1,8 +1,4 @@
-import { useState } from 'react';
-
-function FilterLeft({onCategoryChange, onDeadlineChange}) {
-    const [selectedCategories, setSelectedCategories] = useState('');
-    const [selectedDeadline, setSelectedDeadline] = useState('');
+function FilterLeft({onCategoryChange, onDeadlineChange, selectedCategory = '', selectedDeadline = ''}) {
 
     const categories = [
     'Dự án & CLB',
@@ -20,33 +16,35 @@ const deadlineOptions = [
 ];
 
     const handleCategoryChange = (category) => {
-        setSelectedCategories(category);
         onCategoryChange?.(category);
-        
-    }
+    };
 
     const handleDeadlineChange = (value) => {
-        setSelectedDeadline(value);
         onDeadlineChange?.(value);
-};
+    };
 
     return (
         <div>
-            <div className="bg-white rounded-lg max-w-xs p-6 ml-4 mt-6 shadow-md">
-                <h3 className="font-bold mb-4 text-xl">Thể loại</h3>
+            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg max-w-xs p-6 ml-4 mt-6 shadow-md">
+                <h3 className="font-bold mb-4 text-xl" style={{
+                background: 'linear-gradient(45deg, #3a7bd5 0.000%, #3d6ff0 25.000%, #5a7fff 50.000%, #7b6fef 75.000%, #9b4dca 100.000%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+                }}>Thể loại</h3>
                 {categories.map((category) => (
                    <label key={category} className="flex mb-2 gap-2 cursor-pointer">
                     <input 
                     type="radio" 
                     name="category" 
                     className="w-4 h-4 accent-blue-500"
-                    checked = {selectedCategories === category}
+                    checked = {selectedCategory === category}
                     onChange = {() => handleCategoryChange(category)}
                     />
                     <span>{category}</span>
                 </label> 
                 ))}
-                {selectedCategories && (
+                {selectedCategory && (
                     <button 
                     className="text-sm text-blue-500 hover:text-blue-700 mt-2"
                     onClick = {() => handleCategoryChange('')}>
@@ -57,7 +55,7 @@ const deadlineOptions = [
             <div>
 
             <div className="bg-white rounded-lg max-w-xs p-6 ml-4 mt-6 shadow-md">
-                <h3 className="font-bold mb-4 text-xl">Thời hạn đăng ký</h3>
+                <h3 className="font-bold mb-4 text-xl" >Thời hạn đăng ký</h3>
                 {deadlineOptions.map((option) => (
                     <label key={option.value} className="flex mb-2 gap-2 cursor-pointer">
                     <input type="radio" name="deadline" className="w-4 h-4 accent-blue-500"

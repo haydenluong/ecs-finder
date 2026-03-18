@@ -105,7 +105,7 @@ const searchedActivities = mockActivities.filter(activity => {
                 <img 
                     src={activity.image}
                     alt={activity.name}
-                    className="rounded-lg shadow-md w-32 h-32 object-cover"
+                    className="rounded-lg shadow-md w-20 h-20 md:w-32 md:h-32 object-cover flex-shrink-0"
                 />
 
                 <div className="flex-1 gap-4">
@@ -131,19 +131,19 @@ const searchedActivities = mockActivities.filter(activity => {
                         {activity.description}
                     </div>
 
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2">
                         {activity.tags.map((tag, index) => (
                             <>
                                 <span 
                                     key={`${index}-main`}
-                                    className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
+                                    className={`${getTagColor(tag.type)} px-3 py-1 rounded-lg text-xs font-medium`}
                                 >
                                     {tag.label}
                                 </span>
                                 {tag.subtopic && (
                                     <span 
                                         key={`${index}-sub`}
-                                        className={`${getTagColor('subtopic')} px-3 py-1 rounded-full text-xs font-medium`}
+                                        className={`${getTagColor('subtopic')} px-3 py-1 rounded-lg text-xs font-medium`}
                                     >
                                         {tag.subtopic}
                                     </span>
@@ -162,7 +162,7 @@ const searchedActivities = mockActivities.filter(activity => {
                 onClick={() => setIsModalOpen(false)}
             >
                 <div 
-                    className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+                    className="bg-white rounded-lg p-6 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button 
@@ -172,12 +172,12 @@ const searchedActivities = mockActivities.filter(activity => {
                         ×
                     </button>
                     
-                    <div className="flex gap-6 mt-8">
-                        <div className="w-1/3">
+                    <div className="flex flex-col md:flex-row gap-6 mt-8">
+                        <div className="w-full md:w-72 md:self-start flex-shrink-0">
                             <img 
                                 src={selectedActivity.image} 
                                 alt={selectedActivity.name}
-                                className="w-full rounded-lg"
+                                className="w-full h-56 object-cover rounded-lg"
                             />
                         </div>
                         
@@ -226,19 +226,19 @@ const searchedActivities = mockActivities.filter(activity => {
                             </div> 
                             
                            
-                            <div className="flex gap-2 mt-4">
+                            <div className="flex flex-wrap gap-2 mt-4">
                                 {selectedActivity.tags.map((tag, index) => (
                                     <>
                                         <span 
                                             key={`${index}-main`}
-                                            className={`${getTagColor(tag.type)} px-3 py-1 rounded-full text-xs font-medium`}
+                                            className={`${getTagColor(tag.type)} px-3 py-1 rounded-lg text-xs font-medium`}
                                         >
                                             {tag.label}
                                         </span>
                                         {tag.subtopic && (
                                             <span 
                                                 key={`${index}-sub`}
-                                                className={`${getTagColor('subtopic')} px-3 py-1 rounded-full text-xs font-medium`}
+                                                className={`${getTagColor('subtopic')} px-3 py-1 rounded-lg text-xs font-medium`}
                                             >
                                                 {tag.subtopic}
                                             </span>

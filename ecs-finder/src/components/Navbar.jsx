@@ -8,7 +8,7 @@ function Navbar() {
                 <img src={logo} alt="Picture of ECs Finder logo" className="rounded-2xl w-16 h-16" />
                 <span className="font-bold text-xl bg-gradient-to-t from-[#56CCF2] to-[#2F80ED] bg-clip-text text-transparent">ECs Finder</span>
             </div>
-            <div className="navbar-center flex space-x-14">
+            <div className="navbar-center hidden md:flex space-x-14">
                 <a href="#" className="font-bold hover:text-blue-500">Trang chủ</a>
                 <a href="#" className="hover:text-blue-500">Giới thiệu/FAQ</a>
             </div>

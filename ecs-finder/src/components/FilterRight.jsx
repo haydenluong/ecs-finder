@@ -1,42 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { topicSet } from '../data/tagData';
 
-function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {  
+function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters }) {  
     const [expandedCategories, setExpandedCategories] = useState({});
     const [selectedTopics, setSelectedTopics] = useState([]);  
     const [selectedSubtopics, setSelectedSubtopics] = useState([]);  
     const [selectedPositions, setSelectedPositions] = useState([]);
 
-    const categories = [
-        {
-            name: 'STEM',
-            subcategories: ['Khoa học tự nhiên', 'Công nghệ', 'Kỹ thuật / Robotics', 'Khác']
-        },
-        {
-            name: 'Xã hội',
-            subcategories: ['Thiện nguyện', 'Giáo dục', 'Bình đẳng xã hội', 'Môi trường', 'Văn hóa', 'Khác']
-        },
-        {
-            name: 'Kinh tế',
-            subcategories: ['Tài chính & Kinh doanh', 'Marketing', 'Khác']
-        },
-        {
-            name: 'Nghệ thuật & Sáng tạo',
-            subcategories: ['Hội họa', 'Viết & Biên tập', 'Thiết kế', 'Khác']
-        },
-        {
-            name: 'Ngôn ngữ & Giao tiếp',
-            subcategories: ['Tiếng Anh', 'Tranh biện & Hùng biện', 'Podcast', 'Khác']
-        },
-        {
-            name: 'Sức khỏe',
-            subcategories: ['Tâm lý học', 'Dinh dưỡng & Lối sống', 'Khác']
+    useEffect(() => {
+        if (topicFilters) {
+            setSelectedTopics(topicFilters.topics || []);
+            setSelectedSubtopics(topicFilters.subtopics || []);
         }
-    ];
+    }, [topicFilters]);
+
+    const categories = topicSet;
     
     const viTriTuyen = ['Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung', 'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại', 'CTV Truyền Thông', 'Tình nguyện viên', 'Khác'];
     
-    // toggle expand/collapse for categories
     const toggleCategory = (categoryName) => {
         setExpandedCategories(prev => ({
             ...prev,
@@ -44,7 +26,6 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
         }));
     };
 
-    // handle main topic checkbox
     const handleTopicChange = (topicName, isChecked) => {
         let newSelectedTopics;
         let newSelectedSubtopics = selectedSubtopics;
@@ -53,7 +34,6 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
             newSelectedTopics = [...selectedTopics, topicName];
         } else {
             newSelectedTopics = selectedTopics.filter(t => t !== topicName);
-            // remove all subtopics of this parent topic
             newSelectedSubtopics = selectedSubtopics.filter(
                 item => item.parent !== topicName
             );
@@ -64,21 +44,17 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
         onTopicFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
     };
 
-    // handle subtopic checkbox
     const handleSubtopicChange = (parentTopic, subtopic, isChecked) => {
         let newSelectedSubtopics;
         let newSelectedTopics = [...selectedTopics];
 
         if (isChecked) {
-            // add subtopic with parent reference
             newSelectedSubtopics = [...selectedSubtopics, { parent: parentTopic, subtopic: subtopic }];
-            // auto-select parent if not already selected
             if (!selectedTopics.includes(parentTopic)) {
                 newSelectedTopics = [...selectedTopics, parentTopic];
                 setSelectedTopics(newSelectedTopics);
             }
         } else {
-            // remove this specific subtopic
             newSelectedSubtopics = selectedSubtopics.filter(
                 item => !(item.parent === parentTopic && item.subtopic === subtopic)
             );
@@ -88,14 +64,14 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
         onTopicFilterChange?.({ topics: newSelectedTopics, subtopics: newSelectedSubtopics });
     };
 
-    // check if a subtopic is selected (needs both parent and name check)
+    
     const isSubtopicSelected = (parentTopic, subtopic) => {
         return selectedSubtopics.some(
             item => item.parent === parentTopic && item.subtopic === subtopic
         );
     };
 
-    // position checkbox  
+ 
     const handlePositionChange = (position, isChecked) => {
         let newSelectedPositions;
         if (isChecked) {
@@ -109,8 +85,13 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
 
     return ( 
         <div>
-            <div className="bg-white rounded-lg max-w-xs p-6 mt-6 mr-4 shadow-md">
-                <h3 className="font-bold mb-4 text-xl">Chủ đề</h3>
+            <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg max-w-xs p-6 mt-6 mr-4 shadow-md">
+                <h3 className="font-bold mb-4 text-xl" style={{
+                background: 'linear-gradient(45deg, #fc8ec5 0.000%, #ff8dd3 25.000%, #ffa1d8 50.000%, #ffc1d2 75.000%, #ffe0c3 100.000%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+                }}>Chủ đề</h3>
                 
                 {categories.map((category) => (
                     <div key={category.name} className="mb-2">
@@ -126,7 +107,7 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
                             
                             <label 
                                 htmlFor={`cat-${category.name}`}
-                                className="flex-1 cursor-pointer font-semibold text-gray-700"
+                                className="flex-1 cursor-pointer font-semibold text-pink-600"
                             >
                                 {category.name}
                             </label>
@@ -150,7 +131,7 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
                         {/* subcategories dropdown */}
                         {expandedCategories[category.name] && (
                             <div className="ml-6 mt-2 space-y-2">
-                                {category.subcategories.map((sub) => (
+                                {category.subtopics.map((sub) => (
                                     <label key={sub} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                                         <input 
                                             type="checkbox" 
@@ -158,7 +139,7 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange }) {
                                             checked={isSubtopicSelected(category.name, sub)}
                                             onChange={(e) => handleSubtopicChange(category.name, sub, e.target.checked)}
                                         />
-                                        <span className="text-sm text-gray-600">{sub}</span>
+                                        <span className="text-sm text-green-600">{sub}</span>
                                     </label>
                                 ))}
                             </div>
