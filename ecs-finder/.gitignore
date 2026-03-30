@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Sync script secrets
+scripts/credentials.json
+.env
+
+# Local personal notes (never push)
+LOCAL_NOTES.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -58,17 +58,29 @@ function HeroSection({ onTagClick, categoryFilter = '', topicFilters = { topics:
             `}</style>
             
             <section className="relative w-full">
-      <div className="relative py-6 sm:py-0 sm:h-52 md:h-60 lg:h-72 overflow-hidden bg-gradient-to-br from-hero-navy via-hero-blue to-hero-blue-dark">
-        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <h1 className="max-w-4xl text-base font-bold leading-tight tracking-tight text-black sm:text-2xl md:text-3xl lg:text-4xl animate-fade-in">
-            Khám phá ngay tại đây những hoạt động ngoại khóa hot nhất!!
+      <div
+        className="relative min-h-[200px] py-10 md:py-14 overflow-hidden"
+        style={{ backgroundImage: 'linear-gradient(to bottom, #c2e9fb 0%, transparent 100%)' }}
+      >
+        {/* decorative blobs */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-12 -top-12 h-64 w-64 rounded-full bg-white/30 blur-3xl" />
+          <div className="absolute -bottom-12 -right-12 h-80 w-80 rounded-full bg-blue-200/40 blur-3xl" />
+        </div>
+        <div className="relative z-10 flex flex-col items-center justify-center gap-4 px-4 text-center md:gap-6">
+          <h1 className="animate-fade-in max-w-4xl text-lg font-bold leading-snug tracking-tight text-blue-900 drop-shadow-sm sm:text-2xl md:text-2xl lg:text-3xl xl:text-4xl">
+            Hong biết bắt đầu từ đâu thì hãy thử click vào{' '}
+            <span className="text-blue-700 underline decoration-wavy decoration-blue-400/60">
+              những bộ lọc ngẫu nhiên này
+            </span>{' '}
+            xemm!
           </h1>
 
-      <div className="flex flex-wrap gap-2 justify-center mt-4">
+      <div className="flex flex-wrap justify-center gap-2">
         {displayedTags.map((tag) => (
           <span
             key={tag.label + tag.type + (tag.parent || '')}
-            className={`px-3 py-1 md:px-5 md:py-2 rounded-full text-xs md:text-lg font-semibold animate-fade-in cursor-pointer hover:brightness-95 transition-all ${
+            className={`px-4 py-1.5 md:px-5 md:py-2 rounded-full text-sm md:text-base font-semibold shadow-md animate-fade-in cursor-pointer hover:shadow-lg hover:scale-105 transition-all ${
               (tag.type === 'category' && categoryFilter === tag.label) ||
               (tag.type === 'topic' && topicFilters.topics.includes(tag.label)) ||
               (tag.type === 'subtopic' && topicFilters.subtopics.some(s => s.subtopic === tag.label && s.parent === tag.parent))
@@ -85,11 +97,11 @@ function HeroSection({ onTagClick, categoryFilter = '', topicFilters = { topics:
     </div>
 
       <button
-        className="mt-3 md:mt-6 px-4 py-1.5 md:py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 cursor-pointer disabled:opacity-50 text-sm md:text-lg font-semibold transition"
+        className="rounded-full border-2 border-blue-600 px-6 py-2.5 text-base font-semibold text-blue-700 transition-all hover:bg-blue-600 hover:text-white disabled:opacity-50 md:py-2.5 md:text-base cursor-pointer"
         onClick={randomizeTags}
         disabled={isAnimating}
       >
-          Ngẫu nhiên thử xem!
+        🎲 Ngẫu nhiên thử xem!
       </button>
         </div>
       </div>

@@ -32,12 +32,15 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters
         
         if (isChecked) {
             newSelectedTopics = [...selectedTopics, topicName];
+
+            setExpandedCategories(prev => ({ ...prev, [topicName]: true }));
         } else {
             newSelectedTopics = selectedTopics.filter(t => t !== topicName);
             newSelectedSubtopics = selectedSubtopics.filter(
                 item => item.parent !== topicName
             );
             setSelectedSubtopics(newSelectedSubtopics);
+            setExpandedCategories(prev => ({ ...prev, [topicName]: false }));
         }
         
         setSelectedTopics(newSelectedTopics);
@@ -85,7 +88,7 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters
 
     return ( 
         <div>
-            <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg max-w-xs p-6 mt-6 mr-4 shadow-md">
+            <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg max-w-xs p-6 mt-6 shadow-md">
                 <h3 className="font-bold mb-4 text-xl" style={{
                 background: 'linear-gradient(45deg, #fc8ec5 0.000%, #ff8dd3 25.000%, #ffa1d8 50.000%, #ffc1d2 75.000%, #ffe0c3 100.000%)',
                 WebkitBackgroundClip: 'text',
@@ -96,7 +99,6 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters
                 {categories.map((category) => (
                     <div key={category.name} className="mb-2">
                         <div className="flex items-center gap-2">
-                            {/* main category checkbox */}
                             <input 
                                 type="checkbox" 
                                 className="w-4 h-4 accent-blue-500"
@@ -111,24 +113,26 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters
                             >
                                 {category.name}
                             </label>
+
+                            <span className="hidden xl:inline-flex text-xs bg-pink-100 text-pink-500 font-semibold px-1.5 py-0.5 rounded-full">
+                                {category.subtopics.length}
+                            </span>
                             
-                            {/* expand/collapse button */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleCategory(category.name);
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded"
-                            >
-                                {expandedCategories[category.name] ? (
-                                    <ChevronDown className="h-4 w-4 text-gray-500" />
-                                ) : (
-                                    <ChevronRight className="h-4 w-4 text-gray-500" />
-                                )}
-                            </button>
+                            {category.subtopics.length > 0 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleCategory(category.name);
+                                    }}
+                                    className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-pink-500 transition-colors px-1 py-0.5 rounded hover:bg-pink-50"
+                                >
+                                    {expandedCategories[category.name]
+                                        ? <ChevronDown className="h-3.5 w-3.5" />
+                                        : <ChevronRight className="h-3.5 w-3.5" />}
+                                </button>
+                            )}
                         </div>
                         
-                        {/* subcategories dropdown */}
                         {expandedCategories[category.name] && (
                             <div className="ml-6 mt-2 space-y-2">
                                 {category.subtopics.map((sub) => (
@@ -148,15 +152,15 @@ function FilterRight({ onTopicFilterChange, onPositionFilterChange, topicFilters
                 ))}
             </div>
 
-            <div className="bg-white rounded-lg max-w-xs p-6 mt-6 shadow-md mr-4">
-                <h3 className="font-bold mb-4 text-xl">Vị trí tuyển: </h3>
+            <div className="bg-sky-50 border-l-4 border-sky-400 rounded-lg max-w-xs p-6 mt-6 shadow-md">
+                <h3 className="font-bold mb-4 text-xl text-sky-600">Vị trí tuyển (Nếu có)</h3>
                 {viTriTuyen.map((viTri) => (
-                    <label key={viTri} className="flex mb-2 gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 accent-blue-500"
+                    <label key={viTri} className={`flex mb-1 gap-2 cursor-pointer rounded-lg px-2 py-1 transition-colors ${selectedPositions.includes(viTri) ? 'bg-sky-100' : 'hover:bg-sky-50'}`}>
+                        <input type="checkbox" className="w-4 h-4 accent-sky-500"
                         checked={selectedPositions.includes(viTri)}
                         onChange={(e) => handlePositionChange(viTri, e.target.checked)}
                         />
-                        <span>{viTri}</span>
+                        <span className={selectedPositions.includes(viTri) ? 'text-sky-700 font-semibold' : ''}>{viTri}</span>
                     </label>
                 ))}
             </div>

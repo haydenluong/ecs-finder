@@ -25,6 +25,13 @@ const pinkGradient = {
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
 };
+const headerGradient = {
+    background: 'linear-gradient(90deg, #2f80ed 0%, #56ccf2 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+};
+
 
 function MobileFilterOverlay({
     onClose,
@@ -50,10 +57,11 @@ function MobileFilterOverlay({
         let newSubtopics = topicFilters.subtopics;
         if (isChecked) {
             newTopics = [...topicFilters.topics, topicName];
+            setExpandedCategories(prev => ({ ...prev, [topicName]: true }));
         } else {
-            // deselecting a parent also clears its subtopics
             newTopics = topicFilters.topics.filter(t => t !== topicName);
             newSubtopics = topicFilters.subtopics.filter(s => s.parent !== topicName);
+            setExpandedCategories(prev => ({ ...prev, [topicName]: false }));
         }
         onTopicFilterChange({ topics: newTopics, subtopics: newSubtopics });
     };
@@ -63,7 +71,6 @@ function MobileFilterOverlay({
         let newTopics = [...topicFilters.topics];
         if (isChecked) {
             newSubtopics = [...topicFilters.subtopics, { parent: parentTopic, subtopic }];
-            // auto-check the parent when a subtopic is picked
             if (!topicFilters.topics.includes(parentTopic)) {
                 newTopics = [...newTopics, parentTopic];
             }
@@ -92,51 +99,53 @@ function MobileFilterOverlay({
         onPositionFilterChange([]);
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    const activeCount =
+        (categoryFilter ? 1 : 0) +
+        (deadlineFilter ? 1 : 0) +
+        topicFilters.topics.length +
+        topicFilters.subtopics.length +
+        positionFilters.length;
 
-            {/* header */}
-            <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-gray-200 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-800">Bộ lọc tìm kiếm</h2>
+    return (
+        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'linear-gradient(to bottom, #dbeafe, #f0f9ff)' }}>
+
+            <div className="flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-sm border-b border-blue-100 shadow-sm">
+                <h2 className="text-lg font-bold" style={headerGradient}>Bộ lọc tìm kiếm</h2>
                 <button className="p-1.5 rounded-full hover:bg-gray-100 transition-colors" onClick={onClose}>
                     <X className="w-5 h-5 text-gray-600" />
                 </button>
             </div>
 
-            {/* filter sections — pb-28 so content doesn't hide under the footer */}
             <div className="flex-1 overflow-y-auto px-4 py-4 pb-28 space-y-4">
 
-                {/* Thể loại — blue card, matches FilterLeft on desktop */}
                 <div className="bg-blue-50 border-l-4 border-blue-400 rounded-xl p-4 shadow-sm">
                     <h3 className="font-bold text-xl mb-4" style={blueGradient}>Thể loại</h3>
                     {categories.map((cat) => (
-                        <label key={cat} className="flex items-center gap-3 mb-3 cursor-pointer">
+                        <label key={cat} className={`flex items-center gap-3 mb-2 cursor-pointer rounded-lg px-2 py-1 transition-colors ${categoryFilter === cat ? 'bg-blue-100' : 'hover:bg-blue-50'}`}>
                             <input type="radio" name="mobile-category" className="w-4 h-4 accent-blue-500"
                                 checked={categoryFilter === cat} onChange={() => onCategoryChange(cat)} />
-                            <span className="text-gray-700">{cat}</span>
+                            <span className={categoryFilter === cat ? 'text-blue-700 font-semibold' : 'text-gray-700'}>{cat}</span>
                         </label>
                     ))}
                     {categoryFilter && (
-                        <button className="text-sm text-blue-500 mt-1" onClick={() => onCategoryChange('')}>Xóa lọc</button>
+                        <button className="text-sm text-blue-500 mt-1 hover:underline" onClick={() => onCategoryChange('')}>Xóa lọc</button>
                     )}
                 </div>
 
-                {/* Thời hạn đăng ký — plain white card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <h3 className="font-bold text-xl mb-4 text-gray-800">Thời hạn đăng ký</h3>
+                <div className="bg-sky-50 border-l-4 border-sky-400 rounded-xl p-4 shadow-sm">
+                    <h3 className="font-bold text-xl mb-4 text-sky-600">Thời hạn đăng ký</h3>
                     {deadlineOptions.map((opt) => (
-                        <label key={opt.value} className="flex items-center gap-3 mb-3 cursor-pointer">
-                            <input type="radio" name="mobile-deadline" className="w-4 h-4 accent-blue-500"
+                        <label key={opt.value} className={`flex items-center gap-3 mb-2 cursor-pointer rounded-lg px-2 py-1 transition-colors ${deadlineFilter === opt.value ? 'bg-sky-100' : 'hover:bg-sky-50'}`}>
+                            <input type="radio" name="mobile-deadline" className="w-4 h-4 accent-sky-500"
                                 checked={deadlineFilter === opt.value} onChange={() => onDeadlineChange(opt.value)} />
-                            <span className="text-gray-700">{opt.label}</span>
+                            <span className={deadlineFilter === opt.value ? 'text-sky-700 font-semibold' : 'text-gray-700'}>{opt.label}</span>
                         </label>
                     ))}
                     {deadlineFilter && (
-                        <button className="text-sm text-blue-500 mt-1" onClick={() => onDeadlineChange('')}>Xóa lọc</button>
+                        <button className="text-sm text-sky-500 mt-1 hover:underline" onClick={() => onDeadlineChange('')}>Xóa lọc</button>
                     )}
                 </div>
 
-                {/* Chủ đề — pink card, matches FilterRight on desktop */}
                 <div className="bg-pink-50 border-l-4 border-pink-400 rounded-xl p-4 shadow-sm">
                     <h3 className="font-bold text-xl mb-4" style={pinkGradient}>Chủ đề</h3>
                     {topicSet.map((cat) => (
@@ -149,11 +158,16 @@ function MobileFilterOverlay({
                                 <label htmlFor={`mobile-cat-${cat.name}`} className="flex-1 font-semibold text-pink-600 cursor-pointer">
                                     {cat.name}
                                 </label>
-                                <button onClick={() => toggleExpand(cat.name)} className="p-1 hover:bg-pink-100 rounded">
-                                    {expandedCategories[cat.name]
-                                        ? <ChevronDown className="h-4 w-4 text-gray-500" />
-                                        : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                                </button>
+                                <span className="text-xs bg-pink-100 text-pink-500 font-semibold px-1.5 py-0.5 rounded-full">
+                                    {cat.subtopics.length}
+                                </span>
+                                {cat.subtopics.length > 0 && (
+                                    <button onClick={() => toggleExpand(cat.name)} className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-pink-500 transition-colors px-1 py-0.5 rounded hover:bg-pink-50">
+                                        {expandedCategories[cat.name]
+                                            ? <><ChevronDown className="h-3.5 w-3.5" /><span>thu gọn</span></>
+                                            : <><ChevronRight className="h-3.5 w-3.5" /><span>chi tiết</span></>}
+                                    </button>
+                                )}
                             </div>
                             {expandedCategories[cat.name] && (
                                 <div className="ml-6 mt-2 space-y-2">
@@ -171,33 +185,35 @@ function MobileFilterOverlay({
                     ))}
                 </div>
 
-                {/* Vị trí tuyển — plain white card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <h3 className="font-bold text-xl mb-4 text-gray-800">Vị trí tuyển</h3>
+                <div className="bg-sky-50 border-l-4 border-sky-400 rounded-xl p-4 shadow-sm">
+                    <h3 className="font-bold text-xl mb-4 text-sky-600">Vị trí tuyển</h3>
                     {viTriTuyen.map((viTri) => (
-                        <label key={viTri} className="flex items-center gap-3 mb-3 cursor-pointer">
-                            <input type="checkbox" className="w-4 h-4 accent-blue-500"
+                        <label key={viTri} className={`flex items-center gap-3 mb-2 cursor-pointer rounded-lg px-2 py-1 transition-colors ${positionFilters.includes(viTri) ? 'bg-sky-100' : 'hover:bg-sky-50'}`}>
+                            <input type="checkbox" className="w-4 h-4 accent-sky-500"
                                 checked={positionFilters.includes(viTri)}
                                 onChange={(e) => handlePositionChange(viTri, e.target.checked)} />
-                            <span className="text-gray-700">{viTri}</span>
+                            <span className={positionFilters.includes(viTri) ? 'text-sky-700 font-semibold' : 'text-gray-700'}>{viTri}</span>
                         </label>
                     ))}
                 </div>
             </div>
 
-            {/* footer — fixed so it's always reachable no matter how far you scroll */}
-            <div className="fixed bottom-0 left-0 right-0 flex gap-3 px-5 py-4 bg-white border-t border-gray-200 shadow-lg">
+            <div className="fixed bottom-0 left-0 right-0 flex items-center gap-3 px-5 py-4 bg-white/80 backdrop-blur-sm border-t border-blue-100 shadow-lg">
                 <button
-                    className="flex-1 py-2.5 rounded-full border border-gray-300 font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="text-sm font-semibold text-gray-400 hover:text-red-400 transition-colors px-2"
                     onClick={clearAll}
                 >
                     Xóa tất cả
                 </button>
                 <button
-                    className="flex-1 py-2.5 rounded-full bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+                    className="flex-1 py-2.5 rounded-full text-white font-semibold transition-all hover:brightness-105 flex items-center justify-center gap-2"
+                    style={{ background: 'linear-gradient(90deg, #2f80ed 0%, #56ccf2 100%)' }}
                     onClick={onClose}
                 >
                     Áp dụng
+                    {activeCount > 0 && (
+                        <span className="bg-white/30 text-white text-xs font-bold px-2 py-0.5 rounded-full">{activeCount}</span>
+                    )}
                 </button>
             </div>
         </div>

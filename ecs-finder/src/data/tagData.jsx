@@ -1,27 +1,31 @@
 export const topicSet = [
     {
         name: 'STEM',
-        subtopics: ['Khoa học tự nhiên', 'Công nghệ', 'Kỹ thuật / Robotics']
+        subtopics: ['Khoa học tự nhiên', 'Lập trình / AI / Khoa học dữ liệu', 'Kỹ thuật / Robotics']
     },
     {
         name: 'Xã hội',
-        subtopics: ['Thiện nguyện', 'Giáo dục', 'Bình đẳng xã hội', 'Môi trường', 'Văn hóa']
+        subtopics: ['Thiện nguyện', 'Bình đẳng xã hội', 'Văn hóa / Du học']
+    },
+    {
+        name: 'Môi trường',
+        subtopics: []
     },
     {
         name: 'Kinh tế',
-        subtopics: ['Tài chính & Kinh doanh', 'Marketing']
+        subtopics: ['Tài chính & Kinh doanh', 'Marketing', 'Gây quỹ']
     },
     {
         name: 'Nghệ thuật & Sáng tạo',
-        subtopics: ['Hội họa', 'Viết & Biên tập', 'Thiết kế']
+        subtopics: ['Văn học & Thơ', 'Hội họa', 'Viết', 'Thời trang']
     },
     {
         name: 'Ngôn ngữ & Giao tiếp',
-        subtopics: ['Tiếng Anh', 'Tranh biện & Hùng biện', 'Podcast']
+        subtopics: ['Ngôn ngữ học', 'Tranh biện & Hùng biện']
     },
     {
         name: 'Sức khỏe',
-        subtopics: ['Tâm lý học', 'Dinh dưỡng & Lối sống']
+        subtopics: ['Tâm lý học', 'Dinh dưỡng & Lối sống / Sức khỏe thể chất']
     }
 ];
 

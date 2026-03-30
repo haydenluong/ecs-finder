@@ -33,10 +33,9 @@ function MainContent({ topicFilters, setTopicFilters, categoryFilter, setCategor
 
     return (
         <>
-            {/* ── DESKTOP ONLY ─────────────────────────── */}
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
                 <SearchBar onSearch={setSearchQuery} />
-                <div className="grid grid-cols-[300px_1fr_300px] gap-8 py-8">
+                <div className="grid grid-cols-[300px_1fr_300px] gap-6 py-8">
                     <FilterLeft 
                         onCategoryChange={handleCategoryFilterChange}
                         onDeadlineChange={handleDeadlineFilterChange}
@@ -60,8 +59,7 @@ function MainContent({ topicFilters, setTopicFilters, categoryFilter, setCategor
                 </div>
             </div>
 
-            {/* ── MOBILE ONLY ──────────────────────────── */}
-            <div className="block md:hidden px-4 py-4">
+            <div className="block lg:hidden px-4 py-4">
                 <SearchBar onSearch={setSearchQuery} />
 
                 <div className="flex justify-center my-3">
@@ -105,9 +103,3 @@ function MainContent({ topicFilters, setTopicFilters, categoryFilter, setCategor
 }
 
 export default MainContent;
-
-// User selects a filter in FilterLeft or FilterRight.
-// Filter component calls the handler function (passed as a prop) to notify MainContent of the change.
-// MainContent updates its state using the handler function (e.g., setCategoryFilter, setDeadlineFilter, etc.).
-// MainContent passes the updated filter values as props to ActivityCards.
-// ActivityCards receives the new values and displays the filtered activities accordingly.

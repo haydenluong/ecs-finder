@@ -6,6 +6,8 @@ function ActivityCards({ searchQuery = '', topicFilters = { topics: [], subtopic
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const CARDS_PER_PAGE = 6;
 
     const getTagColor = (type) => {
         const colors = {
@@ -77,6 +79,10 @@ const searchedActivities = mockActivities.filter(activity => {
 });
 
     useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, categoryFilter, deadlineFilter, deadlineFilter, positionFilters, topicFilters]);
+
+    useEffect(() => {
         if (isModalOpen) {
             document.body.style.overflow = 'hidden';
         } else { 
@@ -84,6 +90,9 @@ const searchedActivities = mockActivities.filter(activity => {
         }
     }, [isModalOpen]);
     
+    const totalPages = Math.ceil(searchedActivities.length / CARDS_PER_PAGE);
+    const pagedActivities = searchedActivities.slice((currentPage - 1) * CARDS_PER_PAGE, currentPage * CARDS_PER_PAGE);
+
     return (    
         <>
         {searchedActivities.length === 0 && (
@@ -92,7 +101,13 @@ const searchedActivities = mockActivities.filter(activity => {
             </div>
         )}
 
-        {searchedActivities.map((activity) => (
+        {searchedActivities.length > 0 && (
+            <p className="text-2sm font-bold text-gray-600 mb-4"> 
+                Tìm thấy {searchedActivities.length} hoạt động phù hợp
+            </p>
+        )}
+
+        {pagedActivities.map((activity) => (
             <div 
                 key={activity.id}
                 className="group bg-white rounded-lg shadow-md p-4 flex gap-4 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 mb-4 cursor-pointer" 
@@ -123,7 +138,7 @@ const searchedActivities = mockActivities.filter(activity => {
                         <span>{activity.location}</span>
                     </div>
          
-                    <div className="flex items-center gap-1 text-gray-600 text-sm mt-2">
+                    <div className="flex items-center gap-1 text-gray-600 text-sm mt-1 md:mt-2">
                         📅 {activity.deadline}
                     </div>
 
@@ -154,7 +169,37 @@ const searchedActivities = mockActivities.filter(activity => {
                 </div>
             </div>
         ))}
-
+        {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+                <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                >
+                    ←
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                            page === currentPage
+                                ? 'bg-blue-500 text-white shadow-sm'
+                                : 'border border-gray-300 text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        {page}
+                    </button>
+                ))}
+                <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                >
+                    →
+                </button>
+            </div>
+        )}
         {isModalOpen && selectedActivity && (
             <div 
                 className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden"
