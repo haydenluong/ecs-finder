@@ -15,6 +15,7 @@ dist-ssr
 # Sync script secrets
 scripts/credentials.json
 .env
+.env.example
 
 # Local personal notes (never push)
 LOCAL_NOTES.md
