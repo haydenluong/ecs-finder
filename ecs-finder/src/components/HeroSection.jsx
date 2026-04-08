@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockActivities } from '../data/mockActivities';
+import { mockActivities } from '../data/Activities';
 import { categorySet, topicSet } from '../data/tagData';
 
 // category tags directly from categorySet

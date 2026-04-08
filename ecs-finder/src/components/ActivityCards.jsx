@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Clock } from "lucide-react";
-import { mockActivities } from "../data/mockActivities";
+import { mockActivities } from "../data/Activities";
 
 function ActivityCards({ searchQuery = '', topicFilters = { topics: [], subtopics: [] }, categoryFilter = '', deadlineFilter = '', positionFilters = []}) {
     
