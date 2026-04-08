@@ -2,7 +2,7 @@
 
 A community-driven directory for extracurricular activities, clubs, competitions, and events in Vietnam. Built for students who want to discover and filter opportunities by category, topic, deadline, and open positions.
 
-**Live site:** https://ecsfinder.vercel.app
+**Live site:** https://ecs-finder.vercel.app
 
 ---
 
@@ -48,7 +48,7 @@ ecs-finder/
 │   │   ├── Navbar.jsx
 │   │   └── SearchBar.jsx
 │   ├── data/
-│   │   ├── mockActivities.jsx   # Activity data (source of truth)
+│   │   ├── Activities.jsx   # Activity data (source of truth)
 │   │   └── tagData.jsx          # Valid categories, topics, subtopics
 │   ├── App.jsx
 │   └── main.jsx
