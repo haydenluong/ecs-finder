@@ -8,7 +8,7 @@ export const mockActivities = [
       { label: "STEM", type: "topic", subtopic: "Lập trình / AI / Khoa học dữ liệu" }
     ],
     positions: ["Ban Nhân Sự", "Ban Truyền Thông"],
-    description: "Vietnam Innovation Challenge 2025 là cuộc thi sáng tạo công nghệ thường niên dành riêng cho sinh viên và học sinh trên toàn quốc. Cuộc thi tập trung vào các giải pháp ứng dụng trí tuệ nhân tạo nhằm giải quyết các bài toán thực tiễn trong giáo dục, y tế và môi trường. Các đội thi sẽ có 48 giờ để phát triển prototype và trình bày trước hội đồng giám khảo gồm các chuyên gia đầu ngành công nghệ tại Việt Nam. Người chiến thắng sẽ nhận được học bổng, cơ hội thực tập tại các công ty công nghệ hàng đầu, cùng gói hỗ trợ khởi nghiệp trị giá lên đến 100 triệu đồng. Đây là cơ hội tuyệt vời để các bạn trẻ thể hiện tư duy sáng tạo và xây dựng mạng lưới kết nối trong ngành.",
+    description: "ArtSoul Project là một dự án xã hội được nhen nhóm ý tưởng vào khoảng tháng 11 năm 2025, dự kiến ra mắt trong tháng 1 năm 2026, do các bạn trẻ Việt Nam có niềm đam mê tâm lý học, nghệ thuật và hoạt động ngoại khóa cống hiến cho cộng đồng thành lập nên. Tên gọi \"ArtSoul\" bắt nguồn từ \"Art\" - bảy loại hình nghệ thuật kết hợp với \"Soul\" - miền sâu thẳm tâm hồn. Chúng mình tin nghệ thuật là phương thức tinh tế và kỳ diệu nhất để vẽ nên bức tranh nội tâm rực rỡ, hướng đến cộng đồng tương lai tích cực và nhân văn trong thời đại AI.",
     location: "Online",
     deadline: "15/02/2026",
     link: "https://example.com"
@@ -54,5 +54,21 @@ export const mockActivities = [
     location: "Hà Nội",
     deadline: "28/02/2026",
     link: "https://example.com"
+  },
+  {
+    id: 5,
+    name: "CLB Say Hi",
+    image: "https://drive.google.com/uc?export=view&id=1IzFczF1iiU9BBOcYXYQ7weCeQ7jANJ3I",
+    tags: [
+      { label: "Dự án & CLB", type: "category" },
+      { label: "Xã hội", type: "topic", subtopic: "Khoa học tự nhiên (STEM)" }
+    ],
+    positions: ["Ban Dịch Thuật"],
+    description: "ArtSoul Project là một dự án xã hội được nhen nhóm ý tưởng vào khoảng tháng 11 năm 2025, dự kiến ra mắt trong tháng 1 năm 2026, do các bạn trẻ Việt Nam có niềm đam mê tâm lý học, nghệ thuật và hoạt động ngoại khóa cống hiến cho cộng đồng thành lập nên.
+Tên gọi “ArtSoul” bắt nguồn từ “Art” - danh từ chung để chỉ bảy loại hình nghệ thuật bao gồm kiến trúc, điêu khắc, hội họa, văn học, âm nhạc, sân khấu và điện ảnh kết hợp với “Soul” - miền sâu thẳm tâm hồn của mỗi con người. 
+Trong bộ phim Dead Poets Society (1989) có câu rằng: “Y khoa, luật, kinh doanh, kỹ thuật, đó là những ngành nghề cao quý và cần thiết để TỒN TẠI, nhưng thơ ca, vẻ đẹp, sự lãng mạn, tình yêu...đó mới là những điều mà vì nó mà chúng ta SỐNG.” Chúng mình tin, nghệ thuật là phương thức tinh tế và kỳ diệu nhất để vẽ nên bức tranh nội tâm rực rỡ, phong phú nơi mỗi cá nhân, hướng đến cộng đồng tương lai tích cực và nhân văn trong thời đại AI.",
+    location: "Online",
+    deadline: "5/15/2026",
+    link: "https://www.facebook.com/profile.php?id=61585765110114"
   }
 ];
