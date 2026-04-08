@@ -57,12 +57,12 @@ const deadlineOptions = [
             <div className="bg-sky-50 border-l-4 border-sky-400 rounded-lg max-w-xs p-6 ml-4 mt-6 shadow-md">
                 <h3 className="font-bold mb-4 text-xl text-sky-600">Thời hạn đăng ký</h3>
                 {deadlineOptions.map((option) => (
-                    <label key={option.value} className={`flex mb-1 gap-2 cursor-pointer rounded-lg px-2 py-1 transition-colors ${selectedDeadline === option.value ? 'bg-sky-100' : 'hover:bg-sky-50'}`}>
-                    <input type="radio" name="deadline" className="w-4 h-4 accent-sky-500"
+                    <label key={option.value} className="flex mb-2 gap-2 cursor-pointer">
+                    <input type="radio" name="deadline" className="w-4 h-4 accent-blue-500"
                     checked = {selectedDeadline === option.value}
                     onChange = {() => handleDeadlineChange(option.value)}
                     />
-                    <span className={selectedDeadline === option.value ? 'text-sky-700 font-semibold' : ''}>{option.label}</span>
+                    <span>{option.label}</span>
                 </label>
                 ))}
                 {selectedDeadline && (
@@ -70,7 +70,7 @@ const deadlineOptions = [
                     onClick={() => handleDeadlineChange('')}
                     className="text-sm text-sky-500 hover:text-sky-700 mt-2"
                 >
-                    Xóa lọc
+                    Xóa bộ lọc
                 </button>
             )}
                 

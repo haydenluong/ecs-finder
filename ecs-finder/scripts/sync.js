@@ -16,15 +16,25 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const SHEET_NAME = process.env.SHEET_NAME || 'Form Responses 1';
 const MOCK_FILE = resolve(__dirname, '../src/data/mockActivities.jsx');
 
-// Convert any Google Drive sharing URL → direct image URL
+// Sanitize free-text fields: collapse line breaks, strip curly quotes
+function sanitizeText(raw) {
+  return raw
+    .replace(/[\r\n]+/g, ' ')          // line breaks → space
+    .replace(/[\u201C\u201D]/g, '')     // curly double quotes → removed
+    .replace(/[\u2018\u2019]/g, '')     // curly single quotes → removed
+    .replace(/\s{2,}/g, ' ')           // collapse multiple spaces
+    .trim();
+}
+
+// Convert any Google Drive sharing URL → direct image URL (publicly accessible)
 function toDriveDirectUrl(raw) {
   if (!raw) return '';
   // Format: /file/d/FILE_ID/view
-  const match1 = raw.match(/\/file\/d\/([^/]+)/);
-  if (match1) return `https://drive.google.com/uc?export=view&id=${match1[1]}`;
-  // Format: open?id=FILE_ID
+  const match1 = raw.match(/\/file\/d\/([^/?]+)/);
+  if (match1) return `https://lh3.googleusercontent.com/d/${match1[1]}`;
+  // Format: open?id=FILE_ID or uc?id=FILE_ID
   const match2 = raw.match(/[?&]id=([^&]+)/);
-  if (match2) return `https://drive.google.com/uc?export=view&id=${match2[1]}`;
+  if (match2) return `https://lh3.googleusercontent.com/d/${match2[1]}`;
   return raw; // already a plain URL
 }
 
@@ -72,18 +82,18 @@ async function main() {
 
   const [headers, ...rows] = res.data.values;
 
-  // Find column indices by partial header match (robust to extra punctuation/description text)
-  const col = (keyword) => headers.findIndex(h => h.trim().toLowerCase().includes(keyword.toLowerCase()));
+  // Find column indices by header name (robust to reorder)
+  const col = (name) => headers.findIndex(h => h.trim() === name);
   const iName      = col('Tên hoạt động');
-  const iCategory  = col('Mô hình');
-  const iTopic     = col('Chủ đề CHÍNH');
-  const iSubtopic  = col('Chủ đề PHỤ');
+  const iCategory  = col('Thể loại');
+  const iTopic     = col('Chủ đề');
+  const iSubtopic  = col('Chủ đề con');
   const iPositions = col('Vị trí tuyển');
   const iDesc      = col('Mô tả');
   const iLocation  = col('Địa điểm');
   const iDeadline  = col('Hạn đăng ký');
-  const iLink      = col('Link bài đăng');
-  const iImage     = col('hình ảnh đại diện');
+  const iLink      = col('Link');
+  const iImage     = col('Ảnh bìa');
   const iStatus    = col('Status');
 
   // Read existing file
@@ -130,7 +140,7 @@ async function main() {
       image: toDriveDirectUrl(rawImage),
       tags,
       positions,
-      description: (row[iDesc]     || '').trim(),
+      description: sanitizeText(row[iDesc] || ''),
       location:    (row[iLocation] || '').trim(),
       deadline:    (row[iDeadline] || '').trim(),
       link:        (row[iLink]     || '').trim(),

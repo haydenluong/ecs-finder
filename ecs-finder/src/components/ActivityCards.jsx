@@ -120,6 +120,7 @@ const searchedActivities = mockActivities.filter(activity => {
                 <img 
                     src={activity.image}
                     alt={activity.name}
+                    referrerPolicy="no-referrer"
                     className="rounded-lg shadow-md w-20 h-20 md:w-32 md:h-32 object-cover flex-shrink-0"
                 />
 
@@ -222,6 +223,7 @@ const searchedActivities = mockActivities.filter(activity => {
                             <img 
                                 src={selectedActivity.image} 
                                 alt={selectedActivity.name}
+                                referrerPolicy="no-referrer"
                                 className="w-full h-56 object-cover rounded-lg"
                             />
                         </div>

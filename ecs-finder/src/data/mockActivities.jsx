@@ -58,15 +58,13 @@ export const mockActivities = [
   {
     id: 5,
     name: "CLB Say Hi",
-    image: "https://drive.google.com/uc?export=view&id=1IzFczF1iiU9BBOcYXYQ7weCeQ7jANJ3I",
+    image: "https://lh3.googleusercontent.com/d/1IzFczF1iiU9BBOcYXYQ7weCeQ7jANJ3I",
     tags: [
       { label: "Dự án & CLB", type: "category" },
       { label: "Xã hội", type: "topic", subtopic: "Khoa học tự nhiên (STEM)" }
     ],
     positions: ["Ban Dịch Thuật"],
-    description: "ArtSoul Project là một dự án xã hội được nhen nhóm ý tưởng vào khoảng tháng 11 năm 2025, dự kiến ra mắt trong tháng 1 năm 2026, do các bạn trẻ Việt Nam có niềm đam mê tâm lý học, nghệ thuật và hoạt động ngoại khóa cống hiến cho cộng đồng thành lập nên.
-Tên gọi “ArtSoul” bắt nguồn từ “Art” - danh từ chung để chỉ bảy loại hình nghệ thuật bao gồm kiến trúc, điêu khắc, hội họa, văn học, âm nhạc, sân khấu và điện ảnh kết hợp với “Soul” - miền sâu thẳm tâm hồn của mỗi con người. 
-Trong bộ phim Dead Poets Society (1989) có câu rằng: “Y khoa, luật, kinh doanh, kỹ thuật, đó là những ngành nghề cao quý và cần thiết để TỒN TẠI, nhưng thơ ca, vẻ đẹp, sự lãng mạn, tình yêu...đó mới là những điều mà vì nó mà chúng ta SỐNG.” Chúng mình tin, nghệ thuật là phương thức tinh tế và kỳ diệu nhất để vẽ nên bức tranh nội tâm rực rỡ, phong phú nơi mỗi cá nhân, hướng đến cộng đồng tương lai tích cực và nhân văn trong thời đại AI.",
+    description: "ArtSoul Project là một dự án xã hội được nhen nhóm ý tưởng vào khoảng tháng 11 năm 2025, dự kiến ra mắt trong tháng 1 năm 2026, do các bạn trẻ Việt Nam có niềm đam mê tâm lý học, nghệ thuật và hoạt động ngoại khóa thành lập nên. Tên gọi ArtSoul bắt nguồn từ Art - bảy loại hình nghệ thuật kết hợp với Soul - miền sâu thẳm tâm hồn. Chúng mình tin nghệ thuật là phương thức tinh tế và kỳ diệu nhất để vẽ nên bức tranh nội tâm rực rỡ, hướng đến cộng đồng tương lai tích cực và nhân văn trong thời đại AI.",
     location: "Online",
     deadline: "5/15/2026",
     link: "https://www.facebook.com/profile.php?id=61585765110114"
