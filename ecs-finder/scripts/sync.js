@@ -14,7 +14,7 @@ const credentials = require('./credentials.json');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const SHEET_NAME = process.env.SHEET_NAME || 'Form Responses 1';
-const MOCK_FILE = resolve(__dirname, '../src/data/mockActivities.jsx');
+const DATA_FILE = resolve(__dirname, '../src/data/mockActivities.jsx');
 
 // Sanitize free-text fields: collapse line breaks, strip curly quotes
 function sanitizeText(raw) {
@@ -97,7 +97,7 @@ async function main() {
   const iStatus    = col('Status');
 
   // Read existing file
-  const fileText = readFileSync(MOCK_FILE, 'utf8');
+  const fileText = readFileSync(DATA_FILE, 'utf8');
 
   // Extract existing names for dedup
   const existingNames = new Set();
@@ -155,7 +155,7 @@ async function main() {
   // Splice new entries before the closing ];
   const newEntries = newActivities.map(serializeActivity).join(',\n');
   const updated = fileText.replace(/(\s*\];)\s*$/, `,\n${newEntries}\n];\n`);
-  writeFileSync(MOCK_FILE, updated, 'utf8');
+  writeFileSync(DATA_FILE, updated, 'utf8');
   console.log(`Wrote ${newActivities.length} new activities to mockActivities.jsx`);
 
   // Git auto-push

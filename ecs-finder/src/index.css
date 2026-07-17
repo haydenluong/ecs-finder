@@ -1,4 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
+
+:root {
+  --sky: #a8d5f5;
+  --sky-hi: #d3ebfb;
+  --glass: #ffffff;
+  --glass-2: #eef6fd;
+  --border: rgba(20,52,80,0.13);
+  --border-bright: rgba(20,52,80,0.26);
+  --primary: #1a6fd0;
+  --primary-2: #0b53b8;
+  --accent-2: #2f8fff;
+  --ink: #15191d;
+  --ink-text: #f2f7fb;
+  --text: #16232c;
+  --text-dim: #334652;
+  --text-faint: #546675;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: radial-gradient(1200px 720px at 50% -12%, #d3ebfb, #a8d5f5 62%) fixed;
+  background-color: #a8d5f5;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(20,52,80,0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes floatMag {
+  0%, 100% { transform: translateY(0px) rotate(-8deg); }
+  50%       { transform: translateY(-14px) rotate(-3deg); }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
 }

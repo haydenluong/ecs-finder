@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#a8d5f5; --sky-hi:#d3ebfb;
+    --navy-900:#a8d5f5; --navy-800:#ffffff; --navy-700:#eef6fd;
+    --glass:#ffffff; --glass-2:#eef6fd;
+    --border:rgba(20,52,80,0.13); --border-bright:rgba(20,52,80,0.26);
+    --primary:#1a6fd0; --primary-2:#0b53b8;
+    --accent:#1a6fd0; --accent-2:#2f8fff;
+    --ink:#15191d; --ink-text:#f2f7fb;
+    --text:#16232c; --text-dim:#334652; --text-faint:#546675;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 720px at 50% -12%, var(--sky-hi), var(--sky) 62%);
+    background-attachment:fixed; color:var(--text);
+    font-family:'Be Vietnam Pro',sans-serif; -webkit-font-smoothing:antialiased;
+    overflow-x:hidden; position:relative; min-height:100vh;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:radial-gradient(circle, rgba(20,50,80,0.05) 1px, transparent 1px);
+    background-size:34px 34px;
+  }
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(26,111,208,0.35);border-radius:8px;border:3px solid transparent;background-clip:padding-box;}
+  ::selection{background:rgba(47,143,255,0.25);}
+  input::placeholder{color:var(--text-faint);}
+  @keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 6px rgba(31,231,255,0.55)) drop-shadow(0 0 14px rgba(10,70,239,0.35));}50%{filter:drop-shadow(0 0 14px rgba(31,231,255,0.9)) drop-shadow(0 0 26px rgba(10,70,239,0.55));}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes chipIn{from{opacity:0;transform:translateY(10px) scale(0.94);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @keyframes floatMag{0%,100%{transform:translateY(0) rotate(-8deg);}50%{transform:translateY(-14px) rotate(-3deg);}}
+  @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+  @keyframes spotInA{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes spotInB{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes spotBarA{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @keyframes spotBarB{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @media(max-width:920px){
+    #heroGrid{grid-template-columns:1fr !important;}
+    #heroVisual{display:none !important;}
+  }
+  @media(max-width:1080px){
+    #ecMain{grid-template-columns:1fr !important;}
+    #ecMain aside{position:static !important; flex-direction:row !important; flex-wrap:wrap !important;}
+    #ecMain aside>div{flex:1 1 260px;}
+  }
+  @media(max-width:560px){
+    nav{padding:12px 18px !important; flex-wrap:wrap; gap:14px !important;}
+    nav>div:nth-child(2){order:3; width:100%;}
+    header{padding:48px 22px 30px !important;}
+    header h1{font-size:42px !important;}
+    #ecMain{padding:14px 18px 60px !important;}
+  }
+</style>
+</helmet>
+<div style="position:relative; z-index:1; min-height:100vh;">
+
+  <!-- NAVBAR -->
+  <nav style="position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:28px; padding:14px 40px; background:var(--sky); border-bottom:1px solid var(--border);">
+    <div style="display:flex; align-items:center; gap:13px;">
+      <img src="logo.jpg" alt="ECs Finder" style="width:44px; height:44px; border-radius:11px; object-fit:cover; border:1px solid var(--border-bright);">
+      
+    </div>
+    <span style="font-family: 'Montserrat',sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: var(--text); width: 141px; height: 30px">ECs Finder</span><div style="display:flex; align-items:center; gap:6px; margin-left:14px;">
+      <sc-for list="{{ navLinks }}" as="link" hint-placeholder-count="4">
+        <a href="#" style="font-size:14px; font-weight:600; color:var(--text); text-decoration:none; padding:8px 13px; border-radius:9px; transition:color .18s,background .18s;" style-hover="color:var(--accent); background:rgba(47,123,255,0.1)">{{ link }}</a>
+      </sc-for>
+    </div>
+    <div style="margin-left:auto; display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; padding:3px; gap:2px; background:var(--glass-2); border:1px solid var(--border); border-radius:10px; font-family:'Be Vietnam Pro',sans-serif; font-size:12.5px;">
+        <button onClick="{{ setVI }}" style="{{ viBtnStyle }}">VI</button>
+        <button onClick="{{ setEN }}" style="{{ enBtnStyle }}">EN</button>
+      </div>
+      <button style="font-family:'Be Vietnam Pro',sans-serif; font-weight:500; font-size:13px; letter-spacing:0.02em; color:var(--ink-text); padding:11px 20px; border:none; border-radius:999px; cursor:pointer; background:var(--ink);" style-hover="transform:translateY(-1px)">+ Đăng hoạt động</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header style="position:relative; max-width:1320px; margin:0 auto; padding:44px 40px 30px;">
+    <div id="heroGrid" style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,430px); gap:44px; align-items:center;">
+      <div>
+        <div style="display:inline-flex; align-items:center; gap:9px; padding:7px 15px; background:var(--glass); border:1px solid var(--border-bright); border-radius:999px; font-family:'Be Vietnam Pro',sans-serif; font-weight:600; font-size:12.5px; color:var(--accent); letter-spacing:0.01em; margin-bottom:18px; animation:fadeUp .7s cubic-bezier(0.16,1,0.3,1) both;">
+          <span style="width:7px; height:7px; border-radius:50%; background:var(--accent);"></span>
+          {{ activityCount }} hoạt động đang mở đăng ký
+        </div>
+        <h1 style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:52px; line-height:1.05; letter-spacing:-0.015em; margin:0 0 16px; max-width:16ch; color:var(--text); animation:fadeUp .8s cubic-bezier(0.16,1,0.3,1) .06s both;">
+          Soi sáng hành trình <span style="color:var(--accent);">ngoại khoá</span> của bạn
+        </h1>
+        <p style="font-size:16.5px; line-height:1.6; color:var(--text-dim); max-width:48ch; margin:0 0 24px; animation:fadeUp .8s cubic-bezier(0.16,1,0.3,1) .12s both;">Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam ở một nơi.</p>
+        <div style="max-width:560px; display:flex; align-items:center; gap:12px; background:var(--glass); border:1px solid var(--border-bright); border-radius:14px; padding:7px 8px 7px 18px; box-shadow:0 10px 26px rgba(20,44,68,0.09); animation:fadeUp .8s cubic-bezier(0.16,1,0.3,1) .18s both;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Tìm câu lạc bộ, cuộc thi, dự án, sự kiện..." style="flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'Be Vietnam Pro',sans-serif; font-size:16px; padding:10px 0;">
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-size:12.5px; font-weight:600; color:var(--text-dim); padding-right:8px; white-space:nowrap;">{{ resultCount }} kết quả</span>
+        </div>
+      </div>
+      <div id="heroVisual" style="position:relative; min-height:340px; display:flex; align-items:center; justify-content:center; animation:fadeUp .9s cubic-bezier(0.16,1,0.3,1) .12s both;">
+        <div style="position:absolute; width:310px; height:310px; border-radius:50%; background:radial-gradient(circle at 50% 44%, rgba(255,255,255,0.65), rgba(255,255,255,0) 60%);"></div>
+        <svg viewBox="0 0 200 200" width="248" style="display:block; overflow:visible; filter:drop-shadow(0 26px 34px rgba(26,111,208,0.34)); animation:floatMag 6s ease-in-out infinite;">
+          <defs>
+            <radialGradient id="magLens" cx="38%" cy="30%" r="80%">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"></stop>
+              <stop offset="55%" stop-color="#d3ecff" stop-opacity="0.22"></stop>
+              <stop offset="100%" stop-color="#9fccf4" stop-opacity="0.08"></stop>
+            </radialGradient>
+            <linearGradient id="magRim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f2faff"></stop>
+              <stop offset="42%" stop-color="#c4e3fb"></stop>
+              <stop offset="100%" stop-color="#69aeea"></stop>
+            </linearGradient>
+            <linearGradient id="magHandle" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#66baff"></stop>
+              <stop offset="52%" stop-color="#2f86f0"></stop>
+              <stop offset="100%" stop-color="#1a58c8"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="112" y1="112" x2="156" y2="160" stroke="url(#magHandle)" stroke-width="24" stroke-linecap="round"></line>
+          <line x1="118" y1="110" x2="150" y2="146" stroke="#bfe2ff" stroke-width="5" stroke-linecap="round" opacity="0.6"></line>
+          <circle cx="80" cy="78" r="40" fill="url(#magLens)"></circle>
+          <circle cx="80" cy="78" r="48" fill="none" stroke="url(#magRim)" stroke-width="19"></circle>
+          <circle cx="80" cy="78" r="58" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.45"></circle>
+          <circle cx="80" cy="78" r="38.5" fill="none" stroke="#ffffff" stroke-width="2.4" opacity="0.55"></circle>
+          <path d="M48 55 A46 46 0 0 1 92 36" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.85"></path>
+          <circle cx="58" cy="104" r="3.2" fill="#ffffff" opacity="0.7"></circle>
+        </svg>
+        <span style="position:absolute; display:inline-flex; align-items:center; gap:7px; background:#ffffff; border:1px solid var(--border); border-radius:999px; padding:7px 13px 7px 11px; font-family:'Be Vietnam Pro',sans-serif; font-weight:600; font-size:12.5px; color:var(--text); box-shadow:0 12px 26px rgba(20,44,68,0.15); white-space:nowrap; top:30px; left:2px; animation:floaty 5s ease-in-out infinite; cursor:pointer;" onClick="{{ chipStem }}" style-hover="border-color:var(--accent); box-shadow:0 16px 30px rgba(20,44,68,0.22)"><span style="width:8px; height:8px; border-radius:50%; background:#12a6c9;"></span>STEM</span>
+        <span style="position:absolute; display:inline-flex; align-items:center; gap:7px; background:#ffffff; border:1px solid var(--border); border-radius:999px; padding:7px 13px 7px 11px; font-family:'Be Vietnam Pro',sans-serif; font-weight:600; font-size:12.5px; color:var(--text); box-shadow:0 12px 26px rgba(20,44,68,0.15); white-space:nowrap; top:70px; right:-6px; animation:floaty 6.2s ease-in-out .5s infinite; cursor:pointer;" onClick="{{ chipArt }}" style-hover="border-color:var(--accent); box-shadow:0 16px 30px rgba(20,44,68,0.22)"><span style="width:8px; height:8px; border-radius:50%; background:#7a5cff;"></span>Sáng tạo</span>
+        <span style="position:absolute; display:inline-flex; align-items:center; gap:7px; background:#ffffff; border:1px solid var(--border); border-radius:999px; padding:7px 13px 7px 11px; font-family:'Be Vietnam Pro',sans-serif; font-weight:600; font-size:12.5px; color:var(--text); box-shadow:0 12px 26px rgba(20,44,68,0.15); white-space:nowrap; bottom:40px; left:34px; animation:floaty 5.6s ease-in-out .9s infinite; cursor:pointer;" onClick="{{ chipSport }}" style-hover="border-color:var(--accent); box-shadow:0 16px 30px rgba(20,44,68,0.22)"><span style="width:8px; height:8px; border-radius:50%; background:#1fae6b;"></span>Thể thao</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN: 3-COLUMN -->
+  <main id="ecMain" style="max-width:1320px; margin:0 auto; padding:8px 40px 80px; display:grid; grid-template-columns:238px minmax(0,1fr); gap:34px; align-items:start;">
+
+    <!-- FILTER RAIL (single, flat) -->
+    <aside style="position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-right:4px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-family:'Montserrat',sans-serif; font-weight:700; font-size:15px; letter-spacing:-0.01em; color:var(--text);">Bộ lọc</span>
+        <button onClick="{{ clearAll }}" style="font-family:'Be Vietnam Pro',sans-serif; font-size:12.5px; font-weight:600; color:var(--accent); background:transparent; border:none; cursor:pointer; padding:0;" style-hover="text-decoration:underline">Xoá tất cả</button>
+      </div>
+
+      <div>
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="15" y1="12" x2="3" y2="12"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-dim);">Loại hình</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ categoryOpts }}" as="opt" hint-placeholder-count="5">
+            <label onClick="{{ opt.onClick }}" style="{{ opt.rowStyle }}" style-hover="background:rgba(47,123,255,0.08)">
+              <span style="{{ opt.dotStyle }}"></span>
+              <span style="flex:1;">{{ opt.label }}</span>
+              <span style="font-family:'Be Vietnam Pro',sans-serif; font-size:11.5px; color:var(--text-faint);">{{ opt.count }}</span>
+            </label>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:18px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-dim);">Hạn đăng ký</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ deadlineOpts }}" as="opt" hint-placeholder-count="3">
+            <label onClick="{{ opt.onClick }}" style="{{ opt.rowStyle }}" style-hover="background:rgba(47,123,255,0.08)">
+              <span style="{{ opt.dotStyle }}"></span>
+              <span style="flex:1;">{{ opt.label }}</span>
+            </label>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:18px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 4.5v9L12 21l-9-4.5v-9L12 3Z"></path><path d="m12 12 9-4.5"></path><path d="M12 12v9"></path><path d="m12 12-9-4.5"></path></svg>
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-dim);">Chủ đề</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ topicOpts }}" as="opt" hint-placeholder-count="7">
+            <div style="{{ opt.rowStyle }}">
+              <label onClick="{{ opt.onSelect }}" style="{{ opt.labelStyle }}" style-hover="background:rgba(47,123,255,0.08)">
+                <span style="{{ opt.boxStyle }}">{{ opt.check }}</span>
+                <span style="flex:1;">{{ opt.label }}</span>
+              </label>
+              <button onClick="{{ opt.onToggle }}" style="{{ opt.chevStyle }}">{{ opt.chev }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:18px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5.5 21a7 7 0 0 1 13 0"></path></svg>
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-dim);">Vị trí tuyển</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ positionOpts }}" as="opt" hint-placeholder-count="5">
+            <label onClick="{{ opt.onClick }}" style="{{ opt.rowStyle }}" style-hover="background:rgba(47,123,255,0.08)">
+              <span style="{{ opt.boxStyle }}">{{ opt.check }}</span>
+              <span style="flex:1;">{{ opt.label }}</span>
+            </label>
+          </sc-for>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between;">
+        <h2 style="font-family:'Montserrat',sans-serif; font-weight:700; font-size:22px; letter-spacing:-0.02em; margin:0; color:var(--text);">{{ resultHeading }}</h2>
+        <span style="font-family:'Be Vietnam Pro',sans-serif; font-size:12.5px; font-weight:500; color:var(--text-dim);">Trang {{ pageLabel }}</span>
+      </div>
+
+      <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:18px;">
+          <sc-for list="{{ pageCards }}" as="c" hint-placeholder-count="6">
+            <article onClick="{{ c.onClick }}" style="{{ c.cardStyle }}" style-hover="transform:translateY(-3px); border-color:var(--card-accent); box-shadow:0 18px 40px rgba(20,44,68,0.16), 0 0 0 1px var(--card-accent), 0 0 24px var(--card-glow)">
+              <div style="{{ c.imgStyle }}">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:50%; top:43%; transform:translate(-50%,-50%); opacity:0.5;"><rect x="3" y="4" width="18" height="15" rx="2.5"></rect><circle cx="8.5" cy="9.5" r="1.6"></circle><path d="m4 17 4.5-4.5a2 2 0 0 1 2.8 0L18 19"></path><path d="m14 15 2-2a2 2 0 0 1 2.8 0L21 15"></path></svg>
+                <span style="{{ c.catChip }}">{{ c.category }}</span>
+                <span style="{{ c.daysStyle }}">{{ c.daysLabel }}</span>
+              </div>
+              <div style="padding:16px 17px 17px; display:flex; flex-direction:column; gap:11px;">
+                <h3 style="font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; line-height:1.3; letter-spacing:-0.005em; margin:0; color:var(--text);">{{ c.name }}</h3>
+                <div style="display:flex; align-items:center; gap:14px; color:var(--text-dim); font-size:13px;">
+                  <span style="display:inline-flex; align-items:center; gap:5px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {{ c.location }}
+                  </span>
+                  <span style="display:inline-flex; align-items:center; gap:5px; font-family:'Be Vietnam Pro',sans-serif; font-size:12px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
+                    {{ c.deadline }}
+                  </span>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <sc-for list="{{ c.tags }}" as="t" hint-placeholder-count="2">
+                    <span style="{{ t.style }}">{{ t.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex; align-items:center; gap:7px; padding-top:3px; border-top:1px solid var(--border); margin-top:2px;">
+                  <span style="font-size:11.5px; color:var(--text-faint);">Vị trí:</span>
+                  <span style="font-size:12.5px; color:var(--accent-2); font-weight:500;">{{ c.positionLabel }}</span>
+                </div>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center; padding:70px 20px; background:var(--glass); border:1px dashed var(--border); border-radius:18px;">
+          <div style="font-family:'Montserrat',sans-serif; font-weight:700; font-size:20px; color:var(--text); margin-bottom:8px;">Không tìm thấy hoạt động</div>
+          <div style="color:var(--text-dim); font-size:14.5px;">Thử điều chỉnh bộ lọc hoặc từ khoá tìm kiếm.</div>
+        </div>
+      </sc-if>
+
+      <div style="display:flex; align-items:center; justify-content:center; gap:7px; padding-top:8px;">
+        <button onClick="{{ prevPage }}" style="{{ prevStyle }}">‹</button>
+        <sc-for list="{{ pages }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.onClick }}" style="{{ p.style }}">{{ p.label }}</button>
+        </sc-for>
+        <button onClick="{{ nextPage }}" style="{{ nextStyle }}">›</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DETAIL MODAL -->
+  <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:fixed; inset:0; z-index:60; background:rgba(18,40,62,0.5); display:flex; align-items:flex-start; justify-content:center; padding:48px 20px; overflow-y:auto; animation:fadeUp .25s ease both;">
+      <div onClick="{{ stop }}" style="width:100%; max-width:620px; background:var(--navy-800); border:1px solid var(--border); border-radius:22px; overflow:hidden; box-shadow:0 30px 80px rgba(20,44,68,0.3);">
+        <div style="{{ detail.heroStyle }}">
+          <button onClick="{{ closeDetail }}" style="position:absolute; top:16px; right:16px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:rgba(10,20,32,0.55); border:1px solid rgba(255,255,255,0.3); border-radius:10px; color:#fff; cursor:pointer;" style-hover="background:rgba(10,20,32,0.8)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+          <span style="font-family:'Be Vietnam Pro',sans-serif; font-size:12px; letter-spacing:0.12em; color:rgba(255,255,255,0.85); text-transform:uppercase;">{{ detail.category }}</span>
+          <span style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:64px; color:rgba(255,255,255,0.95); line-height:1; letter-spacing:-0.02em;">{{ detail.acronym }}</span>
+        </div>
+        <div style="padding:26px 28px 30px; display:flex; flex-direction:column; gap:20px;">
+          <h2 style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:27px; line-height:1.2; letter-spacing:-0.02em; margin:0;">{{ detail.name }}</h2>
+          <div style="display:flex; flex-wrap:wrap; gap:20px;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em;">Địa điểm</span>
+              <span style="display:inline-flex; align-items:center; gap:6px; font-size:14.5px; color:var(--text);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>{{ detail.location }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em;">Hạn đăng ký</span>
+              <span style="display:inline-flex; align-items:center; gap:6px; font-family:'Be Vietnam Pro',sans-serif; font-size:14px; color:var(--text);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>{{ detail.deadline }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em;">Chủ đề</span>
+              <span style="font-size:14.5px; color:var(--text);">{{ detail.topic }}</span>
+            </div>
+          </div>
+          <p style="font-size:15px; line-height:1.72; color:var(--text-dim); margin:0;">{{ detail.description }}</p>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+            <span style="font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em;">Thẻ</span>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ detail.tags }}" as="t" hint-placeholder-count="3">
+                <span style="{{ t.style }}">{{ t.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+            <span style="font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em;">Vị trí tuyển</span>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ detail.positions }}" as="p" hint-placeholder-count="2">
+                <span style="font-size:13px; color:var(--text); background:rgba(47,123,255,0.12); border:1px solid var(--border); border-radius:8px; padding:6px 12px;">{{ p }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <a href="#" style="display:flex; align-items:center; justify-content:center; gap:10px; font-family:'Be Vietnam Pro',sans-serif; font-weight:500; font-size:15px; letter-spacing:0.02em; color:var(--ink-text); text-decoration:none; padding:15px; border-radius:999px; background:var(--ink); box-shadow:0 10px 26px rgba(21,25,29,0.22); margin-top:4px;" style-hover="box-shadow:0 12px 32px rgba(21,25,29,0.32)">
+            Đăng ký ngay
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;topicVividness&quot;: {
+    &quot;editor&quot;: &quot;enum&quot;,
+    &quot;options&quot;: [&quot;Nhẹ&quot;, &quot;Vừa&quot;, &quot;Đậm&quot;],
+    &quot;default&quot;: &quot;Đậm&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;section&quot;: &quot;Màu chủ đề&quot;,
+    &quot;label&quot;: &quot;Độ đậm màu&quot;
+  },
+  &quot;topicSpread&quot;: {
+    &quot;editor&quot;: &quot;enum&quot;,
+    &quot;options&quot;: [&quot;Gọn&quot;, &quot;Cân bằng&quot;, &quot;Rộng&quot;],
+    &quot;default&quot;: &quot;Cân bằng&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;section&quot;: &quot;Màu chủ đề&quot;,
+    &quot;label&quot;: &quot;Phổ màu&quot;
+  }
+}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    const ACCENTS = [
+      ['#1f6fe0','#37b9ff'], ['#1487c9','#3fd0c8'], ['#3a63e6','#6aa8ff'],
+      ['#1f7ae6','#46c6ff'], ['#2467d8','#57b0ff'], ['#0f74d6','#38c6f0']
+    ];
+    this.activities = [
+      {id:1, name:'CLB Truyền Thông M-Team', acronym:'MT', category:'Dự án & CLB', topic:'Nghệ thuật & Sáng tạo', subtopic:'Viết', location:'Hà Nội', deadline:'2026-07-15', tags:['Thiết kế','Content'], positions:['Thành viên','Cộng tác viên'], desc:'Câu lạc bộ truyền thông năng động dành cho học sinh đam mê thiết kế, viết lách và sản xuất nội dung số. Tham gia các chiến dịch thực tế và xây dựng portfolio cá nhân.'},
+      {id:2, name:'Cuộc thi KHKT ViSEF 2026', acronym:'VS', category:'Cuộc thi', topic:'STEM', subtopic:'Khoa học tự nhiên', location:'Toàn quốc', deadline:'2026-08-01', tags:['Nghiên cứu'], positions:['Thí sinh'], desc:'Sân chơi khoa học kỹ thuật uy tín nhất dành cho học sinh trung học. Trình bày dự án nghiên cứu của bạn trước hội đồng giám khảo là các nhà khoa học hàng đầu.'},
+      {id:3, name:'Tình nguyện Mùa Hè Xanh', acronym:'MHX', category:'Dự án & CLB', topic:'Xã hội', subtopic:'Thiện nguyện', location:'TP. Hồ Chí Minh', deadline:'2026-07-05', tags:['Cộng đồng','Giáo dục'], positions:['Tình nguyện viên'], desc:'Chiến dịch tình nguyện hè ý nghĩa: dạy học cho trẻ em vùng cao, xây dựng cơ sở vật chất và lan toả tri thức tới cộng đồng khó khăn.'},
+      {id:4, name:'Hội thảo Hướng nghiệp Career Talk', acronym:'CT', category:'Sự kiện', topic:'Kinh tế', subtopic:'Tài chính & Kinh doanh', location:'Đà Nẵng', deadline:'2026-07-20', tags:['Hướng nghiệp'], positions:['Người tham dự'], desc:'Buổi chia sẻ trực tiếp cùng các chuyên gia tuyển dụng và lãnh đạo doanh nghiệp, giúp bạn định hướng con đường sự nghiệp ngay từ khi còn trên ghế nhà trường.'},
+      {id:5, name:'CLB Tranh biện Debate Society', acronym:'DS', category:'Dự án & CLB', topic:'Ngôn ngữ & Giao tiếp', subtopic:'Tranh biện & Hùng biện', location:'Hà Nội', deadline:'2026-07-12', tags:['Hùng biện','Tư duy'], positions:['Thành viên','Trưởng ban'], desc:'Rèn luyện tư duy phản biện, kỹ năng lập luận và thuyết trình qua các buổi tranh biện theo chuẩn quốc tế. Cơ hội thi đấu tại các giải debate lớn.'},
+      {id:6, name:'Cuộc thi Khởi nghiệp StartUp Hunt', acronym:'SH', category:'Cuộc thi', topic:'Kinh tế', subtopic:'Tài chính & Kinh doanh', location:'Toàn quốc', deadline:'2026-09-10', tags:['Khởi nghiệp','Pitching'], positions:['Thí sinh'], desc:'Biến ý tưởng kinh doanh thành hiện thực. Được mentor bởi các nhà sáng lập startup và nhận vốn ươm mầm cho dự án xuất sắc nhất.'},
+      {id:7, name:'Dự án Lập trình Code4Change', acronym:'C4C', category:'Dự án & CLB', topic:'STEM', subtopic:'Lập trình / AI / Khoa học dữ liệu', location:'Online', deadline:'2026-07-25', tags:['Web','Open Source'], positions:['Lập trình viên','Cộng tác viên'], desc:'Cùng nhau xây dựng sản phẩm công nghệ giải quyết vấn đề xã hội. Phù hợp cho bạn yêu thích lập trình web và mã nguồn mở.'},
+      {id:8, name:'Giải chạy Marathon Sinh viên', acronym:'MR', category:'Sự kiện', topic:'Sức khỏe', subtopic:'Dinh dưỡng & Lối sống / Sức khỏe thể chất', location:'TP. Hồ Chí Minh', deadline:'2026-07-30', tags:['Sức khoẻ'], positions:['Vận động viên'], desc:'Đường chạy 5K–21K dành cho sinh viên trên toàn thành phố. Thử thách bản thân, gây quỹ thiện nguyện và kết nối cộng đồng yêu thể thao.'},
+      {id:9, name:'CLB Nhiếp ảnh Lens & Light', acronym:'LL', category:'Dự án & CLB', topic:'Nghệ thuật & Sáng tạo', subtopic:'Hội họa', location:'Hà Nội', deadline:'2026-08-05', tags:['Nhiếp ảnh','Sáng tạo'], positions:['Thành viên'], desc:'Khám phá nghệ thuật nhiếp ảnh từ cơ bản đến nâng cao. Tham gia các buổi photowalk, workshop và triển lãm ảnh cuối kỳ.'},
+      {id:10, name:'Trại hè Lãnh đạo Youth Summit', acronym:'YS', category:'Sự kiện', topic:'Xã hội', subtopic:'Văn hóa / Du học', location:'Đà Lạt', deadline:'2026-08-15', tags:['Kỹ năng','Lãnh đạo'], positions:['Trại sinh','Trưởng nhóm'], desc:'Ba ngày huấn luyện kỹ năng lãnh đạo, làm việc nhóm và tư duy chiến lược trong không gian núi rừng Đà Lạt cùng các diễn giả truyền cảm hứng.'},
+      {id:11, name:'Cuộc thi Âm nhạc Spotlight', acronym:'SL', category:'Cuộc thi', topic:'Nghệ thuật & Sáng tạo', subtopic:null, location:'Hà Nội', deadline:'2026-07-18', tags:['Âm nhạc','Biểu diễn'], positions:['Thí sinh'], desc:'Sân khấu toả sáng cho các tài năng âm nhạc học đường. Biểu diễn solo hoặc nhóm, được đánh giá bởi nghệ sĩ chuyên nghiệp.'},
+      {id:12, name:'Dự án Môi trường Green Earth', acronym:'GE', category:'Dự án & CLB', topic:'Môi trường', subtopic:null, location:'Toàn quốc', deadline:'2026-09-01', tags:['Môi trường','ESG'], positions:['Tình nguyện viên','Trưởng ban'], desc:'Hành động vì hành tinh xanh: trồng cây, dọn rác đại dương và lan toả lối sống bền vững tới giới trẻ Việt Nam.'},
+    ];
+    this.activities.forEach((a,i)=>{ a.accent = ACCENTS[i % ACCENTS.length]; });
+    this.categories = ['Cuộc thi','Dự án & CLB','Sự kiện'];
+    this.deadlines = [['all','Tất cả'],['week','Trong tuần này'],['month','Trong tháng này']];
+    // 7 parent topics, each a distinct cool-toned accent (cyan → teal → green → blue → lavender → indigo → orchid)
+    // each parent owns a base hue (cool spectrum, centred on the brand azure ~205)
+    this.topicTree = [
+      {name:'STEM',                 hue:188, subs:['Khoa học tự nhiên','Lập trình / AI / Khoa học dữ liệu','Kỹ thuật / Robotics']},
+      {name:'Xã hội',               hue:166, subs:['Thiện nguyện','Bình đẳng xã hội','Văn hóa / Du học']},
+      {name:'Môi trường',           hue:144, subs:[]},
+      {name:'Kinh tế',              hue:206, subs:['Tài chính & Kinh doanh','Marketing','Gây quỹ']},
+      {name:'Nghệ thuật & Sáng tạo',hue:262, subs:['Văn học & Thơ','Hội họa','Viết','Thời trang']},
+      {name:'Ngôn ngữ & Giao tiếp', hue:230, subs:['Ngôn ngữ học','Tranh biện & Hùng biện']},
+      {name:'Sức khỏe',             hue:290, subs:['Tâm lý học','Dinh dưỡng & Lối sống / Sức khỏe thể chất']},
+    ];
+    this.topicHues = {};
+    this.topicTree.forEach(p=>{ this.topicHues[p.name] = p.hue; });
+    this.positionsList = ['Thành viên','Trưởng ban','Cộng tác viên','Tình nguyện viên','Thí sinh'];
+    this.tagPool = ['Thiết kế','STEM','Tình nguyện','Khởi nghiệp','Tranh biện','Nhiếp ảnh','Lập trình','Âm nhạc','Lãnh đạo','Môi trường','Content','Nghiên cứu'];
+    this.today = new Date(2026,5,30);
+    this.state = {
+      search:'', category:'all', deadline:'all', topics:[], subtopics:[], expanded:[], positions:[],
+      page:0, lang:'VI', detailId:null, heroTags:this.pickHero(),
+      spotIdx:0, spotPaused:false
+    };
+  }
+  componentDidMount(){
+    this.spotTimer=setInterval(()=>{
+      if(!this.state.spotPaused && !this.state.detailId){
+        this.setState(st=>({spotIdx:(st.spotIdx+1)%this.topicTree.length}));
+      }
+    }, 3200);
+  }
+  componentWillUnmount(){ clearInterval(this.spotTimer); }
+  pickHero(){
+    const pool=[...this.tagPool]; const out=[];
+    for(let i=0;i<4;i++){ out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); }
+    return out;
+  }
+  daysLeft(d){ return Math.round((new Date(d)-this.today)/86400000); }
+  fmtDate(d){ const x=new Date(d); return `${String(x.getDate()).padStart(2,'0')}.${String(x.getMonth()+1).padStart(2,'0')}.${x.getFullYear()}`; }
+  hexRgba(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+  // tint a hex toward white for legible text on dark bg
+  lighten(hex,amt){ const n=parseInt(hex.slice(1),16); const r=(n>>16)&255,g=(n>>8)&255,b=n&255; const t=amt*0.62; const m=(c)=>Math.round(c*(1-t)); return `rgb(${m(r)},${m(g)},${m(b)})`; }
+  hslHex(h,s,l){ s/=100; l/=100; const a=s*Math.min(l,1-l); const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(-1,Math.min(k-3,9-k,1)); }; const to=v=>Math.round(v*255).toString(16).padStart(2,'0'); return `#${to(f(0))}${to(f(8))}${to(f(4))}`; }
+  // vividness + spread profiles (driven by tweak props)
+  vivProfile(){ const P={ 'Nhẹ':{s:58,l:58,bg:0.10,bd:0.30,glow:0.16}, 'Vừa':{s:70,l:54,bg:0.14,bd:0.42,glow:0.22}, 'Đậm':{s:84,l:50,bg:0.18,bd:0.55,glow:0.30} }; return P[this.props.topicVividness] || P['Đậm']; }
+  spreadFactor(){ const F={ 'Gọn':0.50, 'Cân bằng':1.0, 'Rộng':1.5 }; return F[this.props.topicSpread] ?? 1.0; }
+  // resolve a parent topic's hex for the current tweak settings
+  topicColor(topic){ const hue=this.topicHues[topic]; if(hue==null) return '#36b6ff'; const v=this.vivProfile(); const h=Math.round(205+(hue-205)*this.spreadFactor()); return this.hslHex(h, v.s, v.l); }
+  tagStyle(label,hex){
+    const c = hex || '#36b6ff';
+    return `font-family:'Be Vietnam Pro',sans-serif; font-size:11.5px; font-weight:500; color:${this.lighten(c,0.42)}; background:${this.hexRgba(c,0.13)}; border:1px solid ${this.hexRgba(c,0.32)}; border-radius:7px; padding:4px 9px; white-space:nowrap;`;
+  }
+  imgGradient(a){
+    return `position:relative; height:150px; padding:13px; display:flex; align-items:flex-start; justify-content:space-between; overflow:hidden; background:repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0 1.5px, transparent 1.5px 15px), linear-gradient(140deg, ${a.accent[0]} 0%, ${a.accent[1]} 135%);`;
+  }
+  matches(a){
+    const s=this.state;
+    if(s.category!=='all' && a.category!==s.category) return false;
+    if(s.topics.length || s.subtopics.length){
+      const okParent = s.topics.includes(a.topic);
+      const okSub = a.subtopic && s.subtopics.includes(a.subtopic);
+      if(!okParent && !okSub) return false;
+    }
+    if(s.positions.length && !a.positions.some(p=>s.positions.includes(p))) return false;
+    if(s.deadline!=='all'){ const dl=this.daysLeft(a.deadline); if(s.deadline==='week'&&dl>7) return false; if(s.deadline==='month'&&dl>31) return false; }
+    if(s.search.trim()){ const q=s.search.trim().toLowerCase(); const hay=(a.name+' '+a.tags.join(' ')+' '+a.topic+' '+(a.subtopic||'')+' '+a.location).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  }
+  toggleArr(key,val){ this.setState(s=>{ const arr=s[key].includes(val)?s[key].filter(x=>x!==val):[...s[key],val]; return {[key]:arr, page:0}; }); }
+  pickTopic(name){ this.setState({topics:[name], subtopics:[], expanded:[name], page:0}); const el=document.getElementById('ecMain'); if(el){ const y=el.getBoundingClientRect().top+window.scrollY-70; window.scrollTo({top:y, behavior:'smooth'}); } }
+  toggleExpand(val){ this.setState(s=>({ expanded:s.expanded.includes(val)?s.expanded.filter(x=>x!==val):[...s.expanded,val] })); }
+  topicPill(hex,small){
+    const v=this.vivProfile();
+    if(small){
+      return `font-family:'Be Vietnam Pro',sans-serif; font-size:10.5px; font-weight:500; color:${this.lighten(hex,0.55)}; background:${this.hexRgba(hex,v.bg*0.45)}; border:1px solid ${this.hexRgba(hex,v.bd*0.5)}; border-radius:6px; padding:3px 8px; white-space:nowrap;`;
+    }
+    return `font-family:'Be Vietnam Pro',sans-serif; font-size:11.5px; font-weight:600; color:${this.lighten(hex,0.4)}; background:${this.hexRgba(hex,v.bg)}; border:1px solid ${this.hexRgba(hex,v.bd)}; border-radius:7px; padding:4px 9px; white-space:nowrap;`;
+  }
+  renderVals(){
+    const s=this.state;
+    const filtered=this.activities.filter(a=>this.matches(a));
+    const perPage=6; const pageCount=Math.max(1,Math.ceil(filtered.length/perPage));
+    const page=Math.min(s.page,pageCount-1);
+    const slice=filtered.slice(page*perPage,page*perPage+perPage);
+
+    const rowBase='display:flex; align-items:center; gap:11px; padding:9px 11px; border-radius:10px; cursor:pointer; font-size:14px; transition:background .15s; user-select:none;';
+    const dot=(on)=>`width:16px; height:16px; border-radius:50%; flex-shrink:0; border:2px solid ${on?'var(--accent)':'var(--text-faint)'}; background:${on?'radial-gradient(circle, var(--accent) 0 4px, transparent 5px)':'transparent'};`;
+    const box=(on)=>`width:17px; height:17px; border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:800; border:2px solid ${on?'var(--accent)':'var(--text-faint)'}; background:${on?'var(--accent)':'transparent'};`;
+    const boxC=(on,hex,small)=>{ const sz=small?14:17; return `width:${sz}px; height:${sz}px; border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:${small?9:11}px; color:#fff; font-weight:800; border:2px solid ${on?(small?this.hexRgba(hex,0.7):hex):'var(--text-faint)'}; background:${on?(small?this.hexRgba(hex,0.75):hex):'transparent'}; box-shadow:${on?'0 0 '+(small?6:9)+'px '+this.hexRgba(hex,small?0.4:0.6):'none'};`; };
+
+    const categoryOpts=[{key:'all',label:'Tất cả',count:this.activities.length}].concat(
+      this.categories.map(c=>({key:c,label:c,count:this.activities.filter(a=>a.category===c).length}))
+    ).map(o=>({
+      label:o.label, count:o.count,
+      rowStyle:rowBase+(s.category===o.key?'background:rgba(47,123,255,0.13); color:var(--text);':'color:var(--text-dim);'),
+      dotStyle:dot(s.category===o.key),
+      onClick:()=>this.setState({category:o.key,page:0})
+    }));
+
+    const deadlineOpts=this.deadlines.map(([k,l])=>({
+      label:l,
+      rowStyle:rowBase+(s.deadline===k?'background:rgba(47,123,255,0.13); color:var(--text);':'color:var(--text-dim);'),
+      dotStyle:dot(s.deadline===k),
+      onClick:()=>this.setState({deadline:k,page:0})
+    }));
+
+    const topicOpts=[];
+    this.topicTree.forEach(p=>{
+      const psel=s.topics.includes(p.name);
+      const pexp=s.expanded.includes(p.name)||psel;
+      const tc=this.topicColor(p.name);
+      const hasSubs=p.subs.length>0;
+      topicOpts.push({
+        isChild:false,
+        label:p.name, check:psel?'✓':'',
+        rowStyle:'display:flex; align-items:center; gap:2px; border-radius:10px;'+(psel?`background:${this.hexRgba(tc,0.1)};`:''),
+        labelStyle:rowBase+'flex:1;'+(psel?`color:${this.lighten(tc,0.4)}; font-weight:600;`:'color:var(--text);'),
+        boxStyle:boxC(psel,tc,false),
+        onSelect:()=>this.toggleArr('topics',p.name),
+        chev:hasSubs?(pexp?'▾':'▸'):'',
+        chevStyle:hasSubs?'width:28px; height:34px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; color:var(--text-faint); font-size:10px;':'display:none;',
+        onToggle:hasSubs?((e)=>{e.stopPropagation(); this.toggleExpand(p.name);}):(()=>{})
+      });
+      if(pexp){
+        p.subs.forEach(sub=>{
+          const ssel=s.subtopics.includes(sub);
+          topicOpts.push({
+            isChild:true,
+            label:sub, check:ssel?'✓':'',
+            rowStyle:'display:flex; align-items:center; gap:2px; border-radius:9px;'+(ssel?`background:${this.hexRgba(tc,0.06)};`:''),
+            labelStyle:'display:flex; align-items:center; gap:9px; flex:1; padding:6px 10px 6px 32px; border-radius:9px; cursor:pointer; font-size:12.5px; transition:background .15s; user-select:none;'+(ssel?`color:${this.lighten(tc,0.5)};`:'color:var(--text-faint);'),
+            boxStyle:boxC(ssel,tc,true),
+            onSelect:()=>this.toggleArr('subtopics',sub),
+            chev:'', chevStyle:'display:none;', onToggle:()=>{}
+          });
+        });
+      }
+    });
+
+    const positionOpts=this.positionsList.map(p=>{ const on=s.positions.includes(p); return {
+      label:p, check:on?'✓':'',
+      rowStyle:rowBase+(on?'color:var(--text);':'color:var(--text-dim);'),
+      boxStyle:box(on),
+      onClick:()=>this.toggleArr('positions',p)
+    };});
+
+    const pageCards=slice.map((a,i)=>{
+      const dl=this.daysLeft(a.deadline);
+      const urgent=dl<=10;
+      const tc=this.topicColor(a.topic);
+      return {
+        category:a.category, acronym:a.acronym, name:a.name, location:a.location,
+        deadline:this.fmtDate(a.deadline),
+        daysLabel: dl<=0?'Đã đóng':(dl+' ngày'),
+        positionLabel:a.positions.join(' · '),
+        tags:[{label:a.topic, style:this.topicPill(tc,false)}].concat(a.subtopic?[{label:a.subtopic, style:this.topicPill(tc,true)}]:[]),
+        cardStyle:`--card-accent:${tc}; --card-glow:${this.hexRgba(tc,this.vivProfile().glow)}; cursor:pointer; background:var(--glass); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:transform .3s cubic-bezier(0.16,1,0.3,1), box-shadow .3s, border-color .3s; animation:fadeUp .55s cubic-bezier(0.16,1,0.3,1) ${i*60}ms both;`,
+        imgStyle:this.imgGradient(a),
+        daysStyle:`font-family:'Be Vietnam Pro',sans-serif; font-size:11px; font-weight:600; color:#fff; background:${urgent?'#e33f3f':'rgba(9,20,40,0.42)'}; border:1px solid rgba(255,255,255,0.32); border-radius:7px; padding:4px 9px; white-space:nowrap; z-index:1;`,
+        catChip:`font-family:'Be Vietnam Pro',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#fff; background:rgba(9,20,40,0.34); border:1px solid rgba(255,255,255,0.32); border-radius:7px; padding:4px 9px; z-index:1;`,
+        monogram:`position:absolute; left:13px; bottom:13px; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Montserrat',sans-serif; font-weight:800; font-size:18px; color:#fff; background:rgba(9,20,40,0.36); border:1px solid rgba(255,255,255,0.34); z-index:1;`,
+        onClick:()=>this.setState({detailId:a.id})
+      };
+    });
+
+    const pages=Array.from({length:pageCount},(_,i)=>({
+      label:String(i+1),
+      style:`min-width:38px; height:38px; padding:0 6px; font-family:'Be Vietnam Pro',sans-serif; font-size:14px; border-radius:10px; cursor:pointer; border:1px solid ${i===page?'var(--border-bright)':'var(--border)'}; background:${i===page?'var(--accent)':'var(--glass)'}; color:${i===page?'#fff':'var(--text-dim)'}; font-weight:${i===page?'700':'400'};`,
+      onClick:()=>this.setState({page:i})
+    }));
+    const navBtn=(dis)=>`width:38px; height:38px; font-size:18px; border-radius:10px; cursor:${dis?'not-allowed':'pointer'}; border:1px solid var(--border); background:var(--glass); color:${dis?'var(--text-faint)':'var(--text-dim)'}; opacity:${dis?'0.5':'1'};`;
+
+    // featured-topic spotlight (auto-rotates)
+    const ti=this.topicTree[s.spotIdx % this.topicTree.length];
+    const tcS=this.topicColor(ti.name);
+    const inTopic=this.activities.filter(a=>a.topic===ti.name);
+    const exLine=inTopic.slice(0,2).map(a=>a.name).join('  ·  ') || 'Khám phá ngay';
+    const spotlight={
+      name:ti.name, count:inTopic.length, exampleLine:exLine,
+      indexLabel:`${(s.spotIdx % this.topicTree.length)+1} / ${this.topicTree.length}`,
+      cardStyle:`--sp:${tcS}; --sp-glow:${this.hexRgba(tcS,0.3)}; cursor:pointer; padding:17px 19px; border-radius:18px; background:${this.hexRgba(tcS,0.08)}; border:1px solid ${this.hexRgba(tcS,0.4)}; transition:transform .3s, box-shadow .3s, border-color .3s;`,
+      rowStyle:`display:flex; align-items:center; gap:15px; animation:${s.spotIdx%2?'spotInA':'spotInB'} .55s cubic-bezier(0.16,1,0.3,1) both;`,
+      badgeStyle:`width:54px; height:54px; flex-shrink:0; border-radius:14px; display:flex; align-items:center; justify-content:center; font-family:'Montserrat',sans-serif; font-weight:800; font-size:23px; color:#fff; background:linear-gradient(140deg, ${tcS} 0%, ${this.hexRgba(tcS,0.6)} 130%); box-shadow:0 8px 22px ${this.hexRgba(tcS,0.4)};`,
+      nameStyle:`font-family:'Montserrat',sans-serif; font-weight:800; font-size:20px; letter-spacing:-0.01em; line-height:1.1; color:${this.lighten(tcS,0.4)};`,
+      arrowStyle:`color:${tcS}; flex-shrink:0;`,
+      barStyle:`height:100%; background:${tcS}; transform-origin:left; border-radius:2px; animation:${s.spotIdx%2?'spotBarA':'spotBarB'} 3.2s linear both; animation-play-state:${s.spotPaused?'paused':'running'};`,
+      onClick:()=>this.setState({topics:[ti.name],subtopics:[],expanded:[ti.name],page:0}),
+      onEnter:()=>this.setState({spotPaused:true}),
+      onLeave:()=>this.setState({spotPaused:false})
+    };
+    const topicDots=this.topicTree.map((p,i)=>{ const on=i===(s.spotIdx % this.topicTree.length); const dc=this.topicColor(p.name); return {
+      title:p.name,
+      style:`width:${on?22:8}px; height:8px; border-radius:999px; border:none; padding:0; cursor:pointer; transition:all .35s cubic-bezier(0.16,1,0.3,1); background:${on?dc:'rgba(147,169,200,0.3)'}; box-shadow:${on?'0 0 10px '+this.hexRgba(dc,0.6):'none'};`,
+      onClick:()=>this.setState({spotIdx:i, topics:[p.name], subtopics:[], expanded:[p.name], page:0})
+    };});
+
+    const det=this.activities.find(a=>a.id===s.detailId);
+    const detail = det ? {
+      category:det.category, acronym:det.acronym, name:det.name, location:det.location,
+      deadline:this.fmtDate(det.deadline), topic:det.topic, description:det.desc,
+      positions:det.positions, subtopic:det.subtopic,
+      tags:[{label:det.topic, style:this.topicPill(this.topicColor(det.topic),false)}].concat(det.subtopic?[{label:det.subtopic, style:this.topicPill(this.topicColor(det.topic),true)}]:[]),
+      heroStyle:`position:relative; height:172px; padding:24px 26px; display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; background:linear-gradient(135deg, ${det.accent[0]} 0%, ${det.accent[1]} 130%);`
+    } : null;
+
+    const tabOn='padding:5px 12px; border:none; border-radius:7px; cursor:pointer; font-family:"Be Vietnam Pro",sans-serif; background:var(--ink); color:var(--ink-text); font-weight:500;';
+    const tabOff='padding:5px 12px; border:none; border-radius:7px; cursor:pointer; font-family:"Be Vietnam Pro",sans-serif; background:transparent; color:var(--text-dim);';
+
+    return {
+      navLinks:['Trang chủ','Hoạt động','Về chúng tôi','Liên hệ'],
+      activityCount:this.activities.length,
+      viBtnStyle:s.lang==='VI'?tabOn:tabOff, enBtnStyle:s.lang==='EN'?tabOn:tabOff,
+      setVI:()=>this.setState({lang:'VI'}), setEN:()=>this.setState({lang:'EN'}),
+      heroTags:s.heroTags.map(t=>({label:'#'+t, style:`font-size:13.5px; font-weight:500; color:var(--text-dim); background:var(--glass); border:1px solid var(--border); border-radius:999px; padding:9px 16px; cursor:pointer; transition:all .2s; animation:chipIn .5s cubic-bezier(0.16,1,0.3,1) both;`, onClick:()=>this.setState({search:t,page:0})})),
+      shuffleHero:()=>this.setState({heroTags:this.pickHero()}),
+      chipStem:()=>this.pickTopic('STEM'),
+      chipArt:()=>this.pickTopic('Nghệ thuật & Sáng tạo'),
+      chipSport:()=>this.pickTopic('Sức khỏe'),
+      search:s.search, onSearch:(e)=>this.setState({search:e.target.value,page:0}),
+      resultCount:filtered.length,
+      resultHeading: filtered.length===this.activities.length?'Tất cả hoạt động':'Kết quả lọc',
+      pageLabel:`${page+1}/${pageCount}`,
+      hasResults:slice.length>0, noResults:slice.length===0,
+      spotlight, topicDots,
+      categoryOpts, deadlineOpts, topicOpts, positionOpts,
+      pageCards, pages,
+      prevStyle:navBtn(page===0), nextStyle:navBtn(page>=pageCount-1),
+      prevPage:()=>this.setState(st=>({page:Math.max(0,st.page-1)})),
+      nextPage:()=>this.setState(st=>({page:Math.min(pageCount-1,st.page+1)})),
+      clearAll:()=>this.setState({category:'all',deadline:'all',topics:[],subtopics:[],positions:[],search:'',page:0}),
+      detail, closeDetail:()=>this.setState({detailId:null}), stop:(e)=>e.stopPropagation()
+    };
+  }
+}
+</script>
+</body>
+</html>

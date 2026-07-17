@@ -1,4 +1,6 @@
-export const topicSet = [
+import type { Topic, CategoryTag, Tag } from '../types';
+
+export const topicSet: Topic[] = [
     {
         name: 'STEM',
         subtopics: ['Khoa học tự nhiên', 'Lập trình / AI / Khoa học dữ liệu', 'Kỹ thuật / Robotics']
@@ -29,15 +31,17 @@ export const topicSet = [
     }
 ];
 
-export const categorySet = [
+export const categorySet: CategoryTag[] = [
     { label: 'Cuộc thi (Tổ chức cuộc thi)', type: 'category' },
     { label: 'Cuộc thi (Tham gia cuộc thi)', type: 'category' },
     { label: 'Dự án & CLB', type: 'category' },
     { label: 'Sự kiện (Workshop, Talkshows, ...)', type: 'category' }
 ];
 
-
-export const allTags = [
+export const allTags: Tag[] = [
     ...categorySet,
-    ...topicSet.flatMap(cat => [{ label: cat.name, type: 'topic' }, ...cat.subtopics.map(sub => ({ label: sub, type: 'subtopic', parent: cat.name }))])
+    ...topicSet.flatMap(cat => [
+        { label: cat.name, type: 'topic' as const },
+        ...cat.subtopics.map(sub => ({ label: sub, type: 'subtopic' as const, parent: cat.name }))
+    ])
 ];

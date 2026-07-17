@@ -19,6 +19,7 @@ scripts/credentials.json
 
 # Local personal notes (never push)
 LOCAL_NOTES.md
+ARCHITECTURE.md
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +31,7 @@ LOCAL_NOTES.md
 *.njsproj
 *.sln
 *.sw?
+
+design/
+
+
