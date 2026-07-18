@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockActivities } from '../data/Activities';
+import { mockActivities, filterActivities, daysLeft } from '../data/Activities';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 const ACCENT_PAIRS: [string, string][] = [
@@ -30,6 +30,7 @@ interface ActivityCardsProps {
     deadlineFilter?: DeadlineFilter;
     positionFilters?: string[];
     onResultCountChange?: (count: number) => void;
+    onPageInfoChange?: (page: number, totalPages: number) => void;
 }
 
 interface ActivityCardProps {
@@ -47,57 +48,10 @@ interface DaysBadgeProps {
     iso: string;
 }
 
-interface FilterParams {
-    searchQuery: string;
-    categoryFilter: string;
-    deadlineFilter: DeadlineFilter;
-    topicFilters: TopicFilter;
-    positionFilters: string[];
-}
-
 function formatDeadlineDisplay(iso: string): string {
     if (!iso) return '';
     const [y, m, d] = iso.split('-');
     return `${d}.${m}.${y}`;
-}
-
-function daysLeft(iso: string): number | null {
-    if (!iso) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const deadline = new Date(iso);
-    return Math.round((deadline.getTime() - today.getTime()) / 86400000);
-}
-
-function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
-    return activities.filter(a => {
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            const hit = [a.name, a.topic, a.subtopic, a.location]
-                .filter(Boolean).some(s => s!.toLowerCase().includes(q));
-            if (!hit) return false;
-        }
-        if (categoryFilter && a.category !== categoryFilter) return false;
-        if (deadlineFilter) {
-            const days = daysLeft(a.deadline);
-            if (days === null || days < 0) return false;
-            if (deadlineFilter === 'week'  && days > 7)  return false;
-            if (deadlineFilter === 'month' && days > 30) return false;
-        }
-        const { topics, subtopics } = topicFilters;
-        if (topics.length > 0 || subtopics.length > 0) {
-            const subtopicsForActivity = subtopics.filter(s => s.parent === a.topic);
-            if (subtopicsForActivity.length > 0) {
-                if (!subtopicsForActivity.some(s => s.subtopic === a.subtopic)) return false;
-            } else if (topics.length > 0) {
-                if (!topics.includes(a.topic)) return false;
-            }
-        }
-        if (positionFilters.length > 0) {
-            if (!a.positions?.some(p => positionFilters.includes(p))) return false;
-        }
-        return true;
-    });
 }
 
 function DaysBadge({ iso }: DaysBadgeProps) {
@@ -384,16 +338,18 @@ function ActivityCards({
     deadlineFilter = '',
     positionFilters = [],
     onResultCountChange,
+    onPageInfoChange,
 }: ActivityCardsProps) {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
     const filtered = filterActivities(mockActivities, { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters });
+    const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
 
     useEffect(() => { setCurrentPage(0); }, [searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters]);
     useEffect(() => { onResultCountChange?.(filtered.length); }, [filtered.length, onResultCountChange]);
+    useEffect(() => { onPageInfoChange?.(currentPage, totalPages); }, [currentPage, totalPages, onPageInfoChange]);
 
-    const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
     const paged = filtered.slice(currentPage * CARDS_PER_PAGE, (currentPage + 1) * CARDS_PER_PAGE);
 
     return (

@@ -1,6 +1,6 @@
-# ECs Finder
+# ECS Finder
 
-A community-driven directory for extracurricular activities, clubs, competitions, and events in Vietnam. Built for students who want to discover and filter opportunities by category, topic, deadline, and open positions.
+A community-driven directory for extracurricular activities, clubs, competitions, and events. Built for students to discover and filter opportunities by category, topic, deadline, and open positions.
 
 **Live site:** https://ecs-finder.vercel.app
 
@@ -8,92 +8,131 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 ## Features
 
-- **Browse activities** — cards showing name, image, location, deadline, tags, and open positions
-- **Filter by category** — Dự án & CLB, Cuộc thi, Sự kiện
-- **Filter by topic & subtopic** — STEM, Xã hội, Môi trường, Kinh tế, Nghệ thuật, Ngôn ngữ, Sức khỏe
-- **Filter by deadline** — within 3 days, 1 week, 2 weeks, 1 month, or longer
-- **Filter by position** — find activities recruiting for specific roles
-- **Submit an activity** — via Google Form; submissions are reviewed and published through an automated sync pipeline
-- **Mobile responsive** — full filter overlay on mobile
+- Browse activity cards with name, image, location, deadline, and open positions
+- Filter by **category** — Dự án & CLB, Cuộc thi, Sự kiện
+- Filter by **topic & subtopic** — STEM, Xã hội, Môi trường, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
+- Filter by **deadline** — within a week or month
+- Filter by **open position** — find activities recruiting specific roles
+- Full-text **search** across activity names and descriptions
+- **Submit an activity** via Google Form; approved submissions are synced through an automated pipeline
+- Mobile-responsive with a collapsible filter drawer
 
 ---
 
-## Tech Stack
+## Tech stack
 
 | Layer | Tools |
-|---|---|
-| Frontend | React 19, Vite, Tailwind CSS |
+|-------|-------|
+| Frontend | React 19, TypeScript, Vite 7 |
+| Styling | Tailwind CSS 4 |
 | Icons | Lucide React, React Icons |
-| Data pipeline | Node.js, Google Sheets API, Google Drive API |
-| Hosting | Vercel (auto-deploy on push) |
+| Data pipeline | Node.js, Google Sheets API |
+| Hosting | Vercel (auto-deploy on push to `main`) |
 
 ---
 
-## Project Structure
+## Getting started
+
+```bash
+cd ecs-finder
+npm install
+npm run dev       # http://localhost:5173
+```
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+---
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run sync` | Pull approved submissions from Google Sheet and publish |
+
+---
+
+## Project structure
 
 ```
 ecs-finder/
-├── public/
 ├── scripts/
-│   └── sync.js              # CLI sync script (Google Sheets → mockActivities.jsx)
+│   └── sync.js              # Google Sheets → Activities.ts sync script
 ├── src/
-│   ├── assets/
+│   ├── types.ts             # Canonical TypeScript interfaces
+│   ├── index.css            # Design tokens + Tailwind
+│   ├── App.tsx              # Root — owns all filter and search state
 │   ├── components/
-│   │   ├── ActivityCards.jsx
-│   │   ├── FilterLeft.jsx
-│   │   ├── FilterRight.jsx
-│   │   ├── HeroSection.jsx
-│   │   ├── MainContent.jsx
-│   │   ├── MobileFilterOverlay.jsx
-│   │   ├── Navbar.jsx
-│   │   └── SearchBar.jsx
-│   ├── data/
-│   │   ├── Activities.jsx   # Activity data (source of truth)
-│   │   └── tagData.jsx          # Valid categories, topics, subtopics
-│   ├── App.jsx
-│   └── main.jsx
-├── .env.example
+│   │   ├── Navbar.tsx       # Sticky nav with VI/EN toggle
+│   │   ├── HeroSection.tsx  # Hero with search bar and floating topic chips
+│   │   ├── SearchBar.tsx    # Controlled search input with result count
+│   │   ├── FilterLeft.tsx   # Sidebar filter rail (category, deadline, topics, positions)
+│   │   ├── FilterDrawer.tsx # Mobile filter drawer
+│   │   ├── FilterSections.tsx
+│   │   ├── MainContent.tsx  # Layout: filter rail + card grid
+│   │   ├── ActivityCards.tsx # Card grid, detail modal, pagination, client-side filtering
+│   │   └── Footer.tsx
+│   └── data/
+│       ├── Activities.ts    # mockActivities — the only data array rendered by the UI
+│       └── tagData.ts       # topicSet, categorySet, allTags (canonical tag registry)
+├── .env                     # gitignored — see setup below
 └── package.json
 ```
 
 ---
 
-## Getting Started
+## Activity data model
 
-### Prerequisites
-- Node.js 18+
-- npm
+Each entry in `src/data/Activities.ts` follows this shape:
 
-### Install & run locally
-
-```bash
-cd ecs-finder
-npm install
-npm run dev
+```ts
+{
+  id: number,
+  name: string,
+  acronym: string,           // 2–3 char shortname shown in the detail modal
+  category: string,          // must match a categorySet label, e.g. 'Dự án & CLB'
+  topic: string,             // must match a topicSet name, e.g. 'STEM'
+  subtopic: string | null,   // must match a subtopic under the topic, or null
+  location: string,
+  deadline: string,          // ISO date: "YYYY-MM-DD"
+  positions: string[],       // open roles for recruitment
+  desc: string,              // Vietnamese description shown in the modal
+  accent: [string, string],  // two-hex gradient pair for the card header
+  image: string | undefined, // optional photo URL (Unsplash or Google Drive direct link)
+  link: string,              // registration URL — opens in new tab from the modal CTA
+}
 ```
+
+To add a new topic, subtopic, or category, update `src/data/tagData.ts` first, then add entries to `Activities.ts`.
 
 ---
 
-## Activity Submission Pipeline
+## Activity submission pipeline
 
 Activities are submitted via a public Google Form and reviewed before going live.
 
 ### How it works
 
 1. **Submit** — anyone fills out the Google Form
-2. **Review** — open the linked Google Sheet and set the `Status` column to `approved` for entries you want to publish
+2. **Review** — open the linked Google Sheet and set the `Status` column to `approved`
 3. **Sync** — run the sync script locally:
    ```bash
    npm run sync
    ```
-   The script reads all approved rows, maps them to activity objects, appends them to `src/data/mockActivities.jsx`, and auto-pushes to git. Vercel redeploys automatically on push.
+   The script reads approved rows, appends them to `src/data/Activities.ts`, and auto-commits and pushes. Vercel redeploys on push.
 
-### Setup (one-time)
+### One-time setup
 
-1. Enable **Google Sheets API** and **Google Drive API** in [Google Cloud Console](https://console.cloud.google.com)
+1. Enable **Google Sheets API** in [Google Cloud Console](https://console.cloud.google.com)
 2. Create a service account → download JSON key → save as `scripts/credentials.json`
 3. Share the Google Sheet with the service account email (Editor role)
-4. Copy `.env.example` to `.env` and fill in your `SPREADSHEET_ID`
+4. Copy `.env.example` to `.env` and fill in your values:
 
 ```env
 SPREADSHEET_ID=your_spreadsheet_id_here
@@ -102,50 +141,28 @@ SHEET_NAME=Form Responses 1
 
 > `scripts/credentials.json` and `.env` are gitignored and never committed.
 
----
-
-## Adding Activities Manually
-
-Edit `src/data/mockActivities.jsx` directly. Each activity follows this shape:
-
-```js
-{
-  id: 6,
-  name: "Activity Name",
-  image: "https://...",
-  tags: [
-    { label: "Dự án & CLB", type: "category" },
-    { label: "STEM", type: "topic", subtopic: "Lập trình / AI / Khoa học dữ liệu" }
-  ],
-  positions: ["Ban Truyền Thông", "Ban Thiết Kế"],
-  description: "Single-line description, 300–500 characters recommended.",
-  location: "TP. Hồ Chí Minh",
-  deadline: "DD/MM/YYYY",
-  link: "https://..."
-}
-```
-
-Valid `label` values for tags must match entries in `src/data/tagData.jsx`.
+> **Known issue:** `sync.js` still outputs the old tag-array activity shape and targets the old filename. Add activities manually in the new shape above until this is fixed.
 
 ---
 
-## Scripts
+## Design tokens
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start local dev server |
-| `npm run build` | Production build |
-| `npm run sync` | Pull approved submissions from Google Sheet and publish |
+Defined as CSS custom properties in `src/index.css`:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--sky` | `#a8d5f5` | Page background |
+| `--primary` | `#1a6fd0` | Brand blue — buttons, links, active states |
+| `--text` | `#16232c` | Primary text |
+| `--text-dim` | `#334652` | Secondary text |
+| `--text-faint` | `#546675` | Muted / label text |
+| `--glass` | `#ffffff` | Card and panel surfaces |
+| `--border` | `rgba(20,52,80,0.13)` | Borders and dividers |
+
+Fonts: **Montserrat** (headings, 500–800) and **Be Vietnam Pro** (body, 400–600), loaded from Google Fonts.
 
 ---
 
 ## Contributing
 
-This project is maintained by the ECs Finder team. To submit an activity for listing, use the [submission form](https://forms.gle/xfmn8WT8c93NhtzNA).
-
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To submit an activity for listing, use the public submission form linked on the site. For code contributions, open a pull request against `main`.

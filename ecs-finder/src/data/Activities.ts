@@ -1,4 +1,51 @@
-import type { Activity } from '../types';
+import type { Activity, TopicFilter, DeadlineFilter } from '../types';
+
+export interface FilterParams {
+    searchQuery: string;
+    categoryFilter: string;
+    deadlineFilter: DeadlineFilter;
+    topicFilters: TopicFilter;
+    positionFilters: string[];
+}
+
+export function daysLeft(iso: string): number | null {
+    if (!iso) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadline = new Date(iso);
+    return Math.round((deadline.getTime() - today.getTime()) / 86400000);
+}
+
+export function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
+    return activities.filter(a => {
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const hit = [a.name, a.topic, a.subtopic, a.location]
+                .filter(Boolean).some(s => s!.toLowerCase().includes(q));
+            if (!hit) return false;
+        }
+        if (categoryFilter && a.category !== categoryFilter) return false;
+        if (deadlineFilter) {
+            const days = daysLeft(a.deadline);
+            if (days === null || days < 0) return false;
+            if (deadlineFilter === 'week'  && days > 7)  return false;
+            if (deadlineFilter === 'month' && days > 30) return false;
+        }
+        const { topics, subtopics } = topicFilters;
+        if (topics.length > 0 || subtopics.length > 0) {
+            const subtopicsForActivity = subtopics.filter(s => s.parent === a.topic);
+            if (subtopicsForActivity.length > 0) {
+                if (!subtopicsForActivity.some(s => s.subtopic === a.subtopic)) return false;
+            } else if (topics.length > 0) {
+                if (!topics.includes(a.topic)) return false;
+            }
+        }
+        if (positionFilters.length > 0) {
+            if (!a.positions?.some(p => positionFilters.includes(p))) return false;
+        }
+        return true;
+    });
+}
 
 export const mockActivities: Activity[] = [
   {

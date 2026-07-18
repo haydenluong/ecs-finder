@@ -3,6 +3,7 @@ import { mockActivities } from './data/Activities'
 import Navbar from "./components/Navbar";
 import HeroSection from "./components/HeroSection";
 import MainContent from './components/MainContent';
+import Footer from './components/Footer';
 import type { Lang, DeadlineFilter, TopicFilter, Tag, SubtopicTag } from './types';
 
 function App() {
@@ -58,7 +59,7 @@ function App() {
   }
 
   return (
-    <div>
+    <div id="top">
       <Navbar lang={lang} onLangChange={setLang} />
       <HeroSection
         activitiesCount={mockActivities.length}
@@ -79,6 +80,7 @@ function App() {
         setPositionFilters={setPositionFilters}
         onClearAll={handleClearAll}
       />
+      <Footer />
     </div>
   )
 }

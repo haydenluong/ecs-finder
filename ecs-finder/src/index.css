@@ -19,6 +19,10 @@
   --text-faint: #546675;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Be Vietnam Pro', sans-serif;
   background: radial-gradient(1200px 720px at 50% -12%, #d3ebfb, #a8d5f5 62%) fixed;
@@ -60,4 +64,14 @@ body::before {
 @keyframes floaty {
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-7px); }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes navDrop {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }

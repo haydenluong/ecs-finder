@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import type { TopicFilter, Tag } from '../types';
 
@@ -37,15 +38,45 @@ const CHIP_POSITIONS: ChipPosition[] = [
 ];
 
 function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
+    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 920);
+    const [isSmall, setIsSmall]   = useState<boolean>(window.innerWidth <= 560);
+    const [displayCount, setDisplayCount] = useState<number>(0);
+
+    useEffect(() => {
+        function onResize(): void {
+            setIsMobile(window.innerWidth <= 920);
+            setIsSmall(window.innerWidth <= 560);
+        }
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    useEffect(() => {
+        if (activitiesCount === 0) return;
+        const duration = 1000;
+        const start = performance.now();
+        let raf: number;
+        function tick(now: number) {
+            const t = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setDisplayCount(Math.round(eased * activitiesCount));
+            if (t < 1) raf = requestAnimationFrame(tick);
+        }
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [activitiesCount]);
+
     function handleChipClick(chip: HeroChip): void {
         onTagClick({ type: 'topic', label: chip.topic });
     }
 
+    const sectionPadding = isSmall ? '48px 18px 30px' : isMobile ? '48px 22px 30px' : '44px 40px 30px';
+
     return (
-        <section style={{ padding: '44px 40px 30px', maxWidth: 1320, margin: '0 auto' }}>
+        <section style={{ padding: sectionPadding, maxWidth: 1320, margin: '0 auto' }}>
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'minmax(0,1fr) minmax(0,430px)',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) minmax(0,430px)',
                 gap: 44,
                 alignItems: 'center',
             }}>
@@ -64,14 +95,14 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block', flexShrink: 0 }} />
                         <span style={{ fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600, fontSize: 12.5, color: 'var(--primary)' }}>
-                            {activitiesCount} hoạt động đang mở đăng ký
+                            {displayCount} hoạt động đang mở đăng ký
                         </span>
                     </div>
 
                     <h1 style={{
                         fontFamily: 'Montserrat, sans-serif',
                         fontWeight: 800,
-                        fontSize: 52,
+                        fontSize: isMobile ? 42 : 50,
                         lineHeight: 1.05,
                         letterSpacing: '-0.015em',
                         color: 'var(--text)',
@@ -81,7 +112,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     }}>
                         Soi sáng hành trình{' '}
                         <span style={{ color: 'var(--primary)' }}>ngoại khoá</span>
-                        {' '}của bạn
+                        {' '}của bạn 
                     </h1>
 
                     <p style={{
@@ -94,7 +125,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         margin: 0,
                         animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 120ms both',
                     }}>
-                        Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam ở một nơi.
+                        Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam.
                     </p>
 
                     <div style={{ animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 180ms both' }}>
@@ -102,8 +133,19 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     </div>
                 </div>
 
-                {/* Right column */}
-                <div id="heroVisual" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Right column — hidden on mobile via isMobile state */}
+                <div id="heroVisual" style={{ position: 'relative', display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* White radial glow behind the magnifying glass */}
+                    <div style={{
+                        position: 'absolute',
+                        width: 160,
+                        height: 160,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.38) 45%, transparent 72%)',
+                        zIndex: 0,
+                        pointerEvents: 'none',
+                        transform: 'translate(-22px, -18px)',
+                    }} />
                     <svg
                         width="248"
                         viewBox="0 0 200 200"
@@ -181,16 +223,6 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                 </div>
             </div>
 
-            <style>{`
-                @media (max-width: 920px) {
-                    #heroVisual { display: none !important; }
-                    section { padding: 48px 22px 30px !important; }
-                    h1 { font-size: 42px !important; }
-                }
-                @media (max-width: 560px) {
-                    section { padding: 48px 18px 30px !important; }
-                }
-            `}</style>
         </section>
     );
 }

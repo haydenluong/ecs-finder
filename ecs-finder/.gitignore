@@ -19,7 +19,7 @@ scripts/credentials.json
 
 # Local personal notes (never push)
 LOCAL_NOTES.md
-ARCHITECTURE.md
+PROPOSED_DATA_ARCHITECTURE.md
 
 # Editor directories and files
 .vscode/*
