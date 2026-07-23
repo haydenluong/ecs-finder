@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import FilterRail from './FilterLeft';
 import FilterDrawer from './FilterDrawer';
 import ActivityCards from './ActivityCards';
@@ -36,6 +36,12 @@ function MainContent({
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
+    // Bail out when the values are unchanged — a fresh object literal here would
+    // re-render on every call and re-trigger the effect in ActivityCards forever.
+    const handlePageInfoChange = useCallback((page: number, total: number) => {
+        setPageInfo(prev => (prev.page === page && prev.total === total ? prev : { page, total }));
+    }, []);
+
     const activeFilterCount =
         (categoryFilter ? 1 : 0) +
         (deadlineFilter ? 1 : 0) +
@@ -59,30 +65,8 @@ function MainContent({
 
     return (
         <div id="ecMain" style={{ maxWidth: 1320, margin: '0 auto', padding: isMobile ? '8px 16px 80px' : '8px 40px 80px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h2 style={{
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontWeight: 700,
-                    fontSize: 22,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text)',
-                    margin: 0,
-                }}>
-                    {hasFilters ? 'Kết quả lọc' : 'Tất cả hoạt động'}
-                </h2>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                    {pageInfo.total > 1 && (
-                        <span style={{
-                            fontFamily: 'Be Vietnam Pro, sans-serif',
-                            fontSize: 13,
-                            color: 'var(--text-faint)',
-                            fontWeight: 500,
-                        }}>
-                            Trang {pageInfo.page + 1}/{pageInfo.total}
-                        </span>
-                    )}
-                    {isMobile && (
+            {isMobile && (
+                <div style={{ display: 'flex', marginBottom: 14 }}>
                     <button
                         onClick={() => setDrawerOpen(true)}
                         style={{
@@ -121,8 +105,32 @@ function MainContent({
                             }}>{activeFilterCount}</span>
                         )}
                     </button>
-                )}
                 </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h2 style={{
+                    fontFamily: 'Montserrat, sans-serif',
+                    fontWeight: 700,
+                    fontSize: 22,
+                    letterSpacing: '-0.02em',
+                    color: 'var(--text)',
+                    margin: 0,
+                }}>
+                    {hasFilters ? 'Kết quả lọc' : 'Tất cả hoạt động'}
+                </h2>
+
+                {pageInfo.total > 1 && (
+                    <span style={{
+                        fontFamily: 'Be Vietnam Pro, sans-serif',
+                        fontSize: 13,
+                        color: 'var(--text-faint)',
+                        fontWeight: 500,
+                        flexShrink: 0,
+                    }}>
+                        Trang {pageInfo.page + 1}/{pageInfo.total}
+                    </span>
+                )}
             </div>
 
             {isMobile ? (
@@ -133,7 +141,7 @@ function MainContent({
                     deadlineFilter={deadlineFilter}
                     positionFilters={positionFilters}
                     onResultCountChange={setResultCount}
-                    onPageInfoChange={(page, total) => setPageInfo({ page, total })}
+                    onPageInfoChange={handlePageInfoChange}
                 />
             ) : (
                 <div style={{
@@ -150,7 +158,7 @@ function MainContent({
                         deadlineFilter={deadlineFilter}
                         positionFilters={positionFilters}
                         onResultCountChange={setResultCount}
-                        onPageInfoChange={(page, total) => setPageInfo({ page, total })}
+                        onPageInfoChange={handlePageInfoChange}
                     />
                 </div>
             )}

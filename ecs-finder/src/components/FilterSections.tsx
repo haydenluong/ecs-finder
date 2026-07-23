@@ -40,6 +40,7 @@ interface SectionLabelProps {
 
 interface RadioRowProps {
     label: string;
+    value?: string;
     selected: string;
     onSelect: () => void;
     count?: number;
@@ -72,8 +73,9 @@ function SectionLabel({ icon, children }: SectionLabelProps) {
     );
 }
 
-function RadioRow({ label, selected, onSelect, count }: RadioRowProps) {
-    const isSelected = selected === label || (label === 'Tất cả' && !selected);
+function RadioRow({ label, value = label, selected, onSelect, count }: RadioRowProps) {
+    const isSelected = selected === value
+    ;
     return (
         <div
             onClick={onSelect}
@@ -195,9 +197,9 @@ function FilterSections({
                         <line x1="2" y1="12" x2="10" y2="12" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>Loại hình</SectionLabel>
-                <RadioRow label="Tất cả" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={mockActivities.length} />
+                <RadioRow label="Tất cả" value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={mockActivities.length} />
                 {categorySet.map(c => (
-                    <RadioRow key={c.label} label={c.label} selected={categoryFilter}
+                    <RadioRow key={c.label} label={c.label} value={c.label} selected={categoryFilter}
                         onSelect={() => onCategoryChange(categoryFilter === c.label ? '' : c.label)}
                         count={categoryCounts[c.label] ?? 0} />
                 ))}
@@ -212,7 +214,7 @@ function FilterSections({
                     </svg>
                 }>Hạn đăng ký</SectionLabel>
                 {DEADLINE_OPTIONS.map(opt => (
-                    <RadioRow key={opt.value} label={opt.label} selected={deadlineFilter}
+                    <RadioRow key={opt.value} label={opt.label} value={opt.value} selected={deadlineFilter}
                         onSelect={() => onDeadlineChange(deadlineFilter === opt.value ? '' : opt.value)} />
                 ))}
             </div>
@@ -289,16 +291,17 @@ function FilterSections({
                                     {topic.subtopics.map(sub => {
                                         const subSelected = isSubSelected(topic.name, sub);
                                         return (
-                                            <label key={sub} style={{
+                                            <label key={sub} 
+                                                onClick={() => handleSubtopicCheck(topic.name, sub, !subSelected)}
+                                                style={{
                                                 display: 'flex', alignItems: 'center', gap: 8,
                                                 padding: '5px 6px', borderRadius: 7, cursor: 'pointer',
                                                 background: subSelected ? hexRgba(accent, 0.08) : 'transparent',
                                                 transition: 'background 0.15s',
                                                 minHeight: 44,
                                             }}>
-                                                {/* Subtopic colored checkbox */}
+                                                {/* CHECKBOX for subtopics */}
                                                 <div
-                                                    onClick={() => handleSubtopicCheck(topic.name, sub, !subSelected)}
                                                     style={{
                                                         width: 14,
                                                         height: 14,
@@ -348,7 +351,9 @@ function FilterSections({
                 {POSITIONS.map(pos => {
                     const checked = positionFilters.includes(pos);
                     return (
-                        <label key={pos} style={{
+                        <label key={pos}
+                            onClick={() => handlePositionCheck(pos, !checked)}
+                            style={{
                             display: 'flex', alignItems: 'center', gap: 9,
                             padding: '7px 9px', borderRadius: 9, cursor: 'pointer',
                             background: checked ? 'rgba(26,111,208,0.08)' : 'transparent',
@@ -356,9 +361,8 @@ function FilterSections({
                             userSelect: 'none',
                             minHeight: 44,
                         }}>
-                            {/* Plain checkbox */}
+                            
                             <div
-                                onClick={() => handlePositionCheck(pos, !checked)}
                                 style={{
                                     width: 17,
                                     height: 17,

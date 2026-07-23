@@ -146,8 +146,9 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
             <div style={{ padding: '16px 17px 17px', display: 'flex', flexDirection: 'column', gap: 11 }}>
                 <h3 style={{
                     fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 16,
-                    lineHeight: 1.3, color: 'var(--text)', margin: 0,
+                    lineHeight: 1.3, letterSpacing: '-0.005em', color: 'var(--text)', margin: 0,
                     display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    minHeight: '41.6px',
                 }}>
                     {activity.name}
                 </h3>

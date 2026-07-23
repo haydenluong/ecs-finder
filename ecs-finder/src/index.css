@@ -11,6 +11,7 @@
   --border-bright: rgba(20,52,80,0.26);
   --primary: #1a6fd0;
   --primary-2: #0b53b8;
+  --accent: #1a6fd0;
   --accent-2: #2f8fff;
   --ink: #15191d;
   --ink-text: #f2f7fb;
@@ -56,6 +57,12 @@ body::before {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes tagPop {
+  0%   { opacity: 0; transform: scale(0.55); }
+  60%  { opacity: 1; transform: scale(1.14); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 @keyframes floatMag {
   0%, 100% { transform: translateY(0px) rotate(-8deg); }
   50%       { transform: translateY(-14px) rotate(-3deg); }
@@ -74,4 +81,13 @@ body::before {
 @keyframes navDrop {
   from { transform: translateY(-8px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
+}
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(26,111,208,0.35);   /* translucent brand blue */
+  border-radius: 8px;
+  border: 3px solid transparent;       /* inset padding around thumb */
+  background-clip: padding-box;        /* keeps the border transparent so thumb looks slimmer & floated */
 }
