@@ -1,75 +1,101 @@
-# Proposed Architecture — Automated Submission Pipeline
+# Proposed Architecture — Automated Submission Pipeline (Supabase)
 
-Status: **proposed / not yet implemented.** This document captures the target architecture discussed for automating activity submissions, replacing the current manual Google Form → Sheet → `npm run sync` → manual push flow.
+Status: **decided, not yet implemented.** This replaces the manual Google Form → Sheet → `npm run sync` → manual push flow with a fully automated Supabase-backed pipeline.
 
 ## Goals
 
 1. Automatically validate incoming submissions (duplicates, broken links, spam/low-quality content).
-2. Automatically publish approved activities without a manual `npm run sync` + push step.
+2. Automatically publish approved activities — no manual sync, commit, or deploy step.
+3. Instant publishing: an approved activity is visible on the site immediately.
+4. Secondary but real: learn Supabase, and make the project a stronger portfolio piece. Future direction: user accounts / auth (Supabase Auth), which this architecture sets up for.
 
-## Current state (for reference)
+## Decisions (previously open questions)
 
-Google Form → Google Sheet (manual `Status = approved`) → `npm run sync` (run by hand) → commits `Activities.jsx` → git push → Vercel auto-deploy.
+| Question | Decision |
+|---|---|
+| Human-in-the-loop or auto-approve? | **Auto-approve** if all checks pass. Submissions that fail a *soft* check (link liveness, Claude content check) are stored as `flagged` for human review instead of being rejected — nothing legitimate gets silently dropped. Everything is logged and revertible. |
+| Where does the form live? | **In-app React form** (new page/route in this app), posting to the Edge Function. The Google Form is retired. Building the form is deliberate React practice. |
+| Admin UI? | **None at first.** Reviewing `flagged` rows and reverting bad activities is done in the Supabase dashboard (Studio) — a spreadsheet-like table editor, zero code. Build an in-app admin page later only if dashboard editing gets annoying (it pairs naturally with adding auth). |
 
-See `CLAUDE.md` for full detail on the existing pipeline and its known bug (`sync.js` still points at the stale `mockActivities.jsx` filename).
-
-## Proposed architecture
+## Architecture
 
 ### 1. Data layer: Supabase
 
-Replace `Activities.jsx` (a JS array baked into the build) with a Supabase (hosted Postgres) table, e.g. `activities`, with a `status` column: `pending` / `approved` / `rejected`.
+A Supabase (hosted Postgres) table `activities` with the same fields as the current `Activity` type, plus:
 
-- Row Level Security (RLS) restricts writes: anyone can insert as `pending`; only an authenticated admin role can change `status` or read pending rows.
-- The React app fetches `status = 'approved'` rows at runtime instead of importing a static array — activities go live the moment a row is approved, no rebuild or deploy.
+- `status`: `'approved' | 'flagged' | 'rejected'` — no `pending` state, because passing all checks auto-approves.
+- `created_at`, and the raw submission payload kept for audit/revert.
 
-### 2. Submission intake
+**Row Level Security (RLS) — important, this was wrong in the first draft:**
 
-The submission form (in-app or existing Google Form, TBD) posts to a Supabase Edge Function instead of writing directly to the table. That function is the validation gate.
+- The public (anon key) gets **read-only access to `status = 'approved'` rows. No insert, no update, ever.**
+- All writes go through the Edge Function, which runs server-side with the secret service-role key.
+- Rationale: the anon key ships in the JS bundle and is public by design. If RLS allowed public inserts, anyone could POST rows straight to the Supabase REST API and bypass the CAPTCHA, rate limits, and every validation check. The Edge Function is only a real gate if it's the *only* write path.
 
-### 3. Automated validation (in the Edge Function)
+The React app fetches approved rows at runtime instead of importing a static array. This requires adding **loading and error states** to the card grid (the static site never needed them) — treat that as part of the migration, not an afterthought.
 
-Runs before a submission is stored, in order from cheapest to most expensive:
+### 2. Submission intake: in-app form → Edge Function
 
-1. **Format checks** — required fields present, link is a well-formed URL, category/tag values match `tagData.jsx`'s registry.
-2. **Duplicate check** — exact or fuzzy match against existing activity names.
-3. **Link liveness** — fetch the submitted link, confirm it resolves (not a dead link).
-4. **Claude API content check** — send the title/description/link to Claude, ask for a structured `{ approve: boolean, reason: string }` verdict on whether the submission looks legitimate (not spam, not gibberish, actually describes what it claims). Uses a cheap model (Haiku) since this is a simple classification task — estimated cost is well under a cent per submission.
+A new form page in the React app collects the same fields as the old Google Form. It posts to a Supabase **Edge Function** (a small server-side script Supabase hosts and runs on demand) — the single validation gate.
 
-Only submissions that pass all four are stored (as `pending`, awaiting human approval — see Open Questions).
+### 3. Validation (in the Edge Function)
+
+Runs cheapest-first. Checks are either **hard** (fail = reject with an error shown to the submitter) or **soft** (fail = store as `flagged` for human review — because these checks have false positives):
+
+1. **Format checks** *(hard)* — required fields present, link is a well-formed URL, category/topic/subtopic match the tag registry.
+2. **Duplicate check** *(hard)* — exact or fuzzy name match against existing rows (a SQL query now, not a regex over a file).
+3. **Link liveness** *(soft)* — fetch the submitted link. Soft because Facebook pages and Google Forms — the most common registration links for Vietnamese student activities — routinely block automated requests even when the link is fine. A fetch failure means "a human should glance at this," not "reject."
+4. **Claude content check** *(soft)* — send name/description/link to Claude (Haiku — simple classification, ~$0.001/submission) for a structured verdict: legitimate vs. spam/gibberish, and validate the description reads sensibly. Soft for the same reason: flag, don't discard.
+   - Prompt-injection note: submission text is untrusted. Quote it clearly as data in the prompt, and the model's output can only ever set a flag/fields — it must not be able to trigger any other action.
+
+Outcome: hard-fail → rejected with feedback; all pass → `approved` (live instantly); soft-fail → `flagged`, reviewed by hand in the dashboard.
+
+**No derived visual fields.** `acronym` and `accent` were removed from the model — cards and the detail modal both show the activity's **photo**, so `image` is now a **required** field. The form must require an image, and format checks (step 1) should treat a missing or non-image URL as a hard fail. Topic accent colors still exist in the frontend for pills/hover, but they're looked up from the topic in code, never stored per activity.
+
+**Tag registry sharing:** the Edge Function can't import `src/data/tagData.ts` from the frontend bundle. Either move the registry to a shared location both can import, or (simpler) store topics/categories in a small Supabase table that both the app and the function read. Decide during implementation; do not hand-duplicate the list in two places.
 
 ### 4. Anti-spam safeguards (in front of validation)
 
-Because step 3.4 costs real (if small) money per call, and because floods of junk submissions are a risk regardless of cost:
+- **CAPTCHA** on the form — Cloudflare Turnstile (free, simpler than reCAPTCHA), verified inside the Edge Function.
+- **Rate limiting** — cap submissions per IP per hour. Edge Functions are stateless, so counts live in a small Supabase table the function checks/increments.
+- **Cheap-checks-first ordering** — free checks run before the paid Claude call.
+- **Hard daily cap** on Claude API calls (a counter in the same rate-limit table) as a failsafe.
 
-- **CAPTCHA** on the submission form — blocks most bots before they ever reach the backend.
-- **Rate limiting** — cap submissions per IP/email per hour.
-- **Cheap-checks-first ordering** — steps 3.1–3.3 (free) run before 3.4 (paid), so junk is filtered out before any API cost is incurred.
-- **Hard daily cap** on Claude API calls as a failsafe against unexpected volume.
+### 5. Publish
 
-### 5. Approval
+No publish step exists. `status = 'approved'` ⇒ visible on next page load. Reverting a bad activity = flipping its status in the dashboard.
 
-Undecided — see Open Questions below. Either a human reviews `pending` rows and flips them to `approved`, or (if validation is trusted enough) passing all checks auto-approves.
+## Migration plan (one-time)
 
-### 6. Publish
+1. Create the `activities` table and RLS policies.
+2. Seed it from the current `mockActivities` array in `src/data/Activities.ts` (a one-off script).
+3. Switch the app to fetch from Supabase, with loading/error UI.
+4. **Delete `Activities.ts` and `scripts/sync.js`** once the fetch path works — two sources of truth is how data bugs happen.
+5. Retire the Google Form/Sheet after the in-app form ships.
 
-No separate "push" step — because the site reads live from Supabase, the moment a row's `status` becomes `approved`, it's visible on the site. No git commit, no rebuild, no deploy.
+## Suggested build order (incremental, each phase leaves the site working)
+
+- **Phase 1 — read path:** table + RLS + seed script; app fetches approved rows; loading/error states. *Learn: Supabase client, async data in React.*
+- **Phase 2 — write path:** in-app form + Edge Function with hard checks (format, duplicate) only. Submissions land as `flagged` initially (everything human-reviewed while trust is built). *Learn: Edge Functions, service-role vs anon key.*
+- **Phase 3 — automation & hardening:** Turnstile, rate limiting, link check, Claude check; flip to auto-approve once the checks have been watched on real submissions for a while.
+- **Later:** Supabase Auth + in-app admin page.
 
 ## What this replaces
 
 | Current | Proposed |
 |---|---|
-| Google Sheet | Supabase `activities` table |
-| Manual review of Sheet rows | Automated validation (+ optional human approval step) |
-| `npm run sync` (manual, currently broken) | Not needed — no static file to regenerate |
-| git commit + push of `Activities.jsx` | Not needed — dynamic fetch from Supabase |
-| Vercel deploy triggered by data changes | Deploys only happen on code changes, not data changes |
+| Google Form + Sheet | In-app form → Edge Function → Supabase `activities` table |
+| Manual review of Sheet rows | Automated checks; only soft-flagged rows reviewed by hand |
+| `npm run sync` (manual, currently broken) | Deleted |
+| git commit + push of data file | Not needed — dynamic fetch |
+| Vercel deploy on data changes | Deploys only on code changes |
 
-## Open questions (not yet decided)
+## Costs
 
-- **Human-in-the-loop or fully automatic approval?** Automated checks catch broken/duplicate/spammy submissions but not necessarily bad judgment calls (inappropriate-but-well-formed content). Leaning toward: auto-approve if all checks pass, but log everything so it can be reviewed/reverted after the fact — a middle ground between full manual review and zero oversight.
-- **Where does the submission form live?** Either replace the Google Form with an in-app form posting to Supabase, or keep the Google Form and bridge it into Supabase.
-- **Admin UI** for reviewing/reverting activities — a page in the existing app, or a separate internal tool.
+- Supabase free tier comfortably covers this scale (500 MB database, 500K Edge Function invocations/month).
+- Claude (Haiku) content check: ~**$0.001 per submission** — under $1/month even at 1,000 submissions, and spam safeguards keep volume honest.
 
-## Cost estimate
+## Accepted trade-offs
 
-Per-submission Claude API cost (Haiku, cheapest suitable model): roughly **$0.0009** (well under a tenth of a cent) for a typical title + description. Even at 1,000 submissions/month, total cost is under $1 — validation cost is not expected to be a meaningful expense, provided spam safeguards are in place.
+- The site gains a runtime dependency (Supabase down/slow ⇒ cards don't load) and needs loading/error UI. Accepted in exchange for instant publishing, full automation, and the learning/portfolio value.
+- Auto-approve means a well-formed, plausible-sounding but bad submission can go live until someone notices. Mitigated by soft-flagging, full logging, and one-click revert in the dashboard.

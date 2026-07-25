@@ -2,15 +2,6 @@ import { useState, useEffect } from 'react';
 import { mockActivities, filterActivities, daysLeft } from '../data/Activities';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
-const ACCENT_PAIRS: [string, string][] = [
-    ['#1f6fe0','#37b9ff'],
-    ['#1487c9','#3fd0c8'],
-    ['#3a63e6','#6aa8ff'],
-    ['#1f7ae6','#46c6ff'],
-    ['#2467d8','#57b0ff'],
-    ['#0f74d6','#38c6f0'],
-];
-
 const TOPIC_ACCENTS: Record<string, string> = {
     'STEM':                     '#12a6c9',
     'Xã hội':                   '#0db87a',
@@ -76,7 +67,6 @@ function DaysBadge({ iso }: DaysBadgeProps) {
 }
 
 function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
-    const accent = activity.accent ?? ACCENT_PAIRS[index % ACCENT_PAIRS.length];
     const topicAccent = TOPIC_ACCENTS[activity.topic] ?? 'var(--primary)';
     const [hovered, setHovered] = useState<boolean>(false);
 
@@ -96,10 +86,7 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
 
     const imageAreaStyle: React.CSSProperties = {
         height: 150,
-        background: `
-            repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 1.5px, transparent 1.5px, transparent 15px),
-            linear-gradient(140deg, ${accent[0]}, ${accent[1]})
-        `,
+        background: `${topicAccent}22`,   // shows only while the photo loads
         padding: 13,
         display: 'flex',
         alignItems: 'flex-start',
@@ -110,17 +97,13 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
     return (
         <div style={cardStyle} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={onClick}>
             <div style={imageAreaStyle}>
-                {activity.image && (
-                    <img
-                        src={activity.image}
-                        alt={activity.name}
-                        referrerPolicy="no-referrer"
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                )}
-                {activity.image && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0.18) 100%)' }} />
-                )}
+                <img
+                    src={activity.image}
+                    alt={activity.name}
+                    referrerPolicy="no-referrer"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0.18) 100%)' }} />
                 <span style={{
                     position: 'relative', zIndex: 1,
                     fontSize: 10.5, fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -132,15 +115,6 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
                 <div style={{ position: 'relative', zIndex: 1 }}>
                     <DaysBadge iso={activity.deadline} />
                 </div>
-                {!activity.image && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" opacity="0.5">
-                            <rect x="4" y="8" width="32" height="24" rx="3" stroke="white" strokeWidth="1.5"/>
-                            <circle cx="14" cy="17" r="3.5" stroke="white" strokeWidth="1.5"/>
-                            <path d="M4 26l9-7 7 6 5-4 11 7" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
-                        </svg>
-                    </div>
-                )}
             </div>
 
             <div style={{ padding: '16px 17px 17px', display: 'flex', flexDirection: 'column', gap: 11 }}>
@@ -201,9 +175,8 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
     );
 }
 
+// modal that pops up when an activity card is clicked 
 function DetailModal({ activity, onClose }: DetailModalProps) {
-    const accent = activity.accent ?? ACCENT_PAIRS[0];
-
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         function onKey(e: KeyboardEvent): void { if (e.key === 'Escape') onClose(); }
@@ -228,12 +201,20 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                 onClick={e => e.stopPropagation()}
             >
                 <div style={{
-                    height: 172,
-                    background: `linear-gradient(135deg, ${accent[0]}, ${accent[1]})`,
+                    height: 210,
+                    background: `${TOPIC_ACCENTS[activity.topic] ?? 'var(--primary)'}22`,   // shows while the photo loads
                     padding: '24px 26px',
                     display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                     position: 'relative',
                 }}>
+                    <img
+                        src={activity.image}
+                        alt={activity.name}
+                        referrerPolicy="no-referrer"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    {/* Dark scrim so the category label and close button stay readable over any photo */}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.30) 100%)' }} />
                     <button
                         onClick={onClose}
                         style={{
@@ -247,11 +228,14 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                             <path d="M4 4l10 10M14 4L4 14" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
                         </svg>
                     </button>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                    <span style={{
+                        position: 'relative', zIndex: 1, alignSelf: 'flex-start',
+                        fontSize: 11.5, fontWeight: 700, color: 'white', letterSpacing: '0.08em',
+                        textTransform: 'uppercase', fontFamily: 'Be Vietnam Pro, sans-serif',
+                        background: 'rgba(9,20,40,0.42)', border: '1px solid rgba(255,255,255,0.3)',
+                        borderRadius: 8, padding: '5px 11px',
+                    }}>
                         {activity.category}
-                    </span>
-                    <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: 64, color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                        {activity.acronym || activity.name?.slice(0, 3).toUpperCase()}
                     </span>
                 </div>
 
@@ -342,6 +326,8 @@ function ActivityCards({
     onPageInfoChange,
 }: ActivityCardsProps) {
     const [currentPage, setCurrentPage] = useState<number>(0);
+
+    // set the modal state to the activity when its card is clicked 
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
     const filtered = filterActivities(mockActivities, { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters });
@@ -374,11 +360,16 @@ function ActivityCards({
                         gridTemplateColumns: 'repeat(auto-fill, minmax(232px, 1fr))',
                         gap: 18,
                     }}>
+
+                        {/* paged: an array that contains the activities for the current page
+                        and here it is mapped to show the activities for one page
+                        s */}
                         {paged.map((activity, i) => (
                             <ActivityCard
                                 key={activity.id}
                                 activity={activity}
                                 index={i}
+                                // this gives the activity's data to the modal when the card is clicked
                                 onClick={() => setSelectedActivity(activity)}
                             />
                         ))}

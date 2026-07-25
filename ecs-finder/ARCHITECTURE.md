@@ -32,26 +32,28 @@ All data is bundled at build time and rendered client-side. Filtering, search, a
 ```
 ecs-finder/
 ├── src/
+│   ├── App.tsx                     ← Root. Owns all filter state.
+│   ├── main.tsx                    ← Entry point. Mounts App to <div id="root">
+│   ├── types.ts                    ← TypeScript interfaces (Activity, Tag, etc.)
+│   ├── index.css                   ← Global styles + design tokens (--primary, --text, etc.)
+│   ├── App.css
+│   │
 │   ├── components/
-│   │   ├── App.tsx                 ← Root. Owns all filter state.
 │   │   ├── Navbar.tsx              ← Top bar: logo, links, language toggle
-│   │   ├── HeroSection.tsx         ← Banner: headline, search, floating chips
+│   │   ├── HeroSection.tsx         ← Banner: headline (typing animation), search, floating chips
 │   │   ├── SearchBar.tsx           ← Input field + result count badge
 │   │   ├── MainContent.tsx         ← Layout: FilterLeft | ActivityCards
-│   │   ├── FilterLeft.tsx          ← Filter sidebar wrapper
-│   │   ├── FilterSections.tsx      ← Checkbox groups (Category, Deadline, Topics, Positions)
+│   │   ├── FilterLeft.tsx          ← Filter sidebar wrapper (desktop)
+│   │   ├── FilterDrawer.tsx        ← Mobile bottom-sheet wrapper (≤1080px)
+│   │   ├── FilterSections.tsx      ← Filter controls, shared by rail + drawer. Holds hexRgba() helper.
 │   │   ├── ActivityCards.tsx       ← Card grid + detail modal + pagination
-│   │   └── ContactSection.tsx      ← (stub, not integrated yet)
+│   │   └── Footer.tsx              ← Site footer (copy-email button)
 │   │
 │   ├── data/
-│   │   ├── Activities.ts           ← mockActivities array + filterActivities() function
+│   │   ├── Activities.ts           ← mockActivities array + filterActivities() + daysLeft()
 │   │   └── tagData.ts              ← topicSet, categorySet, allTags registries
 │   │
-│   ├── types.ts                    ← TypeScript interfaces (Activity, Tag, etc.)
-│   ├── utils/
-│   │   └── hexRgba.ts              ← Color utility for semi-transparent accents
-│   ├── index.css                   ← Global styles + design tokens (--primary, --text, etc.)
-│   └── main.tsx                    ← Entry point. Mounts App to <div id="root">
+│   └── assets/                     ← logo.jpg
 │
 ├── index.html                      ← HTML shell
 ├── CLAUDE.md                       ← Development guide (commands, architecture overview)
@@ -75,7 +77,6 @@ Each activity is a structured object with required and optional fields:
 interface Activity {
   id: number;
   name: string;                           // "Hackathon 2024"
-  acronym: string;                        // "HCK" (2–3 chars, displayed large in modal)
   category: string;                       // Must match categorySet label
   topic: string;                          // Must match topicSet name (e.g. "STEM")
   subtopic: string | null;                // Must match topic's subtopic, or null
@@ -83,11 +84,14 @@ interface Activity {
   deadline: string;                       // ISO format "YYYY-MM-DD"
   positions: string[];                    // Job roles open (e.g. ["Developer", "Designer"])
   desc: string;                           // Vietnamese description (shown in modal)
-  accent: [string, string];               // Two-hex gradient for card background
-  image?: string;                         // Optional photo URL (Unsplash or direct link)
+  image: string;                          // REQUIRED photo URL — shown on the card and as the modal header
   link: string;                           // Registration URL (opens in new tab)
 }
 ```
+
+**`image` is required.** Both the card's image area and the detail modal's header render the photo, so there is no fallback artwork — a missing or dead URL leaves a faintly tinted empty box. Any future submission path must validate it.
+
+**Removed fields:** `acronym` (2–3 char shortname shown large in the modal) and `accent` (per-activity gradient pair) were dropped — the photo replaced both. Topic accent *colors* still exist, but they're looked up from the topic in code (see Design System), never stored per activity.
 
 ### Data Flow
 
@@ -127,16 +131,22 @@ const [lang, setLang] = useState<Lang>('VI');                           // 'VI' 
 const [searchQuery, setSearchQuery] = useState<string>('');             // User's search text
 const [categoryFilter, setCategoryFilter] = useState<string>('');       // Single category or empty
 const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>(''); // '' | 'week' | 'month'
-const [topicFilters, setTopicFilters] = useState<TopicFilter>({        // Multi-select topics + subtopics
+const [topicFilters, setTopicFilters] = useState<TopicFilter>({        // ONE topic + multi subtopics
   topics: [],
   subtopics: []
 });
 const [positionFilters, setPositionFilters] = useState<string[]>([]);   // Multi-select positions
 ```
 
+**Topics are single-select.** `topics` is still an array (so downstream filtering, counts, and types didn't need changing), but it never holds more than one entry. Selecting a topic replaces whatever was there and clears its subtopics; ticking a subtopic under a *different* topic switches to that topic and drops the previous topic's subtopics. **Subtopics remain multi-select** within the selected topic. Enforced by `handleTopicCheck` / `handleSubtopicCheck` in `FilterSections.tsx`.
+
 ### Local Component State
 
-Sections like `FilterSections` manage their own UI state (e.g., which topic accordion is expanded) — this doesn't affect filtering, just UI presentation.
+Sections like `FilterSections` manage their own UI state (e.g., `expandedTopics` — which topic accordion is open) — this doesn't affect filtering, just UI presentation. Expansion follows selection: choosing a topic expands only that one and collapses any other; deselecting collapses everything.
+
+Other local state: `hovered` (per card), `navOpen` (mobile menu), `drawerOpen` (mobile filters), `currentPage` + `selectedActivity` (ActivityCards), `isMobile` (tracked separately in Navbar / HeroSection / MainContent, each with its own breakpoint).
+
+**One `useCallback`** exists — `handlePageInfoChange` in `MainContent.tsx`. `ActivityCards` reports its page info upward via a `useEffect` that lists the callback as a dependency; without a stable identity the effect re-fired every render and hit "Maximum update depth exceeded". The setter also bails out when page/total are unchanged. Don't inline that prop again.
 
 ### State Flow
 
@@ -220,7 +230,7 @@ function filterActivities(activities: Activity[], filters): Activity[] {
 
 ### Topic Accent Colors
 
-Hardcoded in `FilterSections.tsx` and `ActivityCards.tsx`:
+Used for filter checkboxes, card topic pills, card hover glow, and the image-area tint shown while a photo loads. **Duplicated in `FilterSections.tsx`, `ActivityCards.tsx`, and `HeroSection.tsx` — update all three when changing a color.**
 
 ```
 STEM                    → #12a6c9 (cyan)
@@ -251,10 +261,11 @@ Sức khỏe                → #c933e6 (magenta)
 
 ### Modal Detail Flow
 
-1. User clicks an activity card
-2. Modal opens, showing full activity details (name, description, image, link)
-3. Link is a button that opens registration URL in new tab
-4. Close button or click outside → closes modal
+1. User clicks an activity card → `setSelectedActivity(activity)` stores the whole object (`Activity | null` doubles as "is the modal open?")
+2. Modal opens with a **210px photo header** (the activity's `image`, `objectFit: cover`) carrying a dark scrim, the category pill, and the close button
+3. Below: name, location/deadline/topic meta, description, topic + subtopic tags, open positions
+4. CTA button opens the registration URL in a new tab
+5. Close button, click outside, or **Esc** → closes modal. While open, `document.body` scroll is locked and restored on cleanup.
 
 ---
 
@@ -291,28 +302,34 @@ Output deployed to vercel.app
 
 ## Known Issues & Limitations
 
-1. **`sync.js` is broken** — Still points at old `mockActivities.jsx` filename; outputs old activity shape (tags array instead of new `category`/`topic`/`subtopic`). Manual activity edits work; synced activities won't.
+1. **`sync.js` is broken** — Still points at old `mockActivities.jsx` filename; outputs old activity shape (tags array instead of `category`/`topic`/`subtopic`, and it never knew about the required `image`). Manual activity edits work; synced activities won't. **Not worth fixing** — the Supabase migration deletes this script entirely.
 
-2. **No translations** — Language toggle is visual-only. UI is in Vietnamese; English mode doesn't switch content. Activities are only in Vietnamese.
+2. **No translations** — Language toggle is visual-only. UI is in Vietnamese; English mode doesn't switch content. Direction decided: UI chrome + the fixed tag vocabulary get a plain dictionary keyed on the existing `lang` state; free-text activity fields (`desc`) get an English sibling generated automatically by the Claude call in the proposed pipeline — no manual translation. Nothing implemented yet.
 
-3. **No persistence** — All state is in-memory. Closing the tab loses filter state.
+3. **No image fallback** — `image` is required but nothing handles a dead or blocked URL (Google Drive links are prone to this). A broken link renders an empty tinted box. An `onError` fallback is worth adding.
 
-4. **No mobile optimization** — Responsive CSS exists, but not fully tested on small screens.
+4. **No persistence** — All state is in-memory. Closing the tab loses filter state.
 
-5. **No offline support** — No service worker. Static content but no offline fallback.
+5. **Mobile layout is JS-driven, not CSS** — `isMobile` comes from `window.innerWidth` + a resize listener, so the desktop/mobile branch *unmounts and remounts* the card grid when crossing the breakpoint (pagination position resets). Harmless on a phone; visible when dragging a desktop window.
 
-6. **No analytics** — No tracking of what users search for, filter by, etc.
+6. **Filter controls aren't real form elements** — checkboxes and radios are styled `<div>`s with `onClick`. Not keyboard-reachable, no screen-reader semantics. Fixable via `role`/`aria-checked`/`tabIndex` on `RadioRow` and the checkbox rows.
+
+7. **No offline support** — No service worker. Static content but no offline fallback.
+
+8. **No analytics** — No tracking of what users search for, filter by, etc.
 
 ---
 
 ## Future Roadmap (See Proposed Architecture)
 
 Planned but not yet implemented:
-- **Supabase backend** for live activity updates (no rebuild needed)
+- **Supabase backend** for live activity updates (no rebuild needed) — the app fetches approved rows at runtime, which means adding loading/error states the static site never needed
+- **In-app submission form** replacing the Google Form, posting to a Supabase Edge Function as the single write path
 - **Automated validation** for submitted activities (format, duplicates, link liveness, spam detection)
-- **Claude API content check** for legitimacy scoring
-- **Real-time translations** (EN versions stored in DB)
-- **Admin UI** for approving/reverting activities
+- **Claude API content check** for legitimacy scoring — the same call also produces the English translation of `desc`
+- **Admin UI** for approving/reverting activities (Supabase dashboard at first, in-app later with auth)
+
+Note: the proposal no longer derives `acronym` or `accent`; it must require and validate `image` instead.
 
 See `PROPOSED_DATA_ARCHITECTURE.md` for full details.
 

@@ -37,7 +37,6 @@ export type Tag = CategoryTag | TopicTag | SubtopicTag;
 export interface Activity {
   id: number;
   name: string;
-  acronym: string;
   category: string;
   topic: string;
   subtopic: string | null;
@@ -45,7 +44,6 @@ export interface Activity {
   deadline: string;
   positions: string[];
   desc: string;
-  accent: [string, string];
-  image?: string;
+  image: string;
   link: string;
 }
