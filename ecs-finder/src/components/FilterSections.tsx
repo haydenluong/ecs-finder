@@ -138,11 +138,8 @@ function FilterSections({
 
     useEffect(() => {
         if (topicFilters.topics.length > 0) {
-            setExpandedTopics(prev => {
-                const next = { ...prev };
-                topicFilters.topics.forEach(t => { next[t] = true; });
-                return next;
-            });
+            // Only one topic can be selected now, expand just that one, collapsing any other.
+            setExpandedTopics({ [topicFilters.topics[0]]: true });
         }
     }, [topicFilters.topics]);
 
@@ -151,21 +148,28 @@ function FilterSections({
     }
 
     function handleTopicCheck(name: string, checked: boolean): void {
-        const newTopics = checked
-            ? [...topicFilters.topics, name]
-            : topicFilters.topics.filter(t => t !== name);
-        const newSubtopics = checked
-            ? topicFilters.subtopics
-            : topicFilters.subtopics.filter(s => s.parent !== name);
-        setTopicFilters({ topics: newTopics, subtopics: newSubtopics });
-        if (checked) setExpandedTopics(prev => ({ ...prev, [name]: true }));
+        if (checked) {
+            setTopicFilters({topics:[name], subtopics:[]});
+            setExpandedTopics({ [name]: true });
+        } else {
+            setTopicFilters({topics:[], subtopics:[]});
+            setExpandedTopics({});   // unchecking the topic also collapses it
+        }
     }
 
+
     function handleSubtopicCheck(parent: string, sub: string, checked: boolean): void {
-        const newSubtopics = checked
-            ? [...topicFilters.subtopics, { parent, subtopic: sub }]
-            : topicFilters.subtopics.filter(s => !(s.parent === parent && s.subtopic === sub));
-        setTopicFilters({ topics: topicFilters.topics, subtopics: newSubtopics });
+       if (checked) {
+        const switchingTopic = !topicFilters.topics.includes(parent);
+        const keep = switchingTopic ? [] : topicFilters.subtopics;   // drop old topic's subtopics
+        if (switchingTopic) setExpandedTopics({ [parent]: true });   // collapse the old topic
+        setTopicFilters({ topics: [parent], subtopics: [...keep, { parent, subtopic: sub }] });
+    } else {
+        setTopicFilters({
+            topics: topicFilters.topics,
+            subtopics: topicFilters.subtopics.filter(s => !(s.parent === parent && s.subtopic === sub)),
+        });
+    }
     }
 
     function isSubSelected(parent: string, sub: string): boolean {
