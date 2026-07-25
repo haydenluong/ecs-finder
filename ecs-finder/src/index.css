@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap');
-
+/* Fonts are loaded via <link> in index.html — a CSS @import here would chain
+   an extra round trip and delay the hero headline (LCP). */
 @import "tailwindcss";
 
 :root {
