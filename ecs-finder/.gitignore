@@ -21,6 +21,10 @@ scripts/credentials.json
 .env
 .env.example
 
+# Agent tooling (local only)
+.agents/
+.claude/
+
 # Local personal notes (never push)
 LOCAL_NOTES.md
 PROPOSED_DATA_ARCHITECTURE.md
