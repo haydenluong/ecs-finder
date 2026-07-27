@@ -68,6 +68,7 @@ function MainContent({
             {isMobile && (
                 <div style={{ display: 'flex', marginBottom: 14 }}>
                     <button
+                        type="button"
                         onClick={() => setDrawerOpen(true)}
                         style={{
                             display: 'flex',

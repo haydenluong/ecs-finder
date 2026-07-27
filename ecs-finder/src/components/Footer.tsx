@@ -84,6 +84,7 @@ function Footer() {
 
                         {/* Copy email button */}
                         <button
+                            type="button"
                             onClick={handleCopy}
                             title="Sao chép địa chỉ email"
                             style={{

@@ -90,6 +90,58 @@ No publish step exists. `status = 'approved'` ⇒ visible on next page load. Rev
 | git commit + push of data file | Not needed — dynamic fetch |
 | Vercel deploy on data changes | Deploys only on code changes |
 
+## Implementation notes (decisions that would otherwise live in someone's head)
+
+### Keys & environment variables
+
+- Frontend (`.env`, plus the same vars in Vercel → Project Settings → Environment Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. The `VITE_` prefix is required for Vite to expose them to the app. These are safe to ship — the anon key is public by design; RLS is what protects the data.
+- Edge Function secrets (set via `supabase secrets set`, never in the repo, never `VITE_`-prefixed): the service-role key (auto-available inside functions) and `ANTHROPIC_API_KEY` (Phase 3).
+- `.env` is already gitignored. The service-role key must never appear in frontend code or git in any form.
+
+### Table schema
+
+Postgres convention is `snake_case`; the app's types are `camelCase`. Map at the fetch boundary (one small function converting a DB row → `Activity`), so component code keeps using the existing type untouched.
+
+| Postgres column | Type | Maps to `Activity` field |
+|---|---|---|
+| `id` | `bigint` identity (auto-generated) | `id` |
+| `name` | `text` | `name` |
+| `category` | `text` | `category` |
+| `topic` | `text` | `topic` |
+| `subtopic` | `text` nullable | `subtopic` |
+| `location` | `text` | `location` |
+| `deadline` | `date` | `deadline` (ISO string) |
+| `positions` | `text[]` | `positions` |
+| `description` | `text` | `desc` (avoid `desc` as a column name — it's a reserved SQL keyword) |
+| `image` | `text` | `image` |
+| `link` | `text` | `link` |
+| `status` | `text`, one of `approved`/`flagged`/`rejected` | — (not in frontend type) |
+| `created_at` | `timestamptz` default `now()` | — |
+| `raw_submission` | `jsonb` nullable | — (audit trail, written by the Edge Function) |
+
+### What changes in the React code (and what doesn't)
+
+- New file `src/lib/supabase.ts` — creates the Supabase client once; everything imports from there.
+- Fetch **once, in `App.tsx`**, on mount; store rows in state and pass them down to `MainContent`/`ActivityCards` as a prop replacing the `mockActivities` import. Rationale: all filtering/search/pagination stays exactly as it is (client-side over the full array) — the migration swaps the data *source*, not the filter logic. At this catalog's scale (dozens–hundreds of rows), fetching all approved rows in one query is correct; do not add server-side pagination or per-filter queries.
+- Loading/error UI lives where the cards render. Keep it simple: a spinner/skeleton state and a "couldn't load activities, retry" state with a button that re-runs the fetch.
+
+### Edge Function gotchas
+
+- **CORS**: the browser will send a preflight `OPTIONS` request before the form's POST. The function must handle `OPTIONS` and return `Access-Control-Allow-Origin` for the site's origin, or every submission will fail with an opaque CORS error. This is the #1 first-deploy stumble.
+- Edge Functions run on **Deno**, not Node: imports are URLs/`npm:` specifiers, not bare `node_modules` names.
+- Return structured JSON errors (`{ ok: false, field: 'link', message: '…' }`) so the form can show which field failed — hard-check rejections are user-facing feedback, not logs.
+
+### Definitions pinned down
+
+- **Duplicate check** = case-insensitive, whitespace/diacritic-normalized comparison of `name` against all existing rows (any status — a rejected submission resubmitted verbatim should still match). Start with exact-after-normalization; add fuzzy matching only if real dupes slip through.
+- **Link liveness** = a `fetch` with a ~5s timeout following redirects; any 2xx/3xx = pass. Timeout, network error, 4xx/5xx = soft-flag (not reject).
+- **Claude check** = one message to Haiku (model id `claude-haiku-4-5`) with the submission quoted as data, requesting JSON `{ legitimate: boolean, reason: string }`. Response parse failure = soft-flag, never approve.
+
+### Verification & rollback
+
+- Order of safety during migration: the app keeps importing `Activities.ts` until the Supabase fetch path is verified **on the deployed site** (not just `npm run dev`) — env vars exist in Vercel too, and that's the step people forget. Only then delete `Activities.ts` and `sync.js` (they remain recoverable from git history regardless).
+- Keep the seed script in `scripts/` after seeding — it doubles as disaster recovery documentation for the table shape.
+
 ## Costs
 
 - Supabase free tier comfortably covers this scale (500 MB database, 500K Edge Function invocations/month).

@@ -20,6 +20,7 @@ function LangToggle({ lang, onLangChange }: NavbarProps) {
         }}>
             {(['VI', 'EN'] as Lang[]).map(l => (
                 <button
+                    type="button"
                     key={l}
                     onClick={() => l === 'VI' && onLangChange('VI')}
                     style={{
@@ -129,6 +130,7 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
                 {/* Mobile: hamburger */}
                 {isMobile && (
                     <button
+                        type="button"
                         onClick={() => setNavOpen(o => !o)}
                         aria-label={navOpen ? 'Đóng menu' : 'Mở menu'}
                         style={{

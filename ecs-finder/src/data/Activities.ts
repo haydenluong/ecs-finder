@@ -17,6 +17,8 @@ export function daysLeft(iso: string): number | null {
 }
 
 export function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
+    const selectedTopics = new Set(topicFilters.topics);
+    const selectedPositions = new Set(positionFilters);
     return activities.filter(a => {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
@@ -37,11 +39,11 @@ export function filterActivities(activities: Activity[], { searchQuery, category
             if (subtopicsForActivity.length > 0) {
                 if (!subtopicsForActivity.some(s => s.subtopic === a.subtopic)) return false;
             } else if (topics.length > 0) {
-                if (!topics.includes(a.topic)) return false;
+                if (!selectedTopics.has(a.topic)) return false;
             }
         }
         if (positionFilters.length > 0) {
-            if (!a.positions?.some(p => positionFilters.includes(p))) return false;
+            if (!a.positions?.some(p => selectedPositions.has(p))) return false;
         }
         return true;
     });

@@ -92,6 +92,7 @@ function FilterDrawer({
                     }}>Bộ lọc</span>
                     {hasAnyFilter && (
                         <button
+                            type="button"
                             onClick={onClearAll}
                             style={{
                                 fontFamily: 'Be Vietnam Pro, sans-serif',
@@ -129,6 +130,7 @@ function FilterDrawer({
                     flexShrink: 0,
                 }}>
                     <button
+                        type="button"
                         onClick={onClose}
                         style={{
                             width: '100%',

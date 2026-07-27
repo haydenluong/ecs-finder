@@ -234,7 +234,8 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         const isActive = topicFilters.topics.includes(slotTopics[i]);
                         return (
                             <button
-                                key={`${i}-${animKey}`}
+                                type="button"
+                                key={`${slotTopics[i]}-${animKey}`}
                                 onClick={() => onTagClick({ type: 'topic', label: slotTopics[i] })}
                                 onMouseEnter={() => setHoverTag(i)}
                                 onMouseLeave={() => setHoverTag(null)}
@@ -272,6 +273,8 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
 
                     {/* Randomizer button */}
                     <button
+                        type="button"
+                        aria-label="Chọn chủ đề ngẫu nhiên"
                         onClick={randomizeTags}
                         onMouseEnter={() => setHoveredRandom(true)}
                         onMouseLeave={() => setHoveredRandom(false)}

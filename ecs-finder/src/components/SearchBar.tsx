@@ -24,6 +24,7 @@ function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
 
                 <input
                     type="text"
+                    aria-label="Tìm kiếm hoạt động"
                     placeholder="Tìm câu lạc bộ, cuộc thi, dự án, sự kiện..."
                     value={searchQuery}
                     onChange={e => onChange(e.target.value)}

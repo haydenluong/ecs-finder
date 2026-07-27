@@ -14,6 +14,10 @@ const TOPIC_ACCENTS: Record<string, string> = {
 
 const CARDS_PER_PAGE = 6;
 
+// Stable identities so these defaults don't create a new object/array each render.
+const EMPTY_TOPIC_FILTER: TopicFilter = { topics: [], subtopics: [] };
+const EMPTY_POSITIONS: string[] = [];
+
 interface ActivityCardsProps {
     searchQuery?: string;
     topicFilters?: TopicFilter;
@@ -95,7 +99,16 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
     };
 
     return (
-        <div style={cardStyle} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={onClick}>
+        <div
+            role="button"
+            tabIndex={0}
+            aria-label={activity.name}
+            style={cardStyle}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onClick={onClick}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+        >
             <div style={imageAreaStyle}>
                 <img
                     src={activity.image}
@@ -216,6 +229,8 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                     {/* Dark scrim so the category label and close button stay readable over any photo */}
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.30) 100%)' }} />
                     <button
+                        type="button"
+                        aria-label="Đóng"
                         onClick={onClose}
                         style={{
                             position: 'absolute', top: 16, right: 16,
@@ -318,10 +333,10 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
 
 function ActivityCards({
     searchQuery = '',
-    topicFilters = { topics: [], subtopics: [] },
+    topicFilters = EMPTY_TOPIC_FILTER,
     categoryFilter = '',
     deadlineFilter = '',
-    positionFilters = [],
+    positionFilters = EMPTY_POSITIONS,
     onResultCountChange,
     onPageInfoChange,
 }: ActivityCardsProps) {
@@ -378,6 +393,8 @@ function ActivityCards({
                     {totalPages > 1 && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 28 }}>
                             <button
+                                type="button"
+                                aria-label="Trang trước"
                                 onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
                                 disabled={currentPage === 0}
                                 style={{
@@ -389,7 +406,10 @@ function ActivityCards({
                             >←</button>
                             {Array.from({ length: totalPages }, (_, i) => (
                                 <button
+                                    type="button"
                                     key={i}
+                                    aria-label={`Trang ${i + 1}`}
+                                    aria-current={i === currentPage ? 'page' : undefined}
                                     onClick={() => setCurrentPage(i)}
                                     style={{
                                         padding: '7px 13px', borderRadius: 9, border: '1px solid var(--border)',
@@ -401,6 +421,8 @@ function ActivityCards({
                                 >{i + 1}</button>
                             ))}
                             <button
+                                type="button"
+                                aria-label="Trang sau"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={currentPage === totalPages - 1}
                                 style={{

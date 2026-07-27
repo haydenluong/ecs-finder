@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { topicSet, categorySet } from '../data/tagData';
 import { mockActivities } from '../data/Activities';
 import type { DeadlineFilter, TopicFilter } from '../types';
@@ -12,6 +12,8 @@ export const TOPIC_ACCENTS: Record<string, string> = {
     'Ngôn ngữ & Giao tiếp':    '#3d5cff',
     'Sức khỏe':                 '#c933e6',
 };
+
+const groupStyle: React.CSSProperties = { padding: '14px 4px' };
 
 const DEADLINE_OPTIONS: { label: string; value: DeadlineFilter }[] = [
     { label: 'Tất cả',          value: '' },
@@ -78,7 +80,12 @@ function RadioRow({ label, value = label, selected, onSelect, count }: RadioRowP
     ;
     return (
         <div
+            role="radio"
+            tabIndex={0}
+            aria-checked={isSelected}
+            aria-label={label}
             onClick={onSelect}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
             style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -183,12 +190,18 @@ function FilterSections({
         onPositionFilterChange(next);
     }
 
-    const groupStyle: React.CSSProperties = { padding: '14px 4px' };
+    // Set lookups instead of Array.includes inside the topic/position maps below.
+    const selectedTopics = new Set(topicFilters.topics);
+    const selectedPositions = new Set(positionFilters);
 
-    const categoryCounts: Record<string, number> = {};
-    for (const a of mockActivities) {
-        categoryCounts[a.category] = (categoryCounts[a.category] ?? 0) + 1;
-    }
+    // mockActivities is a build-time constant, so these counts never change.
+    const categoryCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const a of mockActivities) {
+            counts[a.category] = (counts[a.category] ?? 0) + 1;
+        }
+        return counts;
+    }, []);
 
     return (
         <>
@@ -233,49 +246,58 @@ function FilterSections({
                 }>Chủ đề</SectionLabel>
                 {topicSet.map(topic => {
                     const accent = TOPIC_ACCENTS[topic.name] ?? 'var(--primary)';
-                    const isChecked = topicFilters.topics.includes(topic.name);
+                    const isChecked = selectedTopics.has(topic.name);
                     const isExpanded = expandedTopics[topic.name] ?? false;
                     return (
                         <div key={topic.name} style={{ marginBottom: 4 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', minHeight: 44 }}>
-                                {/* Colored topic checkbox (boxC) */}
+                                {/* Colored topic checkbox (boxC) + name — one focusable checkbox control */}
                                 <div
+                                    role="checkbox"
+                                    tabIndex={0}
+                                    aria-checked={isChecked}
+                                    aria-label={topic.name}
                                     onClick={() => handleTopicCheck(topic.name, !isChecked)}
-                                    style={{
-                                        width: 17,
-                                        height: 17,
-                                        borderRadius: 5,
-                                        flexShrink: 0,
-                                        border: `2px solid ${isChecked ? accent : 'var(--text-faint)'}`,
-                                        background: isChecked ? accent : 'transparent',
-                                        boxShadow: isChecked ? `0 0 9px ${hexRgba(accent, 0.6)}` : 'none',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxSizing: 'border-box',
-                                        transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-                                    }}
+                                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTopicCheck(topic.name, !isChecked); } }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, cursor: 'pointer' }}
                                 >
-                                    {isChecked && (
-                                        <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
-                                            <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    )}
+                                    <div
+                                        style={{
+                                            width: 17,
+                                            height: 17,
+                                            borderRadius: 5,
+                                            flexShrink: 0,
+                                            border: `2px solid ${isChecked ? accent : 'var(--text-faint)'}`,
+                                            background: isChecked ? accent : 'transparent',
+                                            boxShadow: isChecked ? `0 0 9px ${hexRgba(accent, 0.6)}` : 'none',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxSizing: 'border-box',
+                                            transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
+                                        }}
+                                    >
+                                        {isChecked && (
+                                            <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
+                                                <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <span
+                                        style={{
+                                            flex: 1,
+                                            fontFamily: 'Be Vietnam Pro, sans-serif',
+                                            fontWeight: 600,
+                                            fontSize: 13.5,
+                                            color: isChecked ? accent : 'var(--text)',
+                                        }}
+                                    >{topic.name}</span>
                                 </div>
-                                <span
-                                    onClick={() => handleTopicCheck(topic.name, !isChecked)}
-                                    style={{
-                                        flex: 1,
-                                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                                        fontWeight: 600,
-                                        fontSize: 13.5,
-                                        color: isChecked ? accent : 'var(--text)',
-                                        cursor: 'pointer',
-                                    }}
-                                >{topic.name}</span>
                                 {topic.subtopics.length > 0 && (
                                     <button
+                                        type="button"
+                                        aria-label={isExpanded ? `Thu gọn ${topic.name}` : `Mở rộng ${topic.name}`}
+                                        aria-expanded={isExpanded}
                                         onClick={() => toggleExpand(topic.name)}
                                         style={{
                                             background: 'none', border: 'none', cursor: 'pointer',
@@ -295,8 +317,13 @@ function FilterSections({
                                     {topic.subtopics.map(sub => {
                                         const subSelected = isSubSelected(topic.name, sub);
                                         return (
-                                            <label key={sub} 
+                                            <div key={sub}
+                                                role="checkbox"
+                                                tabIndex={0}
+                                                aria-checked={subSelected}
+                                                aria-label={sub}
                                                 onClick={() => handleSubtopicCheck(topic.name, sub, !subSelected)}
+                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSubtopicCheck(topic.name, sub, !subSelected); } }}
                                                 style={{
                                                 display: 'flex', alignItems: 'center', gap: 8,
                                                 padding: '5px 6px', borderRadius: 7, cursor: 'pointer',
@@ -334,7 +361,7 @@ function FilterSections({
                                                     color: subSelected ? accent : 'var(--text-dim)',
                                                     fontWeight: subSelected ? 600 : 400,
                                                 }}>{sub}</span>
-                                            </label>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -353,10 +380,15 @@ function FilterSections({
                     </svg>
                 }>Vị trí tuyển</SectionLabel>
                 {POSITIONS.map(pos => {
-                    const checked = positionFilters.includes(pos);
+                    const checked = selectedPositions.has(pos);
                     return (
-                        <label key={pos}
+                        <div key={pos}
+                            role="checkbox"
+                            tabIndex={0}
+                            aria-checked={checked}
+                            aria-label={pos}
                             onClick={() => handlePositionCheck(pos, !checked)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePositionCheck(pos, !checked); } }}
                             style={{
                             display: 'flex', alignItems: 'center', gap: 9,
                             padding: '7px 9px', borderRadius: 9, cursor: 'pointer',
@@ -394,7 +426,7 @@ function FilterSections({
                                 color: checked ? 'var(--primary)' : 'var(--text-dim)',
                                 fontWeight: checked ? 600 : 400,
                             }}>{pos}</span>
-                        </label>
+                        </div>
                     );
                 })}
             </div>

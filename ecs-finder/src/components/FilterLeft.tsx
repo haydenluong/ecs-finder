@@ -38,7 +38,7 @@ function FilterRail({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>Bộ lọc</span>
                 {hasAnyFilter && (
-                    <button onClick={onClearAll} style={{
+                    <button type="button" onClick={onClearAll} style={{
                         fontFamily: 'Be Vietnam Pro, sans-serif',
                         fontSize: 13,
                         color: 'var(--primary)',
