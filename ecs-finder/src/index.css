@@ -42,7 +42,7 @@ body::before {
   background-size: 22px 22px;
 }
 
-#root {
+#top {
   position: relative;
   z-index: 1;
 }

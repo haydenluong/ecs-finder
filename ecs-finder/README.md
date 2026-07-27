@@ -23,9 +23,9 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 | Layer | Tools |
 |-------|-------|
-| Frontend | React 19, TypeScript, Vite 7 |
-| Styling | Tailwind CSS 4 |
-| Icons | Lucide React, React Icons |
+| Frontend | React 19, TypeScript, Next.js 16 (App Router) |
+| Rendering | Static prerender at build time + client hydration |
+| Styling | CSS custom properties + inline styles |
 | Data pipeline | Node.js, Google Sheets API |
 | Hosting | Vercel (auto-deploy on push to `main`) |
 
@@ -36,7 +36,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 ```bash
 cd ecs-finder
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://localhost:3000
 ```
 
 ### Prerequisites
@@ -50,9 +50,9 @@ npm run dev       # http://localhost:5173
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start Vite dev server with HMR |
-| `npm run build` | Production build into `dist/` |
-| `npm run preview` | Preview the production build locally |
+| `npm run dev` | Start the Next dev server |
+| `npm run build` | Production build into `.next/` |
+| `npm start` | Serve the production build locally |
 | `npm run lint` | Run ESLint |
 | `npm run sync` | Pull approved submissions from Google Sheet and publish |
 
@@ -65,9 +65,12 @@ ecs-finder/
 ├── scripts/
 │   └── sync.js              # Google Sheets → Activities.ts sync script
 ├── src/
+│   ├── app/
+│   │   ├── layout.tsx       # Root layout — <html>/<body>, metadata, fonts
+│   │   ├── page.tsx         # "/" route (Server Component)
+│   │   └── HomeClient.tsx   # Client boundary — owns all filter and search state
 │   ├── types.ts             # Canonical TypeScript interfaces
-│   ├── index.css            # Design tokens + Tailwind
-│   ├── App.tsx              # Root — owns all filter and search state
+│   ├── index.css            # Design tokens + global styles
 │   ├── components/
 │   │   ├── Navbar.tsx       # Sticky nav with VI/EN toggle
 │   │   ├── HeroSection.tsx  # Hero with search bar and floating topic chips
@@ -95,7 +98,6 @@ Each entry in `src/data/Activities.ts` follows this shape:
 {
   id: number,
   name: string,
-  acronym: string,           // 2–3 char shortname shown in the detail modal
   category: string,          // must match a categorySet label, e.g. 'Dự án & CLB'
   topic: string,             // must match a topicSet name, e.g. 'STEM'
   subtopic: string | null,   // must match a subtopic under the topic, or null
@@ -103,8 +105,7 @@ Each entry in `src/data/Activities.ts` follows this shape:
   deadline: string,          // ISO date: "YYYY-MM-DD"
   positions: string[],       // open roles for recruitment
   desc: string,              // Vietnamese description shown in the modal
-  accent: [string, string],  // two-hex gradient pair for the card header
-  image: string | undefined, // optional photo URL (Unsplash or Google Drive direct link)
+  image: string,             // REQUIRED photo URL — card image area + modal header
   link: string,              // registration URL — opens in new tab from the modal CTA
 }
 ```

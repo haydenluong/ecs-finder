@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Next.js
+.next
+next-env.d.ts
+
 # Sync script secrets
 scripts/credentials.json
 .env
@@ -20,6 +24,8 @@ scripts/credentials.json
 # Local personal notes (never push)
 LOCAL_NOTES.md
 PROPOSED_DATA_ARCHITECTURE.md
+MIGRATION_STUDY_PLAN.md
+TO_DO.md
 
 # Editor directories and files
 .vscode/*

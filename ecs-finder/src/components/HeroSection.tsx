@@ -44,11 +44,11 @@ function pickSlotTopics(): string[] {
 }
 
 function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
-    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 920);
-    const [isSmall, setIsSmall]   = useState<boolean>(window.innerWidth <= 560);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+    const [isSmall, setIsSmall]   = useState<boolean>(false);
     const [displayCount, setDisplayCount] = useState<number>(0);
     const [hoverTag, setHoverTag] = useState<number | null>(null);
-    const [slotTopics, setSlotTopics] = useState<string[]>(() => pickSlotTopics());
+    const [slotTopics, setSlotTopics] = useState<string[]>(() => topicSet.slice(0, 3).map(t => t.name));
     const [hoveredRandom, setHoveredRandom] = useState<boolean>(false);
     const [animKey, setAnimKey] = useState<number>(0);
     const [typedWord, setTypedWord] = useState<string>('');
@@ -66,10 +66,16 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- randomize only after hydration, so server and client HTML match
+        setSlotTopics(pickSlotTopics());
+    }, []);
+
+    useEffect(() => {
         function onResize(): void {
             setIsMobile(window.innerWidth <= 920);
             setIsSmall(window.innerWidth <= 560);
         }
+        onResize();
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);

@@ -47,7 +47,7 @@ function Footer() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <img
-                                src={logo}
+                                src={logo.src}
                                 alt="ECS Finder logo"
                                 style={{ width: 36, height: 36, borderRadius: 9, objectFit: 'cover', border: `1px solid ${D.border}` }}
                             />

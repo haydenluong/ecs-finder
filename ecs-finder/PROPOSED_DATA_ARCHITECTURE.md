@@ -14,7 +14,7 @@ Status: **decided, not yet implemented.** This replaces the manual Google Form �
 | Question | Decision |
 |---|---|
 | Human-in-the-loop or auto-approve? | **Auto-approve** if all checks pass. Submissions that fail a *soft* check (link liveness, Claude content check) are stored as `flagged` for human review instead of being rejected — nothing legitimate gets silently dropped. Everything is logged and revertible. |
-| Where does the form live? | **In-app React form** (new page/route in this app), posting to the Edge Function. The Google Form is retired. Building the form is deliberate React practice. |
+| Where does the form live? | **In-app React form** at `src/app/submit/page.tsx`, posting to a Route Handler. The Google Form is retired. Building the form is deliberate React practice. |
 | Admin UI? | **None at first.** Reviewing `flagged` rows and reverting bad activities is done in the Supabase dashboard (Studio) — a spreadsheet-like table editor, zero code. Build an in-app admin page later only if dashboard editing gets annoying (it pairs naturally with adding auth). |
 
 ## Architecture
@@ -29,16 +29,27 @@ A Supabase (hosted Postgres) table `activities` with the same fields as the curr
 **Row Level Security (RLS) — important, this was wrong in the first draft:**
 
 - The public (anon key) gets **read-only access to `status = 'approved'` rows. No insert, no update, ever.**
-- All writes go through the Edge Function, which runs server-side with the secret service-role key.
-- Rationale: the anon key ships in the JS bundle and is public by design. If RLS allowed public inserts, anyone could POST rows straight to the Supabase REST API and bypass the CAPTCHA, rate limits, and every validation check. The Edge Function is only a real gate if it's the *only* write path.
+- All writes go through the Route Handler, which runs server-side with the secret service-role key.
+- Rationale: the anon key is public by design. If RLS allowed public inserts, anyone could POST rows straight to the Supabase REST API and bypass the CAPTCHA, rate limits, and every validation check. The server endpoint is only a real gate if it's the *only* write path.
 
-The React app fetches approved rows at runtime instead of importing a static array. This requires adding **loading and error states** to the card grid (the static site never needed them) — treat that as part of the migration, not an afterthought.
+**The read path is now a Server Component.** `src/app/page.tsx` queries Supabase on the server and passes the rows into `HomeClient` as a prop. Two consequences worth noting:
 
-### 2. Submission intake: in-app form → Edge Function
+1. **No loading spinner for the initial list** — the data is already in the HTML when it reaches the browser, and it stays crawlable by search engines. The earlier plan assumed client-side fetching and budgeted for loading/error states; that's no longer needed for the initial render.
+2. **Supabase credentials never reach the browser** for reads, since the query runs server-side.
 
-A new form page in the React app collects the same fields as the old Google Form. It posts to a Supabase **Edge Function** (a small server-side script Supabase hosts and runs on demand) — the single validation gate.
+Error handling still matters (Supabase down or slow), but it belongs in the Server Component — Next's `error.tsx` convention — rather than in component state.
 
-### 3. Validation (in the Edge Function)
+Note this changes the rendering mode: the home page is currently prerendered as fully static. Once it fetches per request it becomes dynamic, or ISR if a revalidation window is set.
+
+### 2. Submission intake: in-app form → Route Handler
+
+A form page at `src/app/submit/page.tsx` collects the same fields as the old Google Form. It posts to a **Next.js Route Handler** at `src/app/api/submit/route.ts` — the single validation gate.
+
+**This replaces the original Supabase Edge Function plan.** Now that the app runs on Next.js, Route Handlers are the better fit: the form and the endpoint share an origin (**no CORS preflight**, which was the single most common Edge Function stumble), local development needs no Docker or Supabase CLI, frontend and backend deploy together on one `git push`, and npm packages like the Anthropic SDK install normally instead of via Deno `npm:` specifiers.
+
+The trade-off accepted: the handler runs on Vercel rather than next to the database, adding a network hop per query (milliseconds at this scale), and couples the backend to Vercel.
+
+### 3. Validation (in the Route Handler)
 
 Runs cheapest-first. Checks are either **hard** (fail = reject with an error shown to the submitter) or **soft** (fail = store as `flagged` for human review — because these checks have false positives):
 
@@ -52,12 +63,12 @@ Outcome: hard-fail → rejected with feedback; all pass → `approved` (live ins
 
 **No derived visual fields.** `acronym` and `accent` were removed from the model — cards and the detail modal both show the activity's **photo**, so `image` is now a **required** field. The form must require an image, and format checks (step 1) should treat a missing or non-image URL as a hard fail. Topic accent colors still exist in the frontend for pills/hover, but they're looked up from the topic in code, never stored per activity.
 
-**Tag registry sharing:** the Edge Function can't import `src/data/tagData.ts` from the frontend bundle. Either move the registry to a shared location both can import, or (simpler) store topics/categories in a small Supabase table that both the app and the function read. Decide during implementation; do not hand-duplicate the list in two places.
+**Tag registry sharing:** this got *easier* with Next.js — the Route Handler and the frontend live in the same project, so `src/data/tagData.ts` can simply be imported by both. No duplication, no separate shared table needed.
 
 ### 4. Anti-spam safeguards (in front of validation)
 
-- **CAPTCHA** on the form — Cloudflare Turnstile (free, simpler than reCAPTCHA), verified inside the Edge Function.
-- **Rate limiting** — cap submissions per IP per hour. Edge Functions are stateless, so counts live in a small Supabase table the function checks/increments.
+- **CAPTCHA** on the form — Cloudflare Turnstile (free, simpler than reCAPTCHA), verified inside the Route Handler.
+- **Rate limiting** — cap submissions per IP per hour. Route Handlers are stateless, so counts live in a small Supabase table the handler checks/increments.
 - **Cheap-checks-first ordering** — free checks run before the paid Claude call.
 - **Hard daily cap** on Claude API calls (a counter in the same rate-limit table) as a failsafe.
 
@@ -75,8 +86,8 @@ No publish step exists. `status = 'approved'` ⇒ visible on next page load. Rev
 
 ## Suggested build order (incremental, each phase leaves the site working)
 
-- **Phase 1 — read path:** table + RLS + seed script; app fetches approved rows; loading/error states. *Learn: Supabase client, async data in React.*
-- **Phase 2 — write path:** in-app form + Edge Function with hard checks (format, duplicate) only. Submissions land as `flagged` initially (everything human-reviewed while trust is built). *Learn: Edge Functions, service-role vs anon key.*
+- **Phase 1 — read path:** table + RLS + seed script; `page.tsx` fetches approved rows server-side and passes them to `HomeClient`; `error.tsx` for failures. *Learn: Supabase client, async/await, Server Components fetching data.*
+- **Phase 2 — write path:** form page + Route Handler with hard checks (format, duplicate) only. Submissions land as `flagged` initially (everything human-reviewed while trust is built). *Learn: Route Handlers, controlled forms, service-role vs anon key.*
 - **Phase 3 — automation & hardening:** Turnstile, rate limiting, link check, Claude check; flip to auto-approve once the checks have been watched on real submissions for a while.
 - **Later:** Supabase Auth + in-app admin page.
 
@@ -84,7 +95,7 @@ No publish step exists. `status = 'approved'` ⇒ visible on next page load. Rev
 
 | Current | Proposed |
 |---|---|
-| Google Form + Sheet | In-app form → Edge Function → Supabase `activities` table |
+| Google Form + Sheet | In-app form → Route Handler → Supabase `activities` table |
 | Manual review of Sheet rows | Automated checks; only soft-flagged rows reviewed by hand |
 | `npm run sync` (manual, currently broken) | Deleted |
 | git commit + push of data file | Not needed — dynamic fetch |
@@ -94,9 +105,10 @@ No publish step exists. `status = 'approved'` ⇒ visible on next page load. Rev
 
 ### Keys & environment variables
 
-- Frontend (`.env`, plus the same vars in Vercel → Project Settings → Environment Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. The `VITE_` prefix is required for Vite to expose them to the app. These are safe to ship — the anon key is public by design; RLS is what protects the data.
-- Edge Function secrets (set via `supabase secrets set`, never in the repo, never `VITE_`-prefixed): the service-role key (auto-available inside functions) and `ANTHROPIC_API_KEY` (Phase 3).
-- `.env` is already gitignored. The service-role key must never appear in frontend code or git in any form.
+- **Server-only** (`.env.local`, plus Vercel → Project Settings → Environment Variables): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY` (Phase 3). **No prefix** — these must never reach the browser.
+- **Browser-exposed** (only if some client-side query is ever needed): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The `NEXT_PUBLIC_` prefix is what makes Next inline a value into the client bundle — treat it as "publish this publicly." Since reads happen in a Server Component, these may not be needed at all.
+- The prefix rule is the whole security boundary here: **anything `NEXT_PUBLIC_` is public.** The service-role key must never carry that prefix, never appear in a `'use client'` file, and never be committed.
+- `.env` is gitignored; add `.env.local` too.
 
 ### Table schema
 
@@ -117,19 +129,21 @@ Postgres convention is `snake_case`; the app's types are `camelCase`. Map at the
 | `link` | `text` | `link` |
 | `status` | `text`, one of `approved`/`flagged`/`rejected` | — (not in frontend type) |
 | `created_at` | `timestamptz` default `now()` | — |
-| `raw_submission` | `jsonb` nullable | — (audit trail, written by the Edge Function) |
+| `raw_submission` | `jsonb` nullable | — (audit trail, written by the Route Handler) |
 
 ### What changes in the React code (and what doesn't)
 
-- New file `src/lib/supabase.ts` — creates the Supabase client once; everything imports from there.
-- Fetch **once, in `App.tsx`**, on mount; store rows in state and pass them down to `MainContent`/`ActivityCards` as a prop replacing the `mockActivities` import. Rationale: all filtering/search/pagination stays exactly as it is (client-side over the full array) — the migration swaps the data *source*, not the filter logic. At this catalog's scale (dozens–hundreds of rows), fetching all approved rows in one query is correct; do not add server-side pagination or per-filter queries.
-- Loading/error UI lives where the cards render. Keep it simple: a spinner/skeleton state and a "couldn't load activities, retry" state with a button that re-runs the fetch.
+- New file `src/lib/supabase.ts` — creates the Supabase client; export a server client (service-role) separately from any browser client so the two can never be confused.
+- Fetch **in `src/app/page.tsx`** (already a Server Component, kept thin for exactly this), then pass the rows into `HomeClient` as a prop replacing the `mockActivities` import. `HomeClient` passes them down to `MainContent`/`ActivityCards` as it already passes filter state.
+- **All filtering/search/pagination stays exactly as it is** — client-side over the full array. The migration swaps the data *source*, not the filter logic. At this catalog's scale (dozens–hundreds of rows), fetching all approved rows in one query is correct; do not add server-side pagination or per-filter queries.
+- `ActivityCards` currently imports `mockActivities` directly. That import becomes a prop — the one structural change on the read path.
 
-### Edge Function gotchas
+### Route Handler notes
 
-- **CORS**: the browser will send a preflight `OPTIONS` request before the form's POST. The function must handle `OPTIONS` and return `Access-Control-Allow-Origin` for the site's origin, or every submission will fail with an opaque CORS error. This is the #1 first-deploy stumble.
-- Edge Functions run on **Deno**, not Node: imports are URLs/`npm:` specifiers, not bare `node_modules` names.
+- **No CORS handling needed** — the form and the endpoint share an origin. (This was the biggest single reason to prefer Route Handlers over Edge Functions.)
+- Runs on **Node**, so `npm install @anthropic-ai/sdk` and import it normally.
 - Return structured JSON errors (`{ ok: false, field: 'link', message: '…' }`) so the form can show which field failed — hard-check rejections are user-facing feedback, not logs.
+- The form page needs `'use client'` (it has state and a submit handler); the Route Handler is server-side by definition. Never import the handler's Supabase client into a client component — that would leak the service-role key.
 
 ### Definitions pinned down
 
@@ -144,7 +158,8 @@ Postgres convention is `snake_case`; the app's types are `camelCase`. Map at the
 
 ## Costs
 
-- Supabase free tier comfortably covers this scale (500 MB database, 500K Edge Function invocations/month).
+- Supabase free tier comfortably covers this scale (500 MB database). Route Handlers run on Vercel's free tier, well within its limits at this volume.
+- **Free-tier projects pause after ~1 week of inactivity.** Keep the project warm with a scheduled ping (cron-job.org) hitting the Supabase REST endpoint directly — pinging the Vercel site is not enough, since a static page makes no Supabase request. Set this up at the end of Phase 1.
 - Claude (Haiku) content check: ~**$0.001 per submission** — under $1/month even at 1,000 submissions, and spam safeguards keep volume honest.
 
 ## Accepted trade-offs

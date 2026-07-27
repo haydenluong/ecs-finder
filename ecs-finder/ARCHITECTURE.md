@@ -1,14 +1,16 @@
 # Architecture — Current State
 
-**Status:** Active. This document describes the current production architecture (as of July 2025).
+**Status:** Active. This document describes the current production architecture (as of July 2026, after the Next.js migration).
 
 ---
 
 ## Overview
 
-**ecs-finder** is a **static React + TypeScript + Vite web application** with **no backend server**. It displays a filterable catalog of extracurricular activities (competitions, clubs, projects) for Vietnamese students.
+**ecs-finder** is a **React + TypeScript + Next.js (App Router) web application**. It displays a filterable catalog of extracurricular activities (competitions, clubs, projects) for Vietnamese students.
 
-All data is bundled at build time and rendered client-side. Filtering, search, and language switching happen in the browser; no network calls.
+Activity data still lives in a TypeScript module bundled at build time, and the home page is **prerendered to static HTML on the server** — so activity content is present in the initial HTML and indexable by search engines. Once that HTML reaches the browser it hydrates into the same client-side app as before: filtering, search, pagination and language switching all happen in the browser with no network calls.
+
+There is no backend server yet. `src/app/api/` (Route Handlers) is where one will live when the Supabase submission pipeline is built.
 
 ---
 
@@ -16,9 +18,11 @@ All data is bundled at build time and rendered client-side. Filtering, search, a
 
 | Layer | Technology |
 |-------|-----------|
-| **Runtime** | React 19 + TypeScript |
-| **Build** | Vite 7 + ESLint |
-| **Styling** | Tailwind CSS 4 + CSS custom properties |
+| **Runtime** | React 19 + TypeScript 6 |
+| **Framework** | Next.js 16 (App Router, Turbopack) |
+| **Rendering** | Static prerender at build time + client hydration |
+| **Linting** | ESLint 9 + `eslint-config-next` |
+| **Styling** | CSS custom properties + inline styles (Tailwind 4 installed but **unused** — zero `className` in the codebase) |
 | **Fonts** | Google Fonts (Montserrat, Be Vietnam Pro) |
 | **Icons** | react-icons, lucide-react |
 | **Hosting** | Vercel (auto-deploy on git push) |
@@ -32,11 +36,13 @@ All data is bundled at build time and rendered client-side. Filtering, search, a
 ```
 ecs-finder/
 ├── src/
-│   ├── App.tsx                     ← Root. Owns all filter state.
-│   ├── main.tsx                    ← Entry point. Mounts App to <div id="root">
+│   ├── app/                        ← App Router. Filenames define routes.
+│   │   ├── layout.tsx              ← Root layout: <html>/<body>, metadata, font links, global CSS
+│   │   ├── page.tsx                ← The "/" route. SERVER Component — future Supabase fetch goes here
+│   │   └── HomeClient.tsx          ← 'use client' boundary. Owns all filter state (was App.tsx)
+│   │
 │   ├── types.ts                    ← TypeScript interfaces (Activity, Tag, etc.)
 │   ├── index.css                   ← Global styles + design tokens (--primary, --text, etc.)
-│   ├── App.css
 │   │
 │   ├── components/
 │   │   ├── Navbar.tsx              ← Top bar: logo, links, language toggle
@@ -55,15 +61,17 @@ ecs-finder/
 │   │
 │   └── assets/                     ← logo.jpg
 │
-├── index.html                      ← HTML shell
 ├── CLAUDE.md                       ← Development guide (commands, architecture overview)
 ├── ARCHITECTURE.md                 ← This file
 ├── package.json                    ← Dependencies + npm scripts
-├── vite.config.ts                  ← Vite build config
-├── tsconfig.json                   ← TypeScript config
+├── next.config.ts                  ← Next.js config (currently empty)
+├── postcss.config.mjs              ← Tailwind 4 via PostCSS
+├── tsconfig.json                   ← TypeScript config (jsx: preserve, @/* → src/*)
 └── scripts/
     └── sync.js                     ← Google Sheets sync script (currently broken)
 ```
+
+**Import alias:** `@/` resolves to `src/`, so `@/components/Navbar` works from any depth.
 
 ---
 
@@ -121,12 +129,14 @@ These are the **source of truth** for valid filter values. When adding a new top
 
 ## State Management
 
-**All state lives in `App.tsx`.** No Redux, Context, or state library.
+**All state lives in `src/app/HomeClient.tsx`.** No Redux, Context, or state library.
+
+`HomeClient.tsx` carries the `'use client'` directive. That single directive is the whole client boundary — everything it imports (all nine components) becomes client-side automatically, so no component file needs its own directive.
 
 ### Filter State
 
 ```typescript
-// App.tsx
+// HomeClient.tsx
 const [lang, setLang] = useState<Lang>('VI');                           // 'VI' | 'EN'
 const [searchQuery, setSearchQuery] = useState<string>('');             // User's search text
 const [categoryFilter, setCategoryFilter] = useState<string>('');       // Single category or empty
@@ -153,11 +163,11 @@ Other local state: `hovered` (per card), `navOpen` (mobile menu), `drawerOpen` (
 ```
 User interaction (click, type)
          ↓
-Component calls setState function (passed as prop from App)
+Component calls setState function (passed as prop from HomeClient)
          ↓
-App.tsx updates state
+HomeClient.tsx updates state
          ↓
-App re-renders all children with new props
+HomeClient re-renders all children with new props
          ↓
 ActivityCards receives new filter props
          ↓
@@ -171,25 +181,30 @@ Screen updates with filtered results
 ## Component Hierarchy
 
 ```
-App.tsx (owns state)
-├─ Navbar.tsx
-│  └ language toggle
-├─ HeroSection.tsx
-│  ├─ SearchBar.tsx
-│  └─ Floating topic chips (clickable)
-└─ MainContent.tsx
-   ├─ FilterLeft.tsx (desktop sidebar)
-   │  └─ FilterSections.tsx
-   │     ├─ Category checkboxes (radio-style)
-   │     ├─ Deadline options (radio-style)
-   │     ├─ Topic checkboxes (with expandable subtopics)
-   │     └─ Position checkboxes
-   ├─ FilterDrawer.tsx (mobile bottom sheet — toggles visibility based on screen size)
-   │  └─ FilterSections.tsx (reused)
-   └─ ActivityCards.tsx (main content)
-      ├─ Card grid (paginated)
-      ├─ Detail modal (opens on card click)
-      └─ Pagination controls
+app/layout.tsx                  ← SERVER: <html>, <body>, metadata, font links, global CSS
+└─ app/page.tsx                 ← SERVER: the "/" route
+   └─ app/HomeClient.tsx        ← 'use client' boundary — owns all state
+      ├─ Navbar.tsx
+      │  └ language toggle
+      ├─ HeroSection.tsx
+      │  ├─ SearchBar.tsx
+      │  └─ Floating topic chips (clickable)
+      ├─ MainContent.tsx
+      │  ├─ FilterLeft.tsx (desktop sidebar)
+      │  │  └─ FilterSections.tsx
+      │  │     ├─ Category checkboxes (radio-style)
+      │  │     ├─ Deadline options (radio-style)
+      │  │     ├─ Topic checkboxes (with expandable subtopics)
+      │  │     └─ Position checkboxes
+      │  ├─ FilterDrawer.tsx (mobile bottom sheet — toggles visibility based on screen size)
+      │  │  └─ FilterSections.tsx (reused)
+      │  └─ ActivityCards.tsx (main content)
+      │     ├─ Card grid (paginated)
+      │     ├─ Detail modal (opens on card click)
+      │     └─ Pagination controls
+      └─ Footer.tsx
+
+Everything from HomeClient.tsx down runs in the browser. Only layout.tsx and page.tsx run on the server.
 ```
 
 ---
@@ -230,7 +245,7 @@ function filterActivities(activities: Activity[], filters): Activity[] {
 
 ### Topic Accent Colors
 
-Used for filter checkboxes, card topic pills, card hover glow, and the image-area tint shown while a photo loads. **Duplicated in `FilterSections.tsx`, `ActivityCards.tsx`, and `HeroSection.tsx` — update all three when changing a color.**
+Used for filter checkboxes, card topic pills, card hover glow, and the image-area tint shown while a photo loads. **The map is duplicated in `FilterSections.tsx` and `ActivityCards.tsx` — update both when changing a color.** (`HeroSection.tsx` separately hardcodes three of these hexes in its `SLOT_DOTS` constant.)
 
 ```
 STEM                    → #12a6c9 (cyan)
@@ -275,10 +290,10 @@ Sức khỏe                → #c933e6 (magenta)
 
 ```bash
 cd ecs-finder
-npm run dev        # Vite dev server at localhost:5173
-npm run build      # Production build → dist/
-npm run preview    # Preview prod build locally
-npm run lint       # ESLint check
+npm run dev        # Next dev server at localhost:3000
+npm run build      # Production build → .next/
+npm start          # Serve the production build locally
+npm run lint       # ESLint check (now covers .tsx — see Known Issues)
 npm run sync       # Sync from Google Sheets (currently broken)
 ```
 
@@ -289,12 +304,14 @@ git push to main
          ↓
 Vercel webhook triggered
          ↓
-`npm run build` runs
+`next build` runs (Vercel auto-detects Next.js)
          ↓
-Vite bundles React + data + styles
+Home page prerendered to static HTML + client bundle
          ↓
 Output deployed to vercel.app
 ```
+
+**Vercel setting:** Root Directory must be `ecs-finder`.
 
 **Data updates:** Require a manual `npm run sync` + `git push` to rebuild and deploy. This is a known friction point (see Proposed Architecture for the fix).
 
@@ -310,7 +327,11 @@ Output deployed to vercel.app
 
 4. **No persistence** — All state is in-memory. Closing the tab loses filter state.
 
-5. **Mobile layout is JS-driven, not CSS** — `isMobile` comes from `window.innerWidth` + a resize listener, so the desktop/mobile branch *unmounts and remounts* the card grid when crossing the breakpoint (pagination position resets). Harmless on a phone; visible when dragging a desktop window.
+5. **Mobile layout is JS-driven, not CSS — and now causes a first-paint flash.** `isMobile` comes from `window.innerWidth` + a resize listener in `Navbar` (≤900), `HeroSection` (≤920/≤560) and `MainContent` (≤1080). Under the old Vite build this was measured during the first render, so phones got the right layout immediately. Under SSR there is no `window` on the server, so each component now renders a **desktop default** and corrects itself in a `useEffect` after hydration — meaning a phone briefly paints the desktop layout (filter rail visible) before it switches. On slow connections this is visible.
+
+   The proper fix is moving these breakpoints into **CSS media queries**, which the browser applies before any JS runs. Note this is blocked by the styling approach: inline `style={{}}` objects cannot contain media queries, so the responsive bits must move to CSS classes (or Tailwind, which is already installed and unused) first.
+
+   The old unmount/remount behavior on breakpoint crossing still applies when dragging a desktop window.
 
 6. **Filter controls aren't real form elements** — checkboxes and radios are styled `<div>`s with `onClick`. Not keyboard-reachable, no screen-reader semantics. Fixable via `role`/`aria-checked`/`tabIndex` on `RadioRow` and the checkbox rows.
 
@@ -318,13 +339,21 @@ Output deployed to vercel.app
 
 8. **No analytics** — No tracking of what users search for, filter by, etc.
 
+9. **`npm run lint` exits non-zero.** The old ESLint config only matched `**/*.{js,jsx}`, so `.tsx` files were never linted. `eslint-config-next` now covers them and surfaces two pre-existing `react-hooks/set-state-in-effect` errors — `ActivityCards.tsx` (resets `currentPage` in an effect, causing a one-render empty-grid flash when filtering from a later page) and `FilterSections.tsx` (stores derived `expandedTopics` in state, with an array dependency that re-fires on identity change). Both are real and worth fixing; both change runtime behavior, so they were left out of the migration. This will block CI until addressed.
+
+10. **TypeScript pinned to 6.0** — `typescript-eslint` throws on TypeScript 7, so `eslint-config-next` cannot load with it installed. Revisit when upstream adds support.
+
+11. **Tailwind 4 is installed but entirely unused** — zero `className` attributes across the codebase; all styling is inline `style={{}}`. Either adopt it or remove it and the PostCSS config.
+
+12. **`sharp` carries libvips CVEs** (transitive dependency of Next for image optimization). **Do not run `npm audit fix --force`** — npm's proposed remedy downgrades Next to 9.3.3. Wait for Next to bump `sharp`.
+
 ---
 
 ## Future Roadmap (See Proposed Architecture)
 
 Planned but not yet implemented:
 - **Supabase backend** for live activity updates (no rebuild needed) — the app fetches approved rows at runtime, which means adding loading/error states the static site never needed
-- **In-app submission form** replacing the Google Form, posting to a Supabase Edge Function as the single write path
+- **In-app submission form** replacing the Google Form, posting to a **Next.js Route Handler** (`src/app/api/submit/route.ts`) as the single write path — the migration to Next.js made Route Handlers preferable to Supabase Edge Functions (same origin so no CORS, no Docker for local dev, one deploy)
 - **Automated validation** for submitted activities (format, duplicates, link liveness, spam detection)
 - **Claude API content check** for legitimacy scoring — the same call also produces the English translation of `desc`
 - **Admin UI** for approving/reverting activities (Supabase dashboard at first, in-app later with auth)
@@ -346,9 +375,9 @@ See `PROPOSED_DATA_ARCHITECTURE.md` for full details.
 
 ## Performance Notes
 
-- **Bundle size:** ~150KB (React + dependencies + code)
-- **Build time:** <10s with Vite
+- **Build time:** ~2s compile with Turbopack; both routes prerender as static
 - **Filtering:** Client-side, instant (no network latency)
-- **Page load:** Fast (static HTML, Vercel CDN)
+- **Page load:** Fast — activity content ships in the prerendered HTML, so first paint doesn't wait on JavaScript
+- **Caveat:** the whole app sits behind a single `'use client'` boundary, so the full component tree still ships to the browser. Pushing that boundary lower would reduce the JS bundle, but is only worth doing once there's server-fetched data to justify it.
 
 No optimization needed yet unless activity count exceeds 1000+.

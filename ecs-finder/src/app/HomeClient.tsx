@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { mockActivities } from './data/Activities'
-import Navbar from "./components/Navbar";
-import HeroSection from "./components/HeroSection";
-import MainContent from './components/MainContent';
-import Footer from './components/Footer';
-import type { Lang, DeadlineFilter, TopicFilter, Tag, SubtopicTag } from './types';
+'use client';
 
-function App() {
+import { useState } from 'react'
+import { mockActivities } from '@/data/Activities'
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import MainContent from '@/components/MainContent';
+import Footer from '@/components/Footer';
+import type { Lang, DeadlineFilter, TopicFilter, Tag, SubtopicTag } from '@/types';
+
+function HomeClient() {
   const [lang, setLang] = useState<Lang>('VI');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topicFilters, setTopicFilters] = useState<TopicFilter>({ topics: [], subtopics: [] });
@@ -85,4 +87,4 @@ function App() {
   )
 }
 
-export default App;
+export default HomeClient;

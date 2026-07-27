@@ -24,7 +24,9 @@ Search the video titles verbatim on YouTube — they're standard terms; any rece
 ## Step 2 — The fetch-in-React pattern
 
 - [ ] **Watch:** "React fetch data useEffect loading error state"
-- [ ] **Do:** Make a throwaway `src/components/FetchPractice.tsx`, render it temporarily in `App.tsx`. Fetch the same fake API and render three states: "Loading…", an error message, and the list of user names. Delete the component when done.
+- [ ] **Do:** Make a throwaway `src/components/FetchPractice.tsx`, render it temporarily in `src/app/HomeClient.tsx`. Fetch the same fake API and render three states: "Loading…", an error message, and the list of user names. Delete the component when done.
+
+> Since the Next.js migration, the *real* activity fetch happens on the server (Step 4), where there's no loading state at all. Do this exercise anyway — you'll need exactly this pattern for the submission form in Step 7, and it's what server fetching is quietly saving you from.
 
 **Done when:** you refresh and briefly *see* the loading state before the names appear.
 
@@ -56,10 +58,12 @@ Search the video titles verbatim on YouTube — they're standard terms; any rece
 
 **Done when:** you can answer that unprompted — it's the security model of the whole pipeline.
 
-## Step 7 — Edge Functions, then BUILD PHASE 2
+## Step 7 — Route Handlers, then BUILD PHASE 2
 
-- [ ] **Watch:** "Supabase Edge Functions tutorial" (note: they run on Deno — looks almost exactly like Node, don't let it throw you)
-- [ ] **Build Phase 2 (with Claude):** in-app form page + Edge Function with the hard checks (format, duplicate); submissions land as `flagged`.
+- [ ] **Watch:** "Next.js Route Handlers tutorial" (the `app/api/.../route.ts` pattern — your backend endpoint)
+- [ ] **Build Phase 2 (with Claude):** form page at `src/app/submit/page.tsx` + Route Handler at `src/app/api/submit/route.ts` with the hard checks (format, duplicate); submissions land as `flagged`.
+
+> Plan changed: the backend is a **Next.js Route Handler**, not a Supabase Edge Function. Same TypeScript, but same-origin (no CORS), no Docker for local dev, and it deploys with the rest of the app. Skip Edge Function tutorials.
 
 ## Phase 3 — no homework
 

@@ -71,7 +71,7 @@ function CtaButton() {
 }
 
 function Navbar({ lang, onLangChange }: NavbarProps) {
-    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 900);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const [navOpen, setNavOpen] = useState<boolean>(false);
 
     useEffect(() => {
@@ -80,6 +80,7 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
             setIsMobile(mobile);
             if (!mobile) setNavOpen(false);
         }
+        onResize();
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
@@ -106,7 +107,7 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
                 {/* Logo + wordmark */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img
-                        src={logo}
+                        src={logo.src}
                         alt="ECS Finder logo"
                         style={{ width: 44, height: 44, borderRadius: 11, objectFit: 'cover', border: '1px solid var(--border)' }}
                     />

@@ -25,13 +25,14 @@ function MainContent({
     positionFilters, setPositionFilters,
     onClearAll,
 }: MainContentProps) {
-    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 1080);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [resultCount, setResultCount] = useState<number>(0);
     const [pageInfo, setPageInfo] = useState<{ page: number; total: number }>({ page: 0, total: 1 });
 
     useEffect(() => {
         function onResize(): void { setIsMobile(window.innerWidth <= 1080); }
+        onResize();
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
