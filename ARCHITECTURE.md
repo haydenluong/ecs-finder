@@ -289,7 +289,6 @@ Sức khỏe                → #c933e6 (magenta)
 ### Local Development
 
 ```bash
-cd ecs-finder
 npm run dev        # Next dev server at localhost:3000
 npm run build      # Production build → .next/
 npm start          # Serve the production build locally
@@ -311,7 +310,7 @@ Home page prerendered to static HTML + client bundle
 Output deployed to vercel.app
 ```
 
-**Vercel setting:** Root Directory must be `ecs-finder`.
+**Vercel setting:** Root Directory must be the **repository root**. It was `ecs-finder` before the project was flattened — if a deploy fails with "no package.json found," this is why.
 
 **Data updates:** Require a manual `npm run sync` + `git push` to rebuild and deploy. This is a known friction point (see Proposed Architecture for the fix).
 
