@@ -1,17 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { topicSet, categorySet } from '../data/tagData';
+import { topicSet, categorySet, TOPIC_ACCENTS } from '../data/tagData';
 import { mockActivities } from '../data/Activities';
 import type { DeadlineFilter, TopicFilter } from '../types';
-
-export const TOPIC_ACCENTS: Record<string, string> = {
-    'STEM':                     '#12a6c9',
-    'Xã hội':                   '#0db87a',
-    'Môi trường':               '#0dba45',
-    'Kinh tế':                  '#0d7aba',
-    'Nghệ thuật & Sáng tạo':   '#7a5cff',
-    'Ngôn ngữ & Giao tiếp':    '#3d5cff',
-    'Sức khỏe':                 '#c933e6',
-};
 
 const groupStyle: React.CSSProperties = { padding: '14px 4px' };
 
@@ -21,7 +11,7 @@ const DEADLINE_OPTIONS: { label: string; value: DeadlineFilter }[] = [
     { label: 'Trong tháng này', value: 'month' },
 ];
 
-export const POSITIONS = [
+const POSITIONS = [
     'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
     'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
     'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
@@ -48,7 +38,7 @@ interface RadioRowProps {
     count?: number;
 }
 
-export interface FilterSectionsProps {
+interface FilterSectionsProps {
     categoryFilter: string;
     onCategoryChange: (cat: string) => void;
     deadlineFilter: DeadlineFilter;
@@ -145,7 +135,7 @@ function FilterSections({
 
     useEffect(() => {
         if (topicFilters.topics.length > 0) {
-            // Only one topic can be selected now, expand just that one, collapsing any other.
+            // only one topic can be selected now, expand just that one, collapsing any other.
             setExpandedTopics({ [topicFilters.topics[0]]: true });
         }
     }, [topicFilters.topics]);
@@ -251,7 +241,7 @@ function FilterSections({
                     return (
                         <div key={topic.name} style={{ marginBottom: 4 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', minHeight: 44 }}>
-                                {/* Colored topic checkbox (boxC) + name — one focusable checkbox control */}
+                                {/* Colored topic checkbox + name — one focusable checkbox control */}
                                 <div
                                     role="checkbox"
                                     tabIndex={0}

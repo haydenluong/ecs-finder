@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
-import { topicSet } from '../data/tagData';
+import { topicSet, TOPIC_ACCENTS } from '../data/tagData';
 import type { TopicFilter, Tag } from '../types';
 
 interface ChipPosition {
@@ -19,8 +19,6 @@ interface HeroSectionProps {
     topicFilters: TopicFilter;
     onTagClick: (tag: Tag) => void;
 }
-
-const SLOT_DOTS = ['#12a6c9', '#7a5cff', '#1fae6b'] as const;
 
 const MAG_TRANSFORMS = [
     'translate(-64px,-46px) rotate(-14deg) scale(1.05)',
@@ -53,7 +51,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
     const [animKey, setAnimKey] = useState<number>(0);
     const [typedWord, setTypedWord] = useState<string>('');
 
-    // Type out the highlighted title word one character at a time on load.
+    // typing animation
     useEffect(() => {
         const fullWord = 'ngoại khoá';
         let i = 0;
@@ -142,9 +140,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     }}>
                         Soi sáng hành trình{' '}
                         <span style={{ color: 'var(--primary)', position: 'relative', display: 'inline-block' }}>
-                            {/* Invisible full word reserves the space so nothing shifts as it types */}
                             <span style={{ visibility: 'hidden' }}>ngoại khoá</span>
-                            {/* Typed text laid on top, out of layout flow */}
                             <span style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
                                 {typedWord}
                                 <span aria-hidden="true" style={{
@@ -177,7 +173,6 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
 
                 {/* Right column — hidden on mobile */}
                 <div id="heroVisual" style={{ position: 'relative', display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* White radial glow — stays fixed, outside the hover wrapper */}
                     <div style={{
                         position: 'absolute',
                         width: 160,
@@ -189,7 +184,6 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         transform: 'translate(-22px, -18px)',
                     }} />
 
-                    {/* Hover-to-follow wrapper — transform here, idle floatMag stays on svg */}
                     <div style={{
                         transition: 'transform 0.55s cubic-bezier(0.34,1.4,0.4,1)',
                         transform: hoverTag !== null ? MAG_TRANSFORMS[hoverTag] : 'translate(0,0) rotate(0deg) scale(1)',
@@ -207,6 +201,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                 opacity: 0.72,
                             }}
                         >
+                            {/* magnifying glass draw */}
                             <defs>
                                 <radialGradient id="lensGrad" cx="40%" cy="35%" r="65%">
                                     <stop offset="0%" stopColor="white" stopOpacity="0.55"/>
@@ -238,6 +233,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     {/* Floating topic chips */}
                     {CHIP_POSITIONS.map((pos, i) => {
                         const isActive = topicFilters.topics.includes(slotTopics[i]);
+                        const dotColor = TOPIC_ACCENTS[slotTopics[i]] ?? 'var(--primary)';
                         return (
                             <button
                                 type="button"
@@ -271,7 +267,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                     transition: 'border-color 0.18s, box-shadow 0.18s',
                                 }}
                             >
-                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: SLOT_DOTS[i], display: 'inline-block', flexShrink: 0 }} />
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, display: 'inline-block', flexShrink: 0 }} />
                                 {slotTopics[i]}
                             </button>
                         );

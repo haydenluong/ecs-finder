@@ -26,13 +26,7 @@ export interface TopicTag {
   type: 'topic';
 }
 
-export interface SubtopicTag {
-  label: string;
-  type: 'subtopic';
-  parent: string;
-}
-
-export type Tag = CategoryTag | TopicTag | SubtopicTag;
+export type Tag = CategoryTag | TopicTag;
 
 export interface Activity {
   id: number;

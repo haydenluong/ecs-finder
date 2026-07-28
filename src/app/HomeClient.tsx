@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import MainContent from '@/components/MainContent';
 import Footer from '@/components/Footer';
-import type { Lang, DeadlineFilter, TopicFilter, Tag, SubtopicTag } from '@/types';
+import type { Lang, DeadlineFilter, TopicFilter, Tag } from '@/types';
 
 function HomeClient() {
   const [lang, setLang] = useState<Lang>('VI');
@@ -25,39 +25,12 @@ function HomeClient() {
   }
 
   function handleTagClick(tag: Tag): void {
-    if (tag.type === 'category') {
-      setCategoryFilter(prev => prev === tag.label ? '' : tag.label);
-    } else if (tag.type === 'topic') {
-      setTopicFilters({ topics: [tag.label], subtopics: [] });
-      setCategoryFilter('');
-      setDeadlineFilter('');
-      setPositionFilters([]);
-    } else if (tag.type === 'subtopic') {
-      const subtopicTag = tag as SubtopicTag;
-      setTopicFilters(prev => {
-        const alreadySelected = prev.subtopics.some(
-          item => item.parent === subtopicTag.parent && item.subtopic === subtopicTag.label
-        );
-        if (alreadySelected) {
-          const remainingSubtopics = prev.subtopics.filter(
-            item => !(item.parent === subtopicTag.parent && item.subtopic === subtopicTag.label)
-          );
-          const parentStillNeeded = remainingSubtopics.some(item => item.parent === subtopicTag.parent);
-          return {
-            topics: parentStillNeeded
-              ? prev.topics
-              : prev.topics.filter(t => t !== subtopicTag.parent),
-            subtopics: remainingSubtopics
-          };
-        }
-        return {
-          topics: prev.topics.includes(subtopicTag.parent)
-            ? prev.topics
-            : [...prev.topics, subtopicTag.parent],
-          subtopics: [...prev.subtopics, { parent: subtopicTag.parent, subtopic: subtopicTag.label }]
-        };
-      });
-    }
+    if (tag.type !== 'topic') return;
+    setTopicFilters(prev =>
+      prev.topics.includes(tag.label)
+        ? { topics: [], subtopics: [] }
+        : { topics: [tag.label], subtopics: [] }
+    );
   }
 
   return (

@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react';
 import { mockActivities, filterActivities, daysLeft } from '../data/Activities';
+import { TOPIC_ACCENTS } from '../data/tagData';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
-
-const TOPIC_ACCENTS: Record<string, string> = {
-    'STEM':                     '#12a6c9',
-    'Xã hội':                   '#0db87a',
-    'Môi trường':               '#0dba45',
-    'Kinh tế':                  '#0d7aba',
-    'Nghệ thuật & Sáng tạo':   '#7a5cff',
-    'Ngôn ngữ & Giao tiếp':    '#3d5cff',
-    'Sức khỏe':                 '#c933e6',
-};
 
 const CARDS_PER_PAGE = 6;
 
@@ -314,15 +305,15 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                         rel="noopener noreferrer"
                         style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                            background: 'var(--ink)', color: 'var(--ink-text)',
+                            background: 'var(--primary)', color: '#ffffff',
                             padding: 15, borderRadius: 999, textDecoration: 'none',
                             fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 500, fontSize: 15, letterSpacing: '0.02em',
-                            boxShadow: '0 10px 26px rgba(21,25,29,0.22)',
+                            boxShadow: '0 10px 26px rgba(26,111,208,0.28)',
                         }}
                     >
                         Đăng ký ngay
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M4 9h10M10 5l4 4-4 4" stroke="var(--ink-text)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M4 9h10M10 5l4 4-4 4" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                     </a>
                 </div>
@@ -375,10 +366,6 @@ function ActivityCards({
                         gridTemplateColumns: 'repeat(auto-fill, minmax(232px, 1fr))',
                         gap: 18,
                     }}>
-
-                        {/* paged: an array that contains the activities for the current page
-                        and here it is mapped to show the activities for one page
-                        s */}
                         {paged.map((activity, i) => (
                             <ActivityCard
                                 key={activity.id}

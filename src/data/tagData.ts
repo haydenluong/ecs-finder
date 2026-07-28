@@ -1,4 +1,14 @@
-import type { Topic, CategoryTag, Tag } from '../types';
+import type { Topic, CategoryTag } from '../types';
+
+export const TOPIC_ACCENTS: Record<string, string> = {
+    'STEM':                     '#12a6c9',
+    'Xã hội':                   '#0db87a',
+    'Môi trường':               '#0dba45',
+    'Kinh tế':                  '#0d7aba',
+    'Nghệ thuật & Sáng tạo':   '#7a5cff',
+    'Ngôn ngữ & Giao tiếp':    '#3d5cff',
+    'Sức khỏe':                 '#c933e6',
+};
 
 export const topicSet: Topic[] = [
     {
@@ -36,12 +46,4 @@ export const categorySet: CategoryTag[] = [
     { label: 'Cuộc thi (Tham gia cuộc thi)', type: 'category' },
     { label: 'Dự án & CLB', type: 'category' },
     { label: 'Sự kiện (Workshop, Talkshows, ...)', type: 'category' }
-];
-
-export const allTags: Tag[] = [
-    ...categorySet,
-    ...topicSet.flatMap(cat => [
-        { label: cat.name, type: 'topic' as const },
-        ...cat.subtopics.map(sub => ({ label: sub, type: 'subtopic' as const, parent: cat.name }))
-    ])
 ];

@@ -50,3 +50,6 @@ design/
 CLAUDE.md
 WORKFLOW.md
 notes/
+
+# TypeScript incremental build info
+*.tsbuildinfo
