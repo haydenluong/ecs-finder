@@ -103,7 +103,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         Soi sáng hành trình{' '}
                         <span className="text-primary">
                             {typedWord}
-                            <span aria-hidden="true" className="font-normal ml-px animate-[blink_0.9s_step-end_infinite]">|</span>
+                            <span aria-hidden="true" className="inline-block w-0 font-normal animate-[blink_0.9s_step-end_infinite]">|</span>
                             <span className="invisible">{TYPED_WORD.slice(typedWord.length)}</span>
                         </span>
                         {' '}của bạn
