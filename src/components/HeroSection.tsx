@@ -27,6 +27,8 @@ const MAG_TRANSFORMS = [
     'translate(-38px,64px) rotate(-10deg) scale(1.05)',
 ] as const;
 
+const TYPED_WORD = 'ngoại khoá';
+
 const CHIP_POSITIONS: ChipPosition[] = [
     { top: 30,  left: 2,   animDelay: '0s',   animDur: '5s' },
     { top: 70,  right: -6, animDelay: '0.5s', animDur: '6.2s' },
@@ -51,12 +53,11 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
 
     // typing animation
     useEffect(() => {
-        const fullWord = 'ngoại khoá';
         let i = 0;
         const id = setInterval(() => {
             i++;
-            setTypedWord(fullWord.slice(0, i));
-            if (i >= fullWord.length) clearInterval(id);
+            setTypedWord(TYPED_WORD.slice(0, i));
+            if (i >= TYPED_WORD.length) clearInterval(id);
         }, 55);
         return () => clearInterval(id);
     }, []);
@@ -100,12 +101,10 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
 
                     <h1 className="font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text max-w-[16ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px]">
                         Soi sáng hành trình{' '}
-                        <span className="text-primary relative inline-block">
-                            <span className="invisible">ngoại khoá</span>
-                            <span className="absolute left-0 top-0 whitespace-nowrap">
-                                {typedWord}
-                                <span aria-hidden="true" className="font-normal ml-px animate-[blink_0.9s_step-end_infinite]">|</span>
-                            </span>
+                        <span className="text-primary">
+                            {typedWord}
+                            <span aria-hidden="true" className="font-normal ml-px animate-[blink_0.9s_step-end_infinite]">|</span>
+                            <span className="invisible">{TYPED_WORD.slice(typedWord.length)}</span>
                         </span>
                         {' '}của bạn
                     </h1>
