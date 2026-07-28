@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import FilterRail from './FilterLeft';
+import FilterRail from './FilterRail';
 import FilterDrawer from './FilterDrawer';
 import ActivityCards from './ActivityCards';
-import type { TopicFilter, DeadlineFilter } from '../types';
+import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
-interface MainContentProps {
+interface MainContentProps {  
   searchQuery: string;
+  activities: Activity[];
   topicFilters: TopicFilter;
   setTopicFilters: (f: TopicFilter) => void;
   categoryFilter: string;
@@ -19,6 +20,7 @@ interface MainContentProps {
 
 function MainContent({
     searchQuery,
+    activities,
     topicFilters, setTopicFilters,
     categoryFilter, setCategoryFilter,
     deadlineFilter, setDeadlineFilter,
@@ -52,6 +54,7 @@ function MainContent({
     const hasFilters = activeFilterCount > 0 || searchQuery;
 
     const sharedFilterProps = {
+        activities,
         categoryFilter,
         onCategoryChange: setCategoryFilter,
         deadlineFilter,
@@ -102,6 +105,7 @@ function MainContent({
             <div className="grid grid-cols-1 gap-[34px] items-start rail:grid-cols-[238px_1fr]">
                 <FilterRail {...sharedFilterProps} className="hidden rail:flex" />
                 <ActivityCards
+                    activities = {activities}
                     searchQuery={searchQuery}
                     topicFilters={topicFilters}
                     categoryFilter={categoryFilter}

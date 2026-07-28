@@ -1,7 +1,8 @@
-import type { DeadlineFilter, TopicFilter } from '../types';
+import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 import FilterSections from './FilterSections';
 
 interface FilterRailProps {
+    activities: Activity[];
     categoryFilter: string;
     onCategoryChange: (cat: string) => void;
     deadlineFilter: DeadlineFilter;
@@ -15,6 +16,7 @@ interface FilterRailProps {
 }
 
 function FilterRail({
+    activities,
     categoryFilter, onCategoryChange,
     deadlineFilter, onDeadlineChange,
     topicFilters, setTopicFilters,
@@ -39,6 +41,7 @@ function FilterRail({
             </div>
 
             <FilterSections
+                activities={activities}
                 categoryFilter={categoryFilter}
                 onCategoryChange={onCategoryChange}
                 deadlineFilter={deadlineFilter}

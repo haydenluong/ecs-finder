@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
-import { mockActivities, filterActivities, daysLeft } from '../data/Activities';
+import { filterActivities, daysLeft } from '../data/Activities';
 import { accentVars } from '../data/tagData';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
@@ -11,6 +11,7 @@ const EMPTY_TOPIC_FILTER: TopicFilter = { topics: [], subtopics: [] };
 const EMPTY_POSITIONS: string[] = [];
 
 interface ActivityCardsProps {
+    activities: Activity[];
     searchQuery?: string;
     topicFilters?: TopicFilter;
     categoryFilter?: string;
@@ -244,6 +245,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
 }
 
 function ActivityCards({
+    activities,
     searchQuery = '',
     topicFilters = EMPTY_TOPIC_FILTER,
     categoryFilter = '',
@@ -257,7 +259,7 @@ function ActivityCards({
     // set the modal state to the activity when its card is clicked 
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
-    const filtered = filterActivities(mockActivities, { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters });
+    const filtered = filterActivities(activities, { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters });
     const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
 
     useEffect(() => { setCurrentPage(0); }, [searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters]);

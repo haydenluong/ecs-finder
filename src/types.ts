@@ -30,6 +30,7 @@ export type Tag = CategoryTag | TopicTag;
 
 export interface Activity {
   id: number;
+  created_at?: string;
   name: string;
   category: string;
   topic: string;
@@ -40,4 +41,5 @@ export interface Activity {
   desc: string;
   image: string;
   link: string;
+  status?: "pending" | "approved" | "rejected" | "archived"; 
 }

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { topicSet, categorySet, accentVars } from '../data/tagData';
-import { mockActivities } from '../data/Activities';
-import type { DeadlineFilter, TopicFilter } from '../types';
+import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 
 const GROUP = 'py-3.5 px-1';
 
@@ -31,6 +30,7 @@ interface RadioRowProps {
 }
 
 interface FilterSectionsProps {
+    activities: Activity[];
     categoryFilter: string;
     onCategoryChange: (cat: string) => void;
     deadlineFilter: DeadlineFilter;
@@ -86,6 +86,7 @@ function RadioRow({ label, value = label, selected, onSelect, count }: RadioRowP
 }
 
 function FilterSections({
+    activities,
     categoryFilter, onCategoryChange,
     deadlineFilter, onDeadlineChange,
     topicFilters, setTopicFilters,
@@ -144,14 +145,13 @@ function FilterSections({
     const selectedTopics = new Set(topicFilters.topics);
     const selectedPositions = new Set(positionFilters);
 
-    // mockActivities is a build-time constant, so these counts never change.
     const categoryCounts = useMemo(() => {
         const counts: Record<string, number> = {};
-        for (const a of mockActivities) {
+        for (const a of activities) {
             counts[a.category] = (counts[a.category] ?? 0) + 1;
         }
         return counts;
-    }, []);
+    }, [activities]);
 
     return (
         <>
@@ -164,7 +164,7 @@ function FilterSections({
                         <line x1="2" y1="12" x2="10" y2="12" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>Loại hình</SectionLabel>
-                <RadioRow label="Tất cả" value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={mockActivities.length} />
+                <RadioRow label="Tất cả" value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={activities.length} />
                 {categorySet.map(c => (
                     <RadioRow key={c.label} label={c.label} value={c.label} selected={categoryFilter}
                         onSelect={() => onCategoryChange(categoryFilter === c.label ? '' : c.label)}

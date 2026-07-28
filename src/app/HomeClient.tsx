@@ -1,14 +1,17 @@
 'use client';
 
 import { useState } from 'react'
-import { mockActivities } from '@/data/Activities'
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import MainContent from '@/components/MainContent';
 import Footer from '@/components/Footer';
-import type { Lang, DeadlineFilter, TopicFilter, Tag } from '@/types';
+import type { Activity, Lang, DeadlineFilter, TopicFilter, Tag } from '@/types';
 
-function HomeClient() {
+interface HomeClientProps {
+  activities: Activity[];
+}
+
+function HomeClient({activities} : HomeClientProps) {
   const [lang, setLang] = useState<Lang>('VI');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topicFilters, setTopicFilters] = useState<TopicFilter>({ topics: [], subtopics: [] });
@@ -37,13 +40,14 @@ function HomeClient() {
     <div id="top">
       <Navbar lang={lang} onLangChange={setLang} />
       <HeroSection
-        activitiesCount={mockActivities.length}
+        activitiesCount={activities.length}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         topicFilters={topicFilters}
         onTagClick={handleTagClick}
       />
       <MainContent
+        activities={activities}
         searchQuery={searchQuery}
         topicFilters={topicFilters}
         setTopicFilters={setTopicFilters}

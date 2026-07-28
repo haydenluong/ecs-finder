@@ -8,10 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "sync": "node scripts/sync.js",
+    "seed": "node --env-file=.env --import tsx scripts/seed.ts",
     "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.9",
     "dotenv": "^17.3.1",
     "googleapis": "^171.4.0",
@@ -32,6 +33,7 @@
     "postcss": "^8.5.6",
     "react-doctor": "^0.9.1",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.1",
     "typescript": "~6.0"
   }
 }

@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import type { DeadlineFilter, TopicFilter } from '../types';
+import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 import FilterSections from './FilterSections';
 
 interface FilterDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     resultCount: number;
+    activities: Activity[];
     categoryFilter: string;
     onCategoryChange: (cat: string) => void;
     deadlineFilter: DeadlineFilter;
@@ -19,6 +20,7 @@ interface FilterDrawerProps {
 
 function FilterDrawer({
     isOpen, onClose, resultCount,
+    activities,
     categoryFilter, onCategoryChange,
     deadlineFilter, onDeadlineChange,
     topicFilters, setTopicFilters,
@@ -73,6 +75,7 @@ function FilterDrawer({
                 {/* Scrollable filter content */}
                 <div className="overflow-y-auto flex-1 px-4">
                     <FilterSections
+                        activities={activities}
                         categoryFilter={categoryFilter}
                         onCategoryChange={onCategoryChange}
                         deadlineFilter={deadlineFilter}
