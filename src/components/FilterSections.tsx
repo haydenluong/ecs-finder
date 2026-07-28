@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { topicSet, categorySet, TOPIC_ACCENTS } from '../data/tagData';
+import { topicSet, categorySet, accentVars } from '../data/tagData';
 import { mockActivities } from '../data/Activities';
 import type { DeadlineFilter, TopicFilter } from '../types';
 
-const groupStyle: React.CSSProperties = { padding: '14px 4px' };
+const GROUP = 'py-3.5 px-1';
 
 const DEADLINE_OPTIONS: { label: string; value: DeadlineFilter }[] = [
     { label: 'Tất cả',          value: '' },
@@ -16,14 +16,6 @@ const POSITIONS = [
     'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
     'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
 ];
-
-function hexRgba(hex: string, alpha: number): string {
-    const h = hex.replace('#', '');
-    const r = parseInt(h.slice(0, 2), 16);
-    const g = parseInt(h.slice(2, 4), 16);
-    const b = parseInt(h.slice(4, 6), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-}
 
 interface SectionLabelProps {
     icon: React.ReactNode;
@@ -51,16 +43,9 @@ interface FilterSectionsProps {
 
 function SectionLabel({ icon, children }: SectionLabelProps) {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+        <div className="flex items-center gap-[7px] mb-2.5">
             {icon}
-            <span style={{
-                fontFamily: 'Be Vietnam Pro, sans-serif',
-                fontWeight: 700,
-                fontSize: 12,
-                letterSpacing: '0.07em',
-                color: 'var(--text-dim)',
-                textTransform: 'uppercase',
-            }}>{children}</span>
+            <span className="font-bold text-[12px] tracking-[0.07em] text-text-dim uppercase">{children}</span>
         </div>
     );
 }
@@ -76,50 +61,25 @@ function RadioRow({ label, value = label, selected, onSelect, count }: RadioRowP
             aria-label={label}
             onClick={onSelect}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 10px',
-                borderRadius: 10,
-                cursor: 'pointer',
-                background: isSelected ? 'rgba(26,111,208,0.08)' : 'transparent',
-                transition: 'background 0.15s',
-                userSelect: 'none',
-                minHeight: 40,
-            }}
-            onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(26,111,208,0.05)'; }}
-            onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+            className={`flex items-center gap-2.5 py-2 px-2.5 rounded-[10px] cursor-pointer select-none min-h-10 transition-[background-color] duration-150 ${
+                isSelected
+                    ? 'bg-[rgba(26,111,208,0.08)]'
+                    : 'bg-transparent hover:bg-[rgba(26,111,208,0.05)]'
+            }`}
         >
             {/* Radio ring + center-dot */}
-            <div style={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                flexShrink: 0,
-                border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--text-faint)'}`,
-                background: isSelected
-                    ? 'radial-gradient(circle, var(--primary) 0px, var(--primary) 4px, transparent 5px)'
-                    : 'transparent',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.15s, background 0.15s',
-            }} />
-            <span style={{
-                flex: 1,
-                fontFamily: 'Be Vietnam Pro, sans-serif',
-                fontSize: 13.5,
-                fontWeight: isSelected ? 600 : 400,
-                color: isSelected ? 'var(--text)' : 'var(--text-dim)',
-            }}>{label}</span>
+            <div className={`w-4 h-4 rounded-full shrink-0 border-2 box-border transition-[border-color,background-color] duration-150 ${
+                isSelected
+                    ? 'border-primary bg-[radial-gradient(circle,var(--color-primary)_0px,var(--color-primary)_4px,transparent_5px)]'
+                    : 'border-text-faint bg-transparent'
+            }`} />
+            <span className={`flex-1 text-[13.5px] ${
+                isSelected ? 'font-semibold text-text' : 'font-normal text-text-dim'
+            }`}>{label}</span>
             {count !== undefined && (
-                <span style={{
-                    fontFamily: 'Be Vietnam Pro, sans-serif',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: isSelected ? 'var(--primary)' : 'var(--text-faint)',
-                    minWidth: 16,
-                    textAlign: 'right',
-                }}>{count}</span>
+                <span className={`text-[12px] font-medium min-w-4 text-right ${
+                    isSelected ? 'text-primary' : 'text-text-faint'
+                }`}>{count}</span>
             )}
         </div>
     );
@@ -196,12 +156,12 @@ function FilterSections({
     return (
         <>
             {/* Category */}
-            <div style={groupStyle}>
+            <div className={GROUP}>
                 <SectionLabel icon={
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <line x1="2" y1="4" x2="14" y2="4" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
-                        <line x1="2" y1="8" x2="14" y2="8" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
-                        <line x1="2" y1="12" x2="10" y2="12" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="2" y1="4" x2="14" y2="4" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="2" y1="8" x2="14" y2="8" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="2" y1="12" x2="10" y2="12" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>Loại hình</SectionLabel>
                 <RadioRow label="Tất cả" value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={mockActivities.length} />
@@ -213,11 +173,11 @@ function FilterSections({
             </div>
 
             {/* Deadline */}
-            <div style={groupStyle}>
+            <div className={GROUP}>
                 <SectionLabel icon={
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <circle cx="8" cy="8" r="6" stroke="var(--primary)" strokeWidth="1.5"/>
-                        <path d="M8 5v3l2 2" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="8" cy="8" r="6" stroke="var(--color-primary)" strokeWidth="1.5"/>
+                        <path d="M8 5v3l2 2" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>Hạn đăng ký</SectionLabel>
                 {DEADLINE_OPTIONS.map(opt => (
@@ -227,20 +187,19 @@ function FilterSections({
             </div>
 
             {/* Topics */}
-            <div style={groupStyle}>
+            <div className={GROUP}>
                 <SectionLabel icon={
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <polygon points="8,1 14,5 14,11 8,15 2,11 2,5" stroke="var(--primary)" strokeWidth="1.5" fill="none"/>
-                        <circle cx="8" cy="8" r="2" fill="var(--primary)"/>
+                        <polygon points="8,1 14,5 14,11 8,15 2,11 2,5" stroke="var(--color-primary)" strokeWidth="1.5" fill="none"/>
+                        <circle cx="8" cy="8" r="2" fill="var(--color-primary)"/>
                     </svg>
                 }>Chủ đề</SectionLabel>
                 {topicSet.map(topic => {
-                    const accent = TOPIC_ACCENTS[topic.name] ?? 'var(--primary)';
                     const isChecked = selectedTopics.has(topic.name);
                     const isExpanded = expandedTopics[topic.name] ?? false;
                     return (
-                        <div key={topic.name} style={{ marginBottom: 4 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', minHeight: 44 }}>
+                        <div key={topic.name} style={accentVars(topic.name)} className="mb-1">
+                            <div className="flex items-center gap-2 py-[7px] min-h-[44px]">
                                 {/* Colored topic checkbox + name — one focusable checkbox control */}
                                 <div
                                     role="checkbox"
@@ -249,39 +208,22 @@ function FilterSections({
                                     aria-label={topic.name}
                                     onClick={() => handleTopicCheck(topic.name, !isChecked)}
                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTopicCheck(topic.name, !isChecked); } }}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, cursor: 'pointer' }}
+                                    className="flex items-center gap-2 flex-1 cursor-pointer"
                                 >
-                                    <div
-                                        style={{
-                                            width: 17,
-                                            height: 17,
-                                            borderRadius: 5,
-                                            flexShrink: 0,
-                                            border: `2px solid ${isChecked ? accent : 'var(--text-faint)'}`,
-                                            background: isChecked ? accent : 'transparent',
-                                            boxShadow: isChecked ? `0 0 9px ${hexRgba(accent, 0.6)}` : 'none',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxSizing: 'border-box',
-                                            transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-                                        }}
-                                    >
+                                    <div className={`w-[17px] h-[17px] rounded-[5px] shrink-0 border-2 flex items-center justify-center box-border transition-[background-color,border-color,box-shadow] duration-150 ${
+                                        isChecked
+                                            ? 'border-[var(--topic)] bg-[var(--topic)] shadow-[0_0_9px_var(--topic-60)]'
+                                            : 'border-text-faint bg-transparent shadow-none'
+                                    }`}>
                                         {isChecked && (
                                             <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
                                                 <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                             </svg>
                                         )}
                                     </div>
-                                    <span
-                                        style={{
-                                            flex: 1,
-                                            fontFamily: 'Be Vietnam Pro, sans-serif',
-                                            fontWeight: 600,
-                                            fontSize: 13.5,
-                                            color: isChecked ? accent : 'var(--text)',
-                                        }}
-                                    >{topic.name}</span>
+                                    <span className={`flex-1 font-semibold text-[13.5px] ${
+                                        isChecked ? 'text-[var(--topic)]' : 'text-text'
+                                    }`}>{topic.name}</span>
                                 </div>
                                 {topic.subtopics.length > 0 && (
                                     <button
@@ -289,21 +231,14 @@ function FilterSections({
                                         aria-label={isExpanded ? `Thu gọn ${topic.name}` : `Mở rộng ${topic.name}`}
                                         aria-expanded={isExpanded}
                                         onClick={() => toggleExpand(topic.name)}
-                                        style={{
-                                            background: 'none', border: 'none', cursor: 'pointer',
-                                            padding: '2px 4px', borderRadius: 5, lineHeight: 1,
-                                            color: 'var(--text-faint)',
-                                            fontSize: 11,
-                                            minWidth: 24,
-                                            minHeight: 24,
-                                        }}
+                                        className="bg-transparent border-none cursor-pointer py-0.5 px-1 rounded-[5px] leading-none text-text-faint text-[11px] min-w-6 min-h-6"
                                     >
                                         {isExpanded ? '▾' : '▸'}
                                     </button>
                                 )}
                             </div>
                             {isExpanded && topic.subtopics.length > 0 && (
-                                <div style={{ paddingLeft: 28, display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 4 }}>
+                                <div className="pl-7 flex flex-col gap-0.5 mb-1">
                                     {topic.subtopics.map(sub => {
                                         const subSelected = isSubSelected(topic.name, sub);
                                         return (
@@ -314,43 +249,24 @@ function FilterSections({
                                                 aria-label={sub}
                                                 onClick={() => handleSubtopicCheck(topic.name, sub, !subSelected)}
                                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSubtopicCheck(topic.name, sub, !subSelected); } }}
-                                                style={{
-                                                display: 'flex', alignItems: 'center', gap: 8,
-                                                padding: '5px 6px', borderRadius: 7, cursor: 'pointer',
-                                                background: subSelected ? hexRgba(accent, 0.08) : 'transparent',
-                                                transition: 'background 0.15s',
-                                                minHeight: 44,
-                                            }}>
+                                                className={`flex items-center gap-2 py-[5px] px-1.5 rounded-[7px] cursor-pointer min-h-[44px] transition-[background-color] duration-150 ${
+                                                    subSelected ? 'bg-[var(--topic-08)]' : 'bg-transparent'
+                                                }`}>
                                                 {/* CHECKBOX for subtopics */}
-                                                <div
-                                                    style={{
-                                                        width: 14,
-                                                        height: 14,
-                                                        borderRadius: 4,
-                                                        flexShrink: 0,
-                                                        border: `2px solid ${subSelected ? hexRgba(accent, 0.7) : 'var(--text-faint)'}`,
-                                                        background: subSelected ? hexRgba(accent, 0.75) : 'transparent',
-                                                        boxShadow: subSelected ? `0 0 9px ${hexRgba(accent, 0.4)}` : 'none',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        boxSizing: 'border-box',
-                                                        transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-                                                    }}
-                                                >
+                                                <div className={`w-3.5 h-3.5 rounded-[4px] shrink-0 border-2 cursor-pointer flex items-center justify-center box-border transition-[background-color,border-color,box-shadow] duration-150 ${
+                                                    subSelected
+                                                        ? 'border-[var(--topic-70)] bg-[var(--topic-75)] shadow-[0_0_9px_var(--topic-40)]'
+                                                        : 'border-text-faint bg-transparent shadow-none'
+                                                }`}>
                                                     {subSelected && (
                                                         <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
                                                             <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                                         </svg>
                                                     )}
                                                 </div>
-                                                <span style={{
-                                                    fontFamily: 'Be Vietnam Pro, sans-serif',
-                                                    fontSize: 12.5,
-                                                    color: subSelected ? accent : 'var(--text-dim)',
-                                                    fontWeight: subSelected ? 600 : 400,
-                                                }}>{sub}</span>
+                                                <span className={`text-[12.5px] ${
+                                                    subSelected ? 'text-[var(--topic)] font-semibold' : 'text-text-dim font-normal'
+                                                }`}>{sub}</span>
                                             </div>
                                         );
                                     })}
@@ -362,11 +278,11 @@ function FilterSections({
             </div>
 
             {/* Positions */}
-            <div style={groupStyle}>
+            <div className={GROUP}>
                 <SectionLabel icon={
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <circle cx="8" cy="5" r="3" stroke="var(--primary)" strokeWidth="1.5"/>
-                        <path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="8" cy="5" r="3" stroke="var(--color-primary)" strokeWidth="1.5"/>
+                        <path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>Vị trí tuyển</SectionLabel>
                 {POSITIONS.map(pos => {
@@ -379,43 +295,22 @@ function FilterSections({
                             aria-label={pos}
                             onClick={() => handlePositionCheck(pos, !checked)}
                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePositionCheck(pos, !checked); } }}
-                            style={{
-                            display: 'flex', alignItems: 'center', gap: 9,
-                            padding: '7px 9px', borderRadius: 9, cursor: 'pointer',
-                            background: checked ? 'rgba(26,111,208,0.08)' : 'transparent',
-                            transition: 'background 0.15s',
-                            userSelect: 'none',
-                            minHeight: 44,
-                        }}>
-                            
-                            <div
-                                style={{
-                                    width: 17,
-                                    height: 17,
-                                    borderRadius: 5,
-                                    flexShrink: 0,
-                                    border: `2px solid ${checked ? 'var(--primary)' : 'var(--text-faint)'}`,
-                                    background: checked ? 'var(--primary)' : 'transparent',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxSizing: 'border-box',
-                                    transition: 'background 0.15s, border-color 0.15s',
-                                }}
-                            >
+                            className={`flex items-center gap-[9px] py-[7px] px-[9px] rounded-[9px] cursor-pointer select-none min-h-[44px] transition-[background-color] duration-150 ${
+                                checked ? 'bg-[rgba(26,111,208,0.08)]' : 'bg-transparent'
+                            }`}>
+
+                            <div className={`w-[17px] h-[17px] rounded-[5px] shrink-0 border-2 cursor-pointer flex items-center justify-center box-border transition-[background-color,border-color] duration-150 ${
+                                checked ? 'border-primary bg-primary' : 'border-text-faint bg-transparent'
+                            }`}>
                                 {checked && (
                                     <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
                                         <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                 )}
                             </div>
-                            <span style={{
-                                fontFamily: 'Be Vietnam Pro, sans-serif',
-                                fontSize: 13,
-                                color: checked ? 'var(--primary)' : 'var(--text-dim)',
-                                fontWeight: checked ? 600 : 400,
-                            }}>{pos}</span>
+                            <span className={`text-[13px] ${
+                                checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'
+                            }`}>{pos}</span>
                         </div>
                     );
                 })}

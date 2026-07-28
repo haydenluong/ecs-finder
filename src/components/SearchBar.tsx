@@ -6,20 +6,11 @@ interface SearchBarProps {
 
 function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
     return (
-        <div style={{ display: 'flex', justifyContent: 'flex-start', width: '100%', maxWidth: 560 }}>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'var(--glass)',
-                borderRadius: 14,
-                padding: '7px 8px 7px 18px',
-                boxShadow: '0 10px 26px rgba(20,44,68,0.09)',
-                width: '100%',
-            }}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-                    <circle cx="9" cy="9" r="6" stroke="var(--primary)" strokeWidth="1.8"/>
-                    <path d="M14 14L18 18" stroke="var(--primary)" strokeWidth="1.8" strokeLinecap="round"/>
+        <div className="flex justify-start w-full max-w-[560px]">
+            <div className="flex items-center gap-2.5 w-full bg-glass rounded-[14px] py-[7px] pr-2 pl-[18px] shadow-[0_10px_26px_rgba(20,44,68,0.09)]">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
+                    <circle cx="9" cy="9" r="6" stroke="var(--color-primary)" strokeWidth="1.8"/>
+                    <path d="M14 14L18 18" stroke="var(--color-primary)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
 
                 <input
@@ -28,29 +19,11 @@ function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
                     placeholder="Tìm câu lạc bộ, cuộc thi, dự án, sự kiện..."
                     value={searchQuery}
                     onChange={e => onChange(e.target.value)}
-                    style={{
-                        flex: 1,
-                        border: 'none',
-                        outline: 'none',
-                        background: 'transparent',
-                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                        fontSize: 16,
-                        color: 'var(--text)',
-                    }}
+                    className="flex-1 border-none outline-none bg-transparent text-[16px] text-text"
                 />
 
                 {resultCount !== undefined && (
-                    <span style={{
-                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                        fontWeight: 600,
-                        fontSize: 12.5,
-                        color: 'var(--text-dim)',
-                        whiteSpace: 'nowrap',
-                        padding: '4px 10px',
-                        background: 'var(--glass-2)',
-                        borderRadius: 7,
-                        border: '1px solid var(--border)',
-                    }}>
+                    <span className="font-semibold text-[12.5px] text-text-dim whitespace-nowrap px-2.5 py-1 bg-glass-2 rounded-[7px] border border-border">
                         {resultCount} kết quả
                     </span>
                 )}

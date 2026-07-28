@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
 import SearchBar from './SearchBar';
-import { topicSet, TOPIC_ACCENTS } from '../data/tagData';
+import { topicSet, accentVars } from '../data/tagData';
 import type { TopicFilter, Tag } from '../types';
 
 interface ChipPosition {
@@ -42,12 +43,9 @@ function pickSlotTopics(): string[] {
 }
 
 function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
-    const [isMobile, setIsMobile] = useState<boolean>(false);
-    const [isSmall, setIsSmall]   = useState<boolean>(false);
     const [displayCount, setDisplayCount] = useState<number>(0);
     const [hoverTag, setHoverTag] = useState<number | null>(null);
     const [slotTopics, setSlotTopics] = useState<string[]>(() => topicSet.slice(0, 3).map(t => t.name));
-    const [hoveredRandom, setHoveredRandom] = useState<boolean>(false);
     const [animKey, setAnimKey] = useState<number>(0);
     const [typedWord, setTypedWord] = useState<string>('');
 
@@ -66,16 +64,6 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- randomize only after hydration, so server and client HTML match
         setSlotTopics(pickSlotTopics());
-    }, []);
-
-    useEffect(() => {
-        function onResize(): void {
-            setIsMobile(window.innerWidth <= 920);
-            setIsSmall(window.innerWidth <= 560);
-        }
-        onResize();
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     useEffect(() => {
@@ -98,108 +86,53 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
         setAnimKey(k => k + 1);
     }
 
-    const sectionPadding = isSmall ? '48px 18px 30px' : isMobile ? '48px 22px 30px' : '44px 40px 30px';
-
     return (
-        <section style={{ padding: sectionPadding, maxWidth: 1320, margin: '0 auto' }}>
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) minmax(0,430px)',
-                gap: 44,
-                alignItems: 'center',
-            }}>
+        <section className="max-w-[1320px] mx-auto pt-12 px-[18px] pb-[30px] sm2:px-[22px] hero:pt-11 hero:px-10">
+            <div className="grid grid-cols-1 gap-11 items-center hero:grid-cols-[minmax(0,1fr)_minmax(0,430px)]">
                 {/* Left column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <div style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        background: 'var(--glass)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 999,
-                        padding: '6px 14px',
-                        width: 'fit-content',
-                        animation: 'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0ms both',
-                    }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600, fontSize: 12.5, color: 'var(--primary)' }}>
+                <div className="flex flex-col gap-5">
+                    <div className="inline-flex items-center gap-2 bg-glass border border-border rounded-full py-1.5 px-3.5 w-fit animate-[fadeUp_0.7s_cubic-bezier(0.16,1,0.3,1)_0ms_both]">
+                        <span className="w-2 h-2 rounded-full bg-primary inline-block shrink-0" />
+                        <span className="font-semibold text-[12.5px] text-primary">
                             {displayCount} hoạt động đang mở đăng ký
                         </span>
                     </div>
 
-                    <h1 style={{
-                        fontFamily: 'Montserrat, sans-serif',
-                        fontWeight: 800,
-                        fontSize: isMobile ? 42 : 50,
-                        lineHeight: 1.05,
-                        letterSpacing: '-0.015em',
-                        color: 'var(--text)',
-                        maxWidth: '16ch',
-                        margin: 0,
-                        animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 60ms both',
-                    }}>
+                    <h1 className="font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text max-w-[16ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px]">
                         Soi sáng hành trình{' '}
-                        <span style={{ color: 'var(--primary)', position: 'relative', display: 'inline-block' }}>
-                            <span style={{ visibility: 'hidden' }}>ngoại khoá</span>
-                            <span style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
+                        <span className="text-primary relative inline-block">
+                            <span className="invisible">ngoại khoá</span>
+                            <span className="absolute left-0 top-0 whitespace-nowrap">
                                 {typedWord}
-                                <span aria-hidden="true" style={{
-                                    fontWeight: 400,
-                                    marginLeft: 1,
-                                    animation: 'blink 0.9s step-end infinite',
-                                }}>|</span>
+                                <span aria-hidden="true" className="font-normal ml-px animate-[blink_0.9s_step-end_infinite]">|</span>
                             </span>
                         </span>
                         {' '}của bạn
                     </h1>
 
-                    <p style={{
-                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                        fontWeight: 400,
-                        fontSize: 16.5,
-                        lineHeight: 1.6,
-                        color: 'var(--text-dim)',
-                        maxWidth: '48ch',
-                        margin: 0,
-                        animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 120ms both',
-                    }}>
+                    <p className="font-normal text-[16.5px] leading-[1.6] text-text-dim max-w-[48ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_120ms_both]">
                         Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam.
                     </p>
 
-                    <div style={{ animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 180ms both' }}>
+                    <div className="animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_180ms_both]">
                         <SearchBar searchQuery={searchQuery} onChange={onSearchChange} />
                     </div>
                 </div>
 
                 {/* Right column — hidden on mobile */}
-                <div id="heroVisual" style={{ position: 'relative', display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{
-                        position: 'absolute',
-                        width: 160,
-                        height: 160,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.38) 45%, transparent 72%)',
-                        zIndex: 0,
-                        pointerEvents: 'none',
-                        transform: 'translate(-22px, -18px)',
-                    }} />
+                <div className="relative hidden hero:flex items-center justify-center">
+                    <div className="absolute w-40 h-40 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.82)_0%,rgba(255,255,255,0.38)_45%,transparent_72%)] z-0 pointer-events-none translate-x-[-22px] translate-y-[-18px]" />
 
-                    <div style={{
-                        transition: 'transform 0.55s cubic-bezier(0.34,1.4,0.4,1)',
-                        transform: hoverTag !== null ? MAG_TRANSFORMS[hoverTag] : 'translate(0,0) rotate(0deg) scale(1)',
-                    }}>
+                    <div
+                        style={{ transform: hoverTag !== null ? MAG_TRANSFORMS[hoverTag] : 'translate(0,0) rotate(0deg) scale(1)' }}
+                        className="transition-transform duration-[550ms] ease-[cubic-bezier(0.34,1.4,0.4,1)]"
+                    >
                         <svg
                             width="248"
                             viewBox="0 0 200 200"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            style={{
-                                position: 'relative',
-                                zIndex: 1,
-                                filter: 'drop-shadow(0 16px 24px rgba(26,111,208,0.14))',
-                                animation: 'floatMag 6s ease-in-out infinite',
-                                opacity: 0.72,
-                            }}
+                            className="relative z-[1] opacity-72 drop-shadow-[0_16px_24px_rgba(26,111,208,0.14)] animate-float-mag"
                         >
                             {/* magnifying glass draw */}
                             <defs>
@@ -233,7 +166,6 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     {/* Floating topic chips */}
                     {CHIP_POSITIONS.map((pos, i) => {
                         const isActive = topicFilters.topics.includes(slotTopics[i]);
-                        const dotColor = TOPIC_ACCENTS[slotTopics[i]] ?? 'var(--primary)';
                         return (
                             <button
                                 type="button"
@@ -242,32 +174,22 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                 onMouseEnter={() => setHoverTag(i)}
                                 onMouseLeave={() => setHoverTag(null)}
                                 style={{
-                                    position: 'absolute',
+                                    ...accentVars(slotTopics[i]),
                                     top: pos.top,
                                     left: pos.left,
                                     right: pos.right,
                                     bottom: pos.bottom,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 7,
-                                    background: 'var(--glass)',
-                                    border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
-                                    borderRadius: 999,
-                                    padding: '7px 13px 7px 11px',
-                                    boxShadow: isActive ? '0 16px 30px rgba(20,44,68,0.22)' : '0 12px 26px rgba(20,44,68,0.15)',
-                                    fontFamily: 'Be Vietnam Pro, sans-serif',
-                                    fontWeight: 600,
-                                    fontSize: 12.5,
-                                    color: 'var(--text)',
-                                    cursor: 'pointer',
                                     animation: animKey > 0
                                         ? `tagPop 0.35s cubic-bezier(0.34,1.4,0.4,1) both, floaty ${pos.animDur} ${pos.animDelay} ease-in-out infinite`
                                         : `floaty ${pos.animDur} ${pos.animDelay} ease-in-out infinite`,
-                                    zIndex: 2,
-                                    transition: 'border-color 0.18s, box-shadow 0.18s',
-                                }}
+                                } as CSSProperties}
+                                className={`absolute flex items-center gap-[7px] bg-glass rounded-full py-[7px] pr-[13px] pl-[11px] font-semibold text-[12.5px] text-text cursor-pointer z-[2] border transition-[border-color,box-shadow] duration-[180ms] ${
+                                    isActive
+                                        ? 'border-primary shadow-[0_16px_30px_rgba(20,44,68,0.22)]'
+                                        : 'border-border shadow-[0_12px_26px_rgba(20,44,68,0.15)]'
+                                }`}
                             >
-                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, display: 'inline-block', flexShrink: 0 }} />
+                                <span className="w-2 h-2 rounded-full bg-[var(--topic)] inline-block shrink-0" />
                                 {slotTopics[i]}
                             </button>
                         );
@@ -278,33 +200,15 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         type="button"
                         aria-label="Chọn chủ đề ngẫu nhiên"
                         onClick={randomizeTags}
-                        onMouseEnter={() => setHoveredRandom(true)}
-                        onMouseLeave={() => setHoveredRandom(false)}
-                        style={{
-                            position: 'absolute', left: -16, top: '50%', transform: 'translateY(-50%)',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                            background: 'none', border: 'none', cursor: 'pointer', zIndex: 3,
-                        }}
+                        className="group absolute left-[-16px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 bg-transparent border-none cursor-pointer z-[3]"
                     >
-                        <span style={{
-                            width: 44, height: 44, borderRadius: '50%', background: '#ffffff',
-                            border: hoveredRandom ? '1px solid var(--accent)' : '1px solid var(--border)',
-                            boxShadow: hoveredRandom
-                                ? '0 12px 26px rgba(20,44,68,0.22)'
-                                : '0 12px 26px rgba(20,44,68,0.15)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transform: hoveredRandom ? 'scale(1.08)' : 'scale(1)',
-                            transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
-                        }}>
+                        <span className="w-11 h-11 rounded-full bg-white flex items-center justify-center border border-border shadow-[0_12px_26px_rgba(20,44,68,0.15)] scale-100 transition-[transform,box-shadow,border-color] duration-[180ms] group-hover:border-primary group-hover:shadow-[0_12px_26px_rgba(20,44,68,0.22)] group-hover:scale-[1.08]">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M3 6h9.5M15 4l2.5 2L15 8M3 14h9.5M15 12l2.5 2-2.5 2" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M6 4l-2.5 2L6 8M6 12l-2.5 2 2.5 2" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                                <path d="M3 6h9.5M15 4l2.5 2L15 8M3 14h9.5M15 12l2.5 2-2.5 2" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M6 4l-2.5 2L6 8M6 12l-2.5 2 2.5 2" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
                             </svg>
                         </span>
-                        <span style={{
-                            fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600,
-                            fontSize: 12, color: 'var(--text-dim)',
-                        }}>Ngẫu nhiên</span>
+                        <span className="font-semibold text-[12px] text-text-dim">Ngẫu nhiên</span>
                     </button>
                 </div>
             </div>

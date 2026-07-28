@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
 import { mockActivities, filterActivities, daysLeft } from '../data/Activities';
-import { TOPIC_ACCENTS } from '../data/tagData';
+import { accentVars } from '../data/tagData';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 const CARDS_PER_PAGE = 6;
@@ -46,130 +47,82 @@ function DaysBadge({ iso }: DaysBadgeProps) {
     const closed = days < 0;
     const urgent = !closed && days <= 10;
     return (
-        <span style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: 'white',
-            background: closed ? '#546675' : urgent ? '#e33f3f' : 'rgba(9,20,40,0.42)',
-            border: '1px solid rgba(255,255,255,0.32)',
-            borderRadius: 7,
-            padding: '4px 9px',
-            whiteSpace: 'nowrap',
-        }}>
+        <span className={`text-[11px] font-semibold text-white border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px] whitespace-nowrap ${
+            closed ? 'bg-[#546675]' : urgent ? 'bg-[#e33f3f]' : 'bg-[rgba(9,20,40,0.42)]'
+        }`}>
             {closed ? 'Đã đóng' : `${days} ngày`}
         </span>
     );
 }
 
 function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
-    const topicAccent = TOPIC_ACCENTS[activity.topic] ?? 'var(--primary)';
-    const [hovered, setHovered] = useState<boolean>(false);
-
-    const cardStyle: React.CSSProperties = {
-        background: 'var(--glass)',
-        border: hovered ? `1px solid ${topicAccent}` : '1px solid var(--border)',
-        borderRadius: 16,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s, border-color 0.3s',
-        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hovered
-            ? `0 18px 40px rgba(20,44,68,0.16), 0 0 0 1px ${topicAccent}, 0 0 24px ${topicAccent}44`
-            : '0 2px 8px rgba(20,44,68,0.07)',
-        animation: `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${index * 60}ms both`,
-    };
-
-    const imageAreaStyle: React.CSSProperties = {
-        height: 150,
-        background: `${topicAccent}22`,   // shows only while the photo loads
-        padding: 13,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        position: 'relative',
-    };
-
     return (
         <div
             role="button"
             tabIndex={0}
             aria-label={activity.name}
-            style={cardStyle}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            style={{ ...accentVars(activity.topic), '--d': `${index * 60}ms` } as CSSProperties}
+            className="bg-glass border border-border rounded-2xl overflow-hidden cursor-pointer
+                       [transition:transform_0.3s_cubic-bezier(0.16,1,0.3,1),box-shadow_0.3s,border-color_0.3s]
+                       [box-shadow:0_2px_8px_rgba(20,44,68,0.07)]
+                       animate-[fadeUp_0.5s_cubic-bezier(0.16,1,0.3,1)_var(--d)_both]
+                       hover:-translate-y-[3px] hover:border-[var(--topic)]
+                       hover:[box-shadow:0_18px_40px_rgba(20,44,68,0.16),0_0_0_1px_var(--topic),0_0_24px_var(--topic-27)]"
             onClick={onClick}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
         >
-            <div style={imageAreaStyle}>
+            {/* bg tint shows only while the photo loads */}
+            <div className="h-[150px] bg-[var(--topic-13)] p-[13px] flex items-start justify-between relative">
                 <img
                     src={activity.image}
                     alt={activity.name}
                     referrerPolicy="no-referrer"
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0.18) 100%)' }} />
-                <span style={{
-                    position: 'relative', zIndex: 1,
-                    fontSize: 10.5, fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                    background: 'rgba(9,20,40,0.34)', border: '1px solid rgba(255,255,255,0.32)',
-                    borderRadius: 7, padding: '4px 9px',
-                }}>
+                <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.28)_0%,rgba(0,0,0,0.05)_60%,rgba(0,0,0,0.18)_100%)]" />
+                <span className="relative z-[1] text-[10.5px] font-bold text-white uppercase tracking-[0.05em] bg-[rgba(9,20,40,0.34)] border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px]">
                     {activity.category}
                 </span>
-                <div style={{ position: 'relative', zIndex: 1 }}>
+                <div className="relative z-[1]">
                     <DaysBadge iso={activity.deadline} />
                 </div>
             </div>
 
-            <div style={{ padding: '16px 17px 17px', display: 'flex', flexDirection: 'column', gap: 11 }}>
-                <h3 style={{
-                    fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 16,
-                    lineHeight: 1.3, letterSpacing: '-0.005em', color: 'var(--text)', margin: 0,
-                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                    minHeight: '41.6px',
-                }}>
+            <div className="pt-4 px-[17px] pb-[17px] flex flex-col gap-[11px]">
+                <h3 className="font-heading font-bold text-[16px] leading-[1.3] tracking-[-0.005em] text-text m-0 line-clamp-2 min-h-[41.6px]">
                     {activity.name}
                 </h3>
 
-                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <div className="flex gap-3.5 flex-wrap">
                     {activity.location && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-dim)' }}>
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--primary)" strokeWidth="1.3"/></svg>
+                        <span className="flex items-center gap-1 text-[13px] text-text-dim">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--color-primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--color-primary)" strokeWidth="1.3"/></svg>
                             {activity.location}
                         </span>
                     )}
                     {activity.deadline && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-dim)' }}>
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--primary)" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                        <span className="flex items-center gap-1 text-[13px] text-text-dim">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--color-primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--color-primary)" strokeWidth="1.3" strokeLinecap="round"/></svg>
                             {formatDeadlineDisplay(activity.deadline)}
                         </span>
                     )}
                 </div>
 
                 {(activity.topic || activity.subtopic) && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <div className="flex gap-1.5 flex-wrap">
                         {activity.topic && (
-                            <span style={{
-                                fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-                                background: `${topicAccent}22`, color: topicAccent, border: `1px solid ${topicAccent}44`,
-                            }}>{activity.topic}</span>
+                            <span className="text-[12px] font-semibold py-[3px] px-2.5 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{activity.topic}</span>
                         )}
                         {activity.subtopic && (
-                            <span style={{
-                                fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 999,
-                                background: `${topicAccent}11`, color: topicAccent, border: `1px solid ${topicAccent}33`,
-                            }}>{activity.subtopic}</span>
+                            <span className="text-[12px] font-medium py-[3px] px-2.5 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{activity.subtopic}</span>
                         )}
                     </div>
                 )}
 
                 {activity.positions?.length > 0 && (
-                    <div style={{
-                        borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 2,
-                        fontSize: 12, color: 'var(--text-faint)',
-                    }}>
-                        <span style={{ fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 11.5 }}>Vị trí: </span>
-                        <span style={{ color: 'var(--accent-2)', fontWeight: 500, fontSize: 12.5 }}>
+                    <div className="border-t border-border pt-2.5 mt-0.5 text-[12px] text-text-faint">
+                        <span className="font-semibold tracking-[0.06em] uppercase text-[11.5px]">Vị trí: </span>
+                        <span className="text-accent-2 font-medium text-[12.5px]">
                             {activity.positions.join(' · ')}
                         </span>
                     </div>
@@ -193,72 +146,53 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
 
     return (
         <div
-            style={{ position: 'fixed', inset: 0, background: 'rgba(18,40,62,0.5)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px' }}
+            className="fixed inset-0 bg-[rgba(18,40,62,0.5)] z-50 flex items-center justify-center py-5 px-4"
             onClick={onClose}
         >
             <div
-                style={{
-                    background: 'var(--glass)', borderRadius: 22, maxWidth: 620, width: '100%',
-                    boxShadow: '0 30px 80px rgba(20,44,68,0.3)', overflow: 'hidden',
-                    animation: 'fadeUp 0.25s ease both', maxHeight: '90vh', overflowY: 'auto',
-                }}
+                style={accentVars(activity.topic)}
+                className="bg-glass rounded-[22px] max-w-[620px] w-full shadow-[0_30px_80px_rgba(20,44,68,0.3)] overflow-hidden animate-[fadeUp_0.25s_ease_both] max-h-[90vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
             >
-                <div style={{
-                    height: 210,
-                    background: `${TOPIC_ACCENTS[activity.topic] ?? 'var(--primary)'}22`,   // shows while the photo loads
-                    padding: '24px 26px',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    position: 'relative',
-                }}>
+                {/* bg tint shows only while the photo loads */}
+                <div className="h-[210px] bg-[var(--topic-13)] py-6 px-[26px] flex flex-col justify-between relative">
                     <img
                         src={activity.image}
                         alt={activity.name}
                         referrerPolicy="no-referrer"
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="absolute inset-0 w-full h-full object-cover"
                     />
                     {/* Dark scrim so the category label and close button stay readable over any photo */}
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.30) 100%)' }} />
+                    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.12)_55%,rgba(0,0,0,0.30)_100%)]" />
                     <button
                         type="button"
                         aria-label="Đóng"
                         onClick={onClose}
-                        style={{
-                            position: 'absolute', top: 16, right: 16,
-                            width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)',
-                            background: 'rgba(10,20,32,0.55)', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
-                        }}
+                        className="absolute top-4 right-4 w-9 h-9 rounded-[10px] border border-[rgba(255,255,255,0.3)] bg-[rgba(10,20,32,0.55)] cursor-pointer flex items-center justify-center text-white"
                     >
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                             <path d="M4 4l10 10M14 4L4 14" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
                         </svg>
                     </button>
-                    <span style={{
-                        position: 'relative', zIndex: 1, alignSelf: 'flex-start',
-                        fontSize: 11.5, fontWeight: 700, color: 'white', letterSpacing: '0.08em',
-                        textTransform: 'uppercase', fontFamily: 'Be Vietnam Pro, sans-serif',
-                        background: 'rgba(9,20,40,0.42)', border: '1px solid rgba(255,255,255,0.3)',
-                        borderRadius: 8, padding: '5px 11px',
-                    }}>
+                    <span className="relative z-[1] self-start text-[11.5px] font-bold text-white tracking-[0.08em] uppercase bg-[rgba(9,20,40,0.42)] border border-[rgba(255,255,255,0.3)] rounded-lg py-[5px] px-[11px]">
                         {activity.category}
                     </span>
                 </div>
 
-                <div style={{ padding: '26px 28px 30px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: 27, lineHeight: 1.2, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
+                <div className="pt-[26px] px-7 pb-[30px] flex flex-col gap-5">
+                    <h2 className="font-heading font-extrabold text-[27px] leading-[1.2] text-text tracking-[-0.02em] m-0">
                         {activity.name}
                     </h2>
 
-                    <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                    <div className="flex gap-5 flex-wrap">
                         {([
-                            { label: 'ĐỊA ĐIỂM', value: activity.location, icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--primary)" strokeWidth="1.3"/></svg> },
-                            { label: 'HẠN ĐĂNG KÝ', value: formatDeadlineDisplay(activity.deadline), icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--primary)" strokeWidth="1.3" strokeLinecap="round"/></svg> },
+                            { label: 'ĐỊA ĐIỂM', value: activity.location, icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--color-primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--color-primary)" strokeWidth="1.3"/></svg> },
+                            { label: 'HẠN ĐĂNG KÝ', value: formatDeadlineDisplay(activity.deadline), icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--color-primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--color-primary)" strokeWidth="1.3" strokeLinecap="round"/></svg> },
                             { label: 'CHỦ ĐỀ', value: activity.topic, icon: null },
                         ] as { label: string; value: string; icon: React.ReactNode }[]).filter(m => m.value).map(meta => (
-                            <div key={meta.label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span style={{ fontSize: 11.5, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600 }}>{meta.label}</span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 14, color: 'var(--text)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                            <div key={meta.label} className="flex flex-col gap-1">
+                                <span className="text-[11.5px] text-text-faint uppercase tracking-[0.06em] font-semibold">{meta.label}</span>
+                                <span className="flex items-center gap-[5px] text-[14px] text-text">
                                     {meta.icon}{meta.value}
                                 </span>
                             </div>
@@ -266,34 +200,27 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                     </div>
 
                     {activity.desc && (
-                        <p style={{ fontSize: 15, lineHeight: 1.72, color: 'var(--text-dim)', margin: 0, fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                        <p className="text-[15px] leading-[1.72] text-text-dim m-0">
                             {activity.desc}
                         </p>
                     )}
 
-                    {(activity.topic || activity.subtopic) && (() => {
-                        const c = TOPIC_ACCENTS[activity.topic] ?? 'var(--primary)';
-                        return (
-                            <div>
-                                <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Thẻ</span>
-                                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-                                    {activity.topic && <span style={{ fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 999, background: `${c}22`, color: c, border: `1px solid ${c}44` }}>{activity.topic}</span>}
-                                    {activity.subtopic && <span style={{ fontSize: 13, fontWeight: 500, padding: '5px 12px', borderRadius: 999, background: `${c}11`, color: c, border: `1px solid ${c}33` }}>{activity.subtopic}</span>}
-                                </div>
+                    {(activity.topic || activity.subtopic) && (
+                        <div>
+                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">Thẻ</span>
+                            <div className="flex gap-[7px] flex-wrap">
+                                {activity.topic && <span className="text-[13px] font-semibold py-[5px] px-3 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{activity.topic}</span>}
+                                {activity.subtopic && <span className="text-[13px] font-medium py-[5px] px-3 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{activity.subtopic}</span>}
                             </div>
-                        );
-                    })()}
+                        </div>
+                    )}
 
                     {activity.positions?.length > 0 && (
                         <div>
-                            <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Vị trí tuyển</span>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">Vị trí tuyển</span>
+                            <div className="flex gap-2 flex-wrap">
                                 {activity.positions.map(p => (
-                                    <span key={p} style={{
-                                        fontSize: 13, color: 'var(--text)', padding: '6px 12px', borderRadius: 8,
-                                        background: 'rgba(47,123,255,0.12)', border: '1px solid rgba(47,123,255,0.2)',
-                                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                                    }}>{p}</span>
+                                    <span key={p} className="text-[13px] text-text py-1.5 px-3 rounded-lg bg-[rgba(47,123,255,0.12)] border border-[rgba(47,123,255,0.2)]">{p}</span>
                                 ))}
                             </div>
                         </div>
@@ -303,13 +230,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                         href={activity.link || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                            background: 'var(--primary)', color: '#ffffff',
-                            padding: 15, borderRadius: 999, textDecoration: 'none',
-                            fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 500, fontSize: 15, letterSpacing: '0.02em',
-                            boxShadow: '0 10px 26px rgba(26,111,208,0.28)',
-                        }}
+                        className="flex items-center justify-center gap-2.5 bg-primary text-white p-[15px] rounded-full no-underline font-medium text-[15px] tracking-[0.02em] shadow-[0_10px_26px_rgba(26,111,208,0.28)]"
                     >
                         Đăng ký ngay
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -348,24 +269,17 @@ function ActivityCards({
     return (
         <div>
             {filtered.length === 0 ? (
-                <div style={{
-                    background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: 18,
-                    padding: '48px 32px', textAlign: 'center',
-                }}>
-                    <p style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--text)', marginBottom: 8 }}>
+                <div className="bg-glass border border-border rounded-[18px] py-12 px-8 text-center">
+                    <p className="font-heading font-bold text-[20px] text-text mb-2">
                         Không tìm thấy hoạt động
                     </p>
-                    <p style={{ fontFamily: 'Be Vietnam Pro, sans-serif', fontSize: 14, color: 'var(--text-faint)' }}>
+                    <p className="text-[14px] text-text-faint">
                         Thử điều chỉnh bộ lọc hoặc từ khoá tìm kiếm.
                     </p>
                 </div>
             ) : (
                 <>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(232px, 1fr))',
-                        gap: 18,
-                    }}>
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(232px,1fr))] gap-[18px]">
                         {paged.map((activity, i) => (
                             <ActivityCard
                                 key={activity.id}
@@ -378,18 +292,15 @@ function ActivityCards({
                     </div>
 
                     {totalPages > 1 && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 28 }}>
+                        <div className="flex items-center justify-center gap-1.5 mt-7">
                             <button
                                 type="button"
                                 aria-label="Trang trước"
                                 onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
                                 disabled={currentPage === 0}
-                                style={{
-                                    padding: '7px 13px', borderRadius: 9, border: '1px solid var(--border)',
-                                    background: 'var(--glass)', cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-                                    opacity: currentPage === 0 ? 0.5 : 1,
-                                    fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--text-dim)',
-                                }}
+                                className={`py-[7px] px-[13px] rounded-[9px] border border-border bg-glass font-semibold text-[14px] text-text-dim ${
+                                    currentPage === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100'
+                                }`}
                             >←</button>
                             {Array.from({ length: totalPages }, (_, i) => (
                                 <button
@@ -398,13 +309,9 @@ function ActivityCards({
                                     aria-label={`Trang ${i + 1}`}
                                     aria-current={i === currentPage ? 'page' : undefined}
                                     onClick={() => setCurrentPage(i)}
-                                    style={{
-                                        padding: '7px 13px', borderRadius: 9, border: '1px solid var(--border)',
-                                        background: i === currentPage ? 'var(--primary)' : 'var(--glass)',
-                                        color: i === currentPage ? 'white' : 'var(--text-dim)',
-                                        fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: i === currentPage ? 700 : 400,
-                                        fontSize: 14, cursor: 'pointer',
-                                    }}
+                                    className={`py-[7px] px-[13px] rounded-[9px] border border-border text-[14px] cursor-pointer ${
+                                        i === currentPage ? 'bg-primary text-white font-bold' : 'bg-glass text-text-dim font-normal'
+                                    }`}
                                 >{i + 1}</button>
                             ))}
                             <button
@@ -412,12 +319,9 @@ function ActivityCards({
                                 aria-label="Trang sau"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={currentPage === totalPages - 1}
-                                style={{
-                                    padding: '7px 13px', borderRadius: 9, border: '1px solid var(--border)',
-                                    background: 'var(--glass)', cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer',
-                                    opacity: currentPage === totalPages - 1 ? 0.5 : 1,
-                                    fontFamily: 'Be Vietnam Pro, sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--text-dim)',
-                                }}
+                                className={`py-[7px] px-[13px] rounded-[9px] border border-border bg-glass font-semibold text-[14px] text-text-dim ${
+                                    currentPage === totalPages - 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer opacity-100'
+                                }`}
                             >→</button>
                         </div>
                     )}

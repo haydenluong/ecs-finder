@@ -25,16 +25,15 @@ function MainContent({
     positionFilters, setPositionFilters,
     onClearAll,
 }: MainContentProps) {
-    const [isMobile, setIsMobile] = useState<boolean>(false);
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [resultCount, setResultCount] = useState<number>(0);
     const [pageInfo, setPageInfo] = useState<{ page: number; total: number }>({ page: 0, total: 1 });
 
     useEffect(() => {
-        function onResize(): void { setIsMobile(window.innerWidth <= 1080); }
-        onResize();
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
+        const mq = window.matchMedia('(width >= 1081px)');
+        function closeIfWide(): void { if (mq.matches) setDrawerOpen(false); }
+        mq.addEventListener('change', closeIfWide);
+        return () => mq.removeEventListener('change', closeIfWide);
     }, []);
 
     // Bail out when the values are unchanged — a fresh object literal here would
@@ -65,77 +64,43 @@ function MainContent({
     };
 
     return (
-        <div id="ecMain" style={{ maxWidth: 1320, margin: '0 auto', padding: isMobile ? '8px 16px 80px' : '8px 40px 80px' }}>
-            {isMobile && (
-                <div style={{ display: 'flex', marginBottom: 14 }}>
-                    <button
-                        type="button"
-                        onClick={() => setDrawerOpen(true)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 7,
-                            padding: '9px 16px',
-                            borderRadius: 999,
-                            border: activeFilterCount > 0 ? '1.5px solid var(--primary)' : '1.5px solid var(--border-bright)',
-                            background: activeFilterCount > 0 ? 'rgba(26,111,208,0.08)' : 'var(--glass)',
-                            cursor: 'pointer',
-                            fontFamily: 'Be Vietnam Pro, sans-serif',
-                            fontWeight: 600,
-                            fontSize: 14,
-                            color: activeFilterCount > 0 ? 'var(--primary)' : 'var(--text-dim)',
-                            flexShrink: 0,
-                            minHeight: 44,
-                        }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            <line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                        Bộ lọc
-                        {activeFilterCount > 0 && (
-                            <span style={{
-                                background: 'var(--primary)',
-                                color: 'white',
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                padding: '1px 7px',
-                                minWidth: 20,
-                                textAlign: 'center',
-                            }}>{activeFilterCount}</span>
-                        )}
-                    </button>
-                </div>
-            )}
+        <div className="max-w-[1320px] mx-auto pt-2 px-4 pb-20 rail:px-10">
+            <div className="flex mb-[14px] rail:hidden">
+                <button
+                    type="button"
+                    onClick={() => setDrawerOpen(true)}
+                    className={`flex items-center gap-[7px] py-[9px] px-4 rounded-full border-[1.5px] cursor-pointer font-semibold text-[14px] shrink-0 min-h-[44px] ${
+                        activeFilterCount > 0
+                            ? 'border-primary bg-[rgba(26,111,208,0.08)] text-primary'
+                            : 'border-border-bright bg-glass text-text-dim'
+                    }`}
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    Bộ lọc
+                    {activeFilterCount > 0 && (
+                        <span className="bg-primary text-white rounded-full text-[11px] font-bold py-px px-[7px] min-w-5 text-center">{activeFilterCount}</span>
+                    )}
+                </button>
+            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h2 style={{
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontWeight: 700,
-                    fontSize: 22,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text)',
-                    margin: 0,
-                }}>
+            <div className="flex items-center justify-between mb-5">
+                <h2 className="font-heading font-bold text-[22px] tracking-[-0.02em] text-text m-0">
                     {hasFilters ? 'Kết quả lọc' : 'Tất cả hoạt động'}
                 </h2>
 
                 {pageInfo.total > 1 && (
-                    <span style={{
-                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                        fontSize: 13,
-                        color: 'var(--text-faint)',
-                        fontWeight: 500,
-                        flexShrink: 0,
-                    }}>
+                    <span className="text-[13px] text-text-faint font-medium shrink-0">
                         Trang {pageInfo.page + 1}/{pageInfo.total}
                     </span>
                 )}
             </div>
 
-            {isMobile ? (
+            <div className="grid grid-cols-1 gap-[34px] items-start rail:grid-cols-[238px_1fr]">
+                <FilterRail {...sharedFilterProps} className="hidden rail:flex" />
                 <ActivityCards
                     searchQuery={searchQuery}
                     topicFilters={topicFilters}
@@ -145,25 +110,7 @@ function MainContent({
                     onResultCountChange={setResultCount}
                     onPageInfoChange={handlePageInfoChange}
                 />
-            ) : (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '238px 1fr',
-                    gap: 34,
-                    alignItems: 'start',
-                }}>
-                    <FilterRail {...sharedFilterProps} />
-                    <ActivityCards
-                        searchQuery={searchQuery}
-                        topicFilters={topicFilters}
-                        categoryFilter={categoryFilter}
-                        deadlineFilter={deadlineFilter}
-                        positionFilters={positionFilters}
-                        onResultCountChange={setResultCount}
-                        onPageInfoChange={handlePageInfoChange}
-                    />
-                </div>
-            )}
+            </div>
 
             <FilterDrawer
                 isOpen={drawerOpen}

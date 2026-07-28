@@ -11,6 +11,7 @@ interface FilterRailProps {
     positionFilters: string[];
     onPositionFilterChange: (p: string[]) => void;
     onClearAll: () => void;
+    className?: string;
 }
 
 function FilterRail({
@@ -19,35 +20,21 @@ function FilterRail({
     topicFilters, setTopicFilters,
     positionFilters, onPositionFilterChange,
     onClearAll,
+    className = 'flex',
 }: FilterRailProps) {
     const hasAnyFilter = categoryFilter || deadlineFilter ||
         topicFilters.topics.length > 0 || positionFilters.length > 0;
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-            position: 'sticky',
-            top: 82,
-            maxHeight: 'calc(100vh - 100px)',
-            overflowY: 'auto',
-            width: 238,
-            paddingRight: 4,
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>Bộ lọc</span>
+        <div className={`flex flex-col gap-5 sticky top-[82px] max-h-[calc(100vh-100px)] overflow-y-auto w-[238px] pr-1 ${className}`}>
+            <div className="flex justify-between items-center">
+                <span className="font-heading font-bold text-[15px] text-text">Bộ lọc</span>
                 {hasAnyFilter && (
-                    <button type="button" onClick={onClearAll} style={{
-                        fontFamily: 'Be Vietnam Pro, sans-serif',
-                        fontSize: 13,
-                        color: 'var(--primary)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                        padding: 0,
-                    }}>Xoá tất cả</button>
+                    <button
+                        type="button"
+                        onClick={onClearAll}
+                        className="text-[13px] text-primary bg-transparent border-none p-0 cursor-pointer underline"
+                    >Xoá tất cả</button>
                 )}
             </div>
 

@@ -1,20 +1,36 @@
-/* Fonts are loaded via <link> in index.html — a CSS @import here would chain
-   an extra round trip and delay the hero headline (LCP). */
-@import "tailwindcss";
+/* Fonts are loaded via <link> in app/layout.tsx — a CSS @import here would
+   chain an extra round trip and delay the hero headline (LCP). */
+@import "tailwindcss" source(none);
+@source "./";
 
-:root {
-  --sky: #a8d5f5;
-  --glass: #ffffff;
-  --glass-2: #eef6fd;
-  --border: rgba(20,52,80,0.13);
-  --border-bright: rgba(20,52,80,0.26);
-  --primary: #1a6fd0;
-  --primary-2: #0b53b8;
-  --accent: #1a6fd0;
-  --accent-2: #2f8fff;
-  --text: #16232c;
-  --text-dim: #334652;
-  --text-faint: #546675;
+@theme static {
+  --color-sky: #a8d5f5;
+  --color-glass: #ffffff;
+  --color-glass-2: #eef6fd;
+  --color-border: rgba(20,52,80,0.13);
+  --color-border-bright: rgba(20,52,80,0.26);
+  --color-primary: #1a6fd0;
+  --color-primary-2: #0b53b8;
+  --color-accent-2: #2f8fff;
+  --color-text: #16232c;
+  --color-text-dim: #334652;
+  --color-text-faint: #546675;
+
+  --font-body: 'Be Vietnam Pro', sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
+
+  --default-transition-timing-function: ease;
+
+  --breakpoint-sm2: 561px;
+  --breakpoint-nav: 901px;
+  --breakpoint-hero: 921px;
+  --breakpoint-rail: 1081px;
+
+  --animate-fade-up: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  --animate-sheet-up: sheetUp 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  --animate-nav-drop: navDrop 0.2s ease both;
+  --animate-float-mag: floatMag 6s ease-in-out infinite;
+  --animate-blink: blink 1s step-end infinite;
 }
 
 html {

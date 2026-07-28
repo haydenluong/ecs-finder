@@ -25,7 +25,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 |-------|-------|
 | Frontend | React 19, TypeScript, Next.js 16 (App Router) |
 | Rendering | Static prerender at build time + client hydration |
-| Styling | CSS custom properties + inline styles |
+| Styling | Tailwind CSS 4 (theme tokens via `@theme` in `src/index.css`) |
 | Data pipeline | Node.js, Google Sheets API |
 | Hosting | Vercel (auto-deploy on push to `main`) |
 
@@ -82,7 +82,7 @@ ecs-finder/
 │   │   └── Footer.tsx
 │   └── data/
 │       ├── Activities.ts    # mockActivities — the only data array rendered by the UI
-│       └── tagData.ts       # topicSet, categorySet, allTags (canonical tag registry)
+│       └── tagData.ts       # topicSet, categorySet, TOPIC_ACCENTS, accentVars()
 ├── .env                     # gitignored — see setup below
 └── package.json
 ```
@@ -147,17 +147,17 @@ SHEET_NAME=Form Responses 1
 
 ## Design tokens
 
-Defined as CSS custom properties in `src/index.css`:
+Defined in the `@theme` block in `src/index.css`, so each is available both as a Tailwind utility and as a CSS variable:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--sky` | `#a8d5f5` | Page background |
-| `--primary` | `#1a6fd0` | Brand blue — buttons, links, active states |
-| `--text` | `#16232c` | Primary text |
-| `--text-dim` | `#334652` | Secondary text |
-| `--text-faint` | `#546675` | Muted / label text |
-| `--glass` | `#ffffff` | Card and panel surfaces |
-| `--border` | `rgba(20,52,80,0.13)` | Borders and dividers |
+| Token | Value | Utility | Usage |
+|-------|-------|---------|-------|
+| `--color-sky` | `#a8d5f5` | `bg-sky` | Page background |
+| `--color-primary` | `#1a6fd0` | `bg-primary` | Brand blue — buttons, links, active states |
+| `--color-text` | `#16232c` | `text-text` | Primary text |
+| `--color-text-dim` | `#334652` | `text-text-dim` | Secondary text |
+| `--color-text-faint` | `#546675` | `text-text-faint` | Muted / label text |
+| `--color-glass` | `#ffffff` | `bg-glass` | Card and panel surfaces |
+| `--color-border` | `rgba(20,52,80,0.13)` | `border-border` | Borders and dividers |
 
 Fonts: **Montserrat** (headings, 500–800) and **Be Vietnam Pro** (body, 400–600), loaded from Google Fonts.
 

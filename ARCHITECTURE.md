@@ -22,7 +22,7 @@ There is no backend server yet. `src/app/api/` (Route Handlers) is where one wil
 | **Framework** | Next.js 16 (App Router, Turbopack) |
 | **Rendering** | Static prerender at build time + client hydration |
 | **Linting** | ESLint 9 + `eslint-config-next` |
-| **Styling** | CSS custom properties + inline styles (Tailwind 4 installed but **unused** — zero `className` in the codebase) |
+| **Styling** | Tailwind 4 utility classes, themed via `@theme static` in `src/index.css` |
 | **Fonts** | Google Fonts (Montserrat, Be Vietnam Pro) |
 | **Icons** | react-icons, lucide-react |
 | **Hosting** | Vercel (auto-deploy on git push) |
@@ -326,11 +326,9 @@ Output deployed to vercel.app
 
 4. **No persistence** — All state is in-memory. Closing the tab loses filter state.
 
-5. **Mobile layout is JS-driven, not CSS — and now causes a first-paint flash.** `isMobile` comes from `window.innerWidth` + a resize listener in `Navbar` (≤900), `HeroSection` (≤920/≤560) and `MainContent` (≤1080). Under the old Vite build this was measured during the first render, so phones got the right layout immediately. Under SSR there is no `window` on the server, so each component now renders a **desktop default** and corrects itself in a `useEffect` after hydration — meaning a phone briefly paints the desktop layout (filter rail visible) before it switches. On slow connections this is visible.
+5. ~~**Mobile layout is JS-driven, not CSS**~~ — **fixed by the Tailwind migration.** The three `window.innerWidth` resize listeners are gone; the breakpoints are now CSS media queries (`max-nav:`, `max-hero:`, `max-sm2:`, `max-rail:`, registered in `@theme`), so the browser applies them before any JS runs and the first-paint flash is gone.
 
-   The proper fix is moving these breakpoints into **CSS media queries**, which the browser applies before any JS runs. Note this is blocked by the styling approach: inline `style={{}}` objects cannot contain media queries, so the responsive bits must move to CSS classes (or Tailwind, which is already installed and unused) first.
-
-   The old unmount/remount behavior on breakpoint crossing still applies when dragging a desktop window.
+   Two related bugs went with it. `MainContent` used to render two positionally distinct `<ActivityCards>` elements, so crossing 1080px unmounted one and mounted the other, resetting the current page and closing any open modal; there is now a single element inside one grid. And `FilterDrawer`, rendered unconditionally, could stay open past 1080px with `body { overflow: hidden }` still applied — `Navbar` and `MainContent` now keep a small `matchMedia` listener whose only job is forcing those overlays closed.
 
 6. **Filter controls aren't real form elements** — checkboxes and radios are styled `<div>`s with `onClick`. Not keyboard-reachable, no screen-reader semantics. Fixable via `role`/`aria-checked`/`tabIndex` on `RadioRow` and the checkbox rows.
 
@@ -342,7 +340,7 @@ Output deployed to vercel.app
 
 10. **TypeScript pinned to 6.0** — `typescript-eslint` throws on TypeScript 7, so `eslint-config-next` cannot load with it installed. Revisit when upstream adds support.
 
-11. **Tailwind 4 is installed but entirely unused** — zero `className` attributes across the codebase; all styling is inline `style={{}}`. Either adopt it or remove it and the PostCSS config.
+11. ~~**Tailwind 4 is installed but entirely unused**~~ — **adopted.** All styling is Tailwind utilities. Three `style={{}}` objects survive on purpose, each only setting CSS custom properties for per-item runtime values: topic accent colors (`accentVars` in `src/data/tagData.ts`), the per-card animation stagger, and the hero chips' absolute positions plus their runtime-interpolated `floaty` timing.
 
 12. **`sharp` carries libvips CVEs** (transitive dependency of Next for image optimization). **Do not run `npm audit fix --force`** — npm's proposed remedy downgrades Next to 9.3.3. Wait for Next to bump `sharp`.
 

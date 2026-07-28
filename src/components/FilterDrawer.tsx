@@ -46,70 +46,32 @@ function FilterDrawer({
 
     return (
         <div
-            style={{
-                position: 'fixed', inset: 0,
-                background: 'rgba(18,40,62,0.5)',
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-            }}
+            className="fixed inset-0 z-[100] flex flex-col justify-end bg-[rgba(18,40,62,0.5)]"
             onClick={onClose}
         >
             <div
-                style={{
-                    background: 'var(--glass)',
-                    borderRadius: '22px 22px 0 0',
-                    maxHeight: '82vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    animation: 'sheetUp 0.28s cubic-bezier(0.16,1,0.3,1) both',
-                }}
+                className="flex flex-col bg-glass rounded-t-[22px] max-h-[82vh] animate-sheet-up"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Handle */}
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-                    <div style={{
-                        width: 36, height: 4, borderRadius: 999,
-                        background: 'rgba(20,52,80,0.18)',
-                    }} />
+                <div className="flex justify-center pt-3 pb-1">
+                    <div className="w-9 h-1 rounded-full bg-[rgba(20,52,80,0.18)]" />
                 </div>
 
                 {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 20px 12px',
-                    borderBottom: '1px solid var(--border)',
-                    flexShrink: 0,
-                }}>
-                    <span style={{
-                        fontFamily: 'Montserrat, sans-serif',
-                        fontWeight: 700,
-                        fontSize: 16,
-                        color: 'var(--text)',
-                    }}>Bộ lọc</span>
+                <div className="flex justify-between items-center pt-2 px-5 pb-3 border-b border-border shrink-0">
+                    <span className="font-heading font-bold text-[16px] text-text">Bộ lọc</span>
                     {hasAnyFilter && (
                         <button
                             type="button"
                             onClick={onClearAll}
-                            style={{
-                                fontFamily: 'Be Vietnam Pro, sans-serif',
-                                fontSize: 13,
-                                color: 'var(--primary)',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                textDecoration: 'underline',
-                                padding: 0,
-                            }}
+                            className="text-[13px] text-primary bg-transparent border-none p-0 cursor-pointer underline"
                         >Xoá tất cả</button>
                     )}
                 </div>
 
                 {/* Scrollable filter content */}
-                <div style={{ overflowY: 'auto', flex: 1, padding: '0 16px' }}>
+                <div className="overflow-y-auto flex-1 px-4">
                     <FilterSections
                         categoryFilter={categoryFilter}
                         onCategoryChange={onCategoryChange}
@@ -123,29 +85,11 @@ function FilterDrawer({
                 </div>
 
                 {/* Sticky footer */}
-                <div style={{
-                    padding: '12px 16px',
-                    borderTop: '1px solid var(--border)',
-                    background: 'var(--glass)',
-                    flexShrink: 0,
-                }}>
+                <div className="py-3 px-4 border-t border-border bg-glass shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        style={{
-                            width: '100%',
-                            padding: '14px 20px',
-                            borderRadius: 999,
-                            border: 'none',
-                            background: 'var(--primary)',
-                            color: 'white',
-                            fontFamily: 'Be Vietnam Pro, sans-serif',
-                            fontWeight: 600,
-                            fontSize: 15,
-                            cursor: 'pointer',
-                            letterSpacing: '0.02em',
-                            boxShadow: '0 6px 20px rgba(26,111,208,0.28)',
-                        }}
+                        className="w-full py-3.5 px-5 rounded-full border-none bg-primary text-white font-semibold text-[15px] cursor-pointer tracking-[0.02em] shadow-[0_6px_20px_rgba(26,111,208,0.28)]"
                     >
                         Xem {resultCount} kết quả
                     </button>
