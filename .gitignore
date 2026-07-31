@@ -16,10 +16,13 @@ dist-ssr
 .next
 next-env.d.ts
 
-# Sync script secrets
+# Secrets — never commit real keys.
+# `.env.*` covers .env.local, .env.production, and any variant Next.js adds later.
+# .env.example is the placeholder-only template and is meant to be committed.
 scripts/credentials.json
 .env
-.env.example
+.env.*
+!.env.example
 
 # Agent tooling (local only)
 .agents/
@@ -46,7 +49,6 @@ design/
 
 
 
-# Local personal / agent working notes (never push)
 CLAUDE.md
 WORKFLOW.md
 notes/
