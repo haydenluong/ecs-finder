@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { filterActivities, daysLeft } from '../data/Activities';
 import { accentVars } from '../data/tagData';
+import ActivityImage from './ActivityImage';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 const CARDS_PER_PAGE = 6;
@@ -73,12 +74,11 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
         >
             {/* bg tint shows only while the photo loads */}
-            <div className="h-[150px] bg-[var(--topic-13)] p-[13px] flex items-start justify-between relative">
-                <img
+            <div className="aspect-[3/2] bg-[var(--topic-13)] p-[13px] flex items-start justify-between relative overflow-hidden">
+                <ActivityImage
                     src={activity.image}
                     alt={activity.name}
-                    referrerPolicy="no-referrer"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    position={activity.image_position}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.28)_0%,rgba(0,0,0,0.05)_60%,rgba(0,0,0,0.18)_100%)]" />
                 <span className="relative z-[1] text-[10.5px] font-bold text-white uppercase tracking-[0.05em] bg-[rgba(9,20,40,0.34)] border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px]">
@@ -156,12 +156,11 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                 onClick={e => e.stopPropagation()}
             >
                 {/* bg tint shows only while the photo loads */}
-                <div className="h-[210px] bg-[var(--topic-13)] py-6 px-[26px] flex flex-col justify-between relative">
-                    <img
+                <div className="aspect-[3/2] bg-[var(--topic-13)] py-6 px-[26px] flex flex-col justify-between relative overflow-hidden">
+                    <ActivityImage
                         src={activity.image}
                         alt={activity.name}
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 w-full h-full object-cover"
+                        position={activity.image_position}
                     />
                     {/* Dark scrim so the category label and close button stay readable over any photo */}
                     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.12)_55%,rgba(0,0,0,0.30)_100%)]" />

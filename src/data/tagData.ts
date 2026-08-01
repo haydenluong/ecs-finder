@@ -74,3 +74,9 @@ export const categorySet: CategoryTag[] = [
     { label: 'Dự án & CLB', type: 'category' },
     { label: 'Sự kiện (Workshop, Talkshows, ...)', type: 'category' }
 ];
+
+export const POSITIONS = [
+    'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
+    'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
+    'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
+];

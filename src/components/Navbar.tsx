@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import logo from "../assets/logo.jpg";
 import type { Lang } from '../types';
 
@@ -28,21 +30,28 @@ function LangToggle({ lang, onLangChange }: NavbarProps) {
     );
 }
 
-function CtaButton() {
+interface NavLinkProps {
+    href: string;
+    active: boolean;
+    children: React.ReactNode;
+}
+
+function NavLink({ href, active, children }: NavLinkProps) {
     return (
-        <a
-            href="https://forms.gle/xfmn8WT8c93NhtzNA"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block font-medium text-[13px] text-white bg-primary py-[11px] px-5 rounded-full no-underline whitespace-nowrap transition-transform duration-[180ms] hover:-translate-y-px"
+        <Link
+            href={href}
+            className={`text-[13px] no-underline whitespace-nowrap transition-colors duration-[180ms] ${
+                active ? 'font-bold text-primary' : 'font-medium text-text-dim hover:text-primary'
+            }`}
         >
-            + Đăng hoạt động
-        </a>
+            {children}
+        </Link>
     );
 }
 
 function Navbar({ lang, onLangChange }: NavbarProps) {
     const [navOpen, setNavOpen] = useState<boolean>(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         const mq = window.matchMedia('(width >= 901px)');
@@ -58,9 +67,9 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
 
     return (
         <nav className="sticky top-0 z-40 bg-sky border-b border-border">
-            <div className="py-3.5 px-5 flex items-center justify-between nav:px-10">
+            <div className="py-3.5 px-5 grid grid-cols-[auto_1fr_auto] items-center gap-4 nav:px-10">
                 {/* Logo + wordmark */}
-                <div className="flex items-center gap-2.5">
+                <div className="col-start-1 flex items-center gap-2.5">
                     <img
                         src={logo.src}
                         alt="ECS Finder logo"
@@ -69,18 +78,23 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
                     <span className="font-heading font-bold text-[18px] tracking-[-0.01em] text-text">ECS Finder</span>
                 </div>
 
-                {/* Desktop: lang toggle + CTA */}
-                <div className="hidden nav:flex items-center gap-3">
-                    <LangToggle lang={lang} onLangChange={onLangChange} />
-                    <CtaButton />
+                {/* Desktop: nav links, centered */}
+                <div className="col-start-2 hidden nav:flex items-center justify-center gap-6">
+                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
+                    <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
                 </div>
 
-                {/* Mobile: hamburger */}
+                {/* Desktop: lang toggle */}
+                <div className="col-start-3 hidden nav:flex items-center justify-self-end">
+                    <LangToggle lang={lang} onLangChange={onLangChange} />
+                </div>
+
+                {/* Mobile: hamburger, shares the third grid cell with the lang toggle above */}
                 <button
                     type="button"
                     onClick={() => setNavOpen(o => !o)}
                     aria-label={navOpen ? 'Đóng menu' : 'Mở menu'}
-                    className={`hidden max-nav:flex w-10 h-10 rounded-[10px] border border-border-bright cursor-pointer flex-col items-center justify-center gap-[5px] shrink-0 ${
+                    className={`col-start-3 justify-self-end hidden max-nav:flex w-10 h-10 rounded-[10px] border border-border-bright cursor-pointer flex-col items-center justify-center gap-[5px] shrink-0 ${
                         navOpen ? 'bg-[rgba(26,111,208,0.1)]' : 'bg-glass'
                     }`}
                 >
@@ -98,9 +112,10 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
 
             {/* Mobile: slide-down panel */}
             {navOpen && (
-                <div className="hidden max-nav:flex bg-sky border-t border-border animate-nav-drop py-3.5 px-5 items-center justify-between">
+                <div className="hidden max-nav:flex bg-sky border-t border-border animate-nav-drop py-3.5 px-5 flex-col items-center gap-3.5">
+                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
+                    <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
                     <LangToggle lang={lang} onLangChange={onLangChange} />
-                    <CtaButton />
                 </div>
             )}
         </nav>

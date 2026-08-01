@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { topicSet, categorySet, accentVars } from '../data/tagData';
+import { topicSet, categorySet, accentVars, POSITIONS } from '../data/tagData';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 
 const GROUP = 'py-3.5 px-1';
@@ -8,12 +8,6 @@ const DEADLINE_OPTIONS: { label: string; value: DeadlineFilter }[] = [
     { label: 'Tất cả',          value: '' },
     { label: 'Trong tuần này',  value: 'week' },
     { label: 'Trong tháng này', value: 'month' },
-];
-
-const POSITIONS = [
-    'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
-    'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
-    'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
 ];
 
 interface SectionLabelProps {

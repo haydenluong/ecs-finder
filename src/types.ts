@@ -28,6 +28,14 @@ export interface TopicTag {
 
 export type Tag = CategoryTag | TopicTag;
 
+export interface ImagePosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zoom: number;
+}
+
 export interface Activity {
   id: number;
   created_at?: string;
@@ -40,6 +48,7 @@ export interface Activity {
   positions: string[];
   desc: string;
   image: string;
+  image_position?: ImagePosition | null;
   link: string;
   status?: "pending" | "approved" | "rejected" | "archived"; 
 }
