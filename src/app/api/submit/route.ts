@@ -57,6 +57,21 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
     return result.success;
 }
 
+// Soft check: a failed fetch does not reject the submission (Facebook/Google
+async function checkLinkLive(link: string): Promise<boolean> {
+    try {
+        const res = await fetch(link, {
+            method: 'GET',
+            redirect: 'follow',
+            signal: AbortSignal.timeout(5000),
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ECSFinderBot/1.0)' },
+        });
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
 // normalize name to compare current submission with previous submissions to see if its the same one
 function normalizeName(s: string): string {
     return s
@@ -161,6 +176,8 @@ export async function POST(request: Request) {
         return fail('name', 'Hoạt động này đã được gửi trước đó.');
     }
 
+    const linkCheckPassed = await checkLinkLive(link);
+
     if (image.size > MAX_IMAGE_BYTES) {
         return fail('image', 'Ảnh không được vượt quá 5MB.');
     }
@@ -220,6 +237,7 @@ export async function POST(request: Request) {
             positions,
             image: publicUrlData.publicUrl,
             image_position: imagePosition,
+            link_check_passed: linkCheckPassed,
             status: 'pending',
         });
 
