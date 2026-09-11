@@ -31,6 +31,32 @@ function fail(field: string, message: string) {
     return NextResponse.json({ ok: false, field, message }, { status: 400 });
 }
 
+// Verifies a Turnstile token server-to-server with Cloudflare. Never trust a
+// token's presence alone — it must be checked against the secret key here.
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+    const body = new URLSearchParams({
+        secret: process.env.TURNSTILE_SECRET_KEY!,
+        response: token,
+        remoteip: ip,
+    });
+
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body,
+    });
+
+    if (!res.ok) {
+        console.error('Turnstile siteverify request failed:', res.status, res.statusText);
+        return false;
+    }
+
+    const result = (await res.json()) as { success: boolean; 'error-codes'?: string[] };
+    if (!result.success) {
+        console.error('Turnstile verification rejected:', result['error-codes']);
+    }
+    return result.success;
+}
+
 // normalize name to compare current submission with previous submissions to see if its the same one
 function normalizeName(s: string): string {
     return s
@@ -44,6 +70,16 @@ function normalizeName(s: string): string {
 
 export async function POST(request: Request) {
     const fd = await request.formData();
+    const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
+
+    const turnstileToken = (fd.get('cf_turnstile_response') as string) ?? '';
+    if (!turnstileToken) {
+        console.error('Turnstile check skipped: no token in submission');
+        return fail('form', 'Xác minh không thành công, vui lòng thử lại.');
+    }
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+        return fail('form', 'Xác minh không thành công, vui lòng thử lại.');
+    }
 
     const name = (fd.get('name') as string ?? '').trim();
     const category = (fd.get('category') as string ?? '').trim();
@@ -94,6 +130,21 @@ export async function POST(request: Request) {
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
         return fail('deadline', 'Ngày hạn nộp không hợp lệ.');
+    }
+// fail-open: still goes through with error
+    const { data: withinLimit, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+        p_ip: ip,
+        p_max_requests: 5,
+        p_window_seconds: 3600,
+    });
+
+    if (rateLimitError) {
+        console.error('check_rate_limit failed, allowing request through:', rateLimitError);
+    } else if (!withinLimit) {
+        return NextResponse.json(
+            { ok: false, field: 'form', message: 'Bạn đã gửi quá nhiều hoạt động. Vui lòng thử lại sau.' },
+            { status: 429 },
+        );
     }
 
     const { data: existing, error: fetchError } = await supabaseAdmin

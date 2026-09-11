@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Script from 'next/script';
 import { useForm, Controller } from 'react-hook-form';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,6 +10,19 @@ import PositionsDropdown from './PositionsDropdown';
 import ImageCropper from './ImageCropper';
 import { categorySet, topicSet } from '@/data/tagData';
 import type { Activity, ImagePosition, Lang } from '@/types';
+
+declare global {
+    interface Window {
+        turnstile?: {
+            render: (container: HTMLElement, options: {
+                sitekey: string;
+                callback: (token: string) => void;
+                'expired-callback'?: () => void;
+            }) => string;
+            reset: (widgetId: string) => void;
+        };
+    }
+}
 
 type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image'> & {
     image?: FileList;
@@ -85,10 +99,30 @@ export default function SubmitClient() {
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
+    const turnstileContainerRef = useRef<HTMLDivElement | null>(null);
+    const turnstileWidgetId = useRef<string | null>(null);
+    const [turnstileToken, setTurnstileToken] = useState('');
+    const [turnstileReady, setTurnstileReady] = useState(false);
+
+    useEffect(() => {
+        if (!turnstileReady || !turnstileContainerRef.current || !window.turnstile) return;
+        turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
+            sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
+            callback: token => setTurnstileToken(token),
+            'expired-callback': () => setTurnstileToken(''),
+        });
+    }, [turnstileReady]);
+
     async function onSubmit(data: SubmitFormValues) {
         setSubmitError('');
 
+        if (!turnstileToken) {
+            setSubmitError('Vui lòng xác minh bạn không phải robot.');
+            return;
+        }
+
         const fd = new FormData();
+        fd.append('cf_turnstile_response', turnstileToken);
         fd.append('name', data.name);
         fd.append('category', data.category);
         fd.append('topic', data.topic);
@@ -108,14 +142,28 @@ export default function SubmitClient() {
                 setSubmitted(true);
             } else {
                 setSubmitError(body.message ?? 'Gửi không thành công, vui lòng thử lại.');
+                resetTurnstile();
             }
         } catch {
             setSubmitError('Không thể kết nối tới máy chủ, vui lòng thử lại.');
+            resetTurnstile();
+        }
+    }
+
+    function resetTurnstile() {
+        setTurnstileToken('');
+        if (turnstileWidgetId.current && window.turnstile) {
+            window.turnstile.reset(turnstileWidgetId.current);
         }
     }
 
     return (
         <>
+            <Script
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                strategy="afterInteractive"
+                onLoad={() => setTurnstileReady(true)}
+            />
             <Navbar lang={lang} onLangChange={setLang} />
             <main className="bg-sky min-h-screen py-10 px-5">
                 <div className="max-w-[1100px] mx-auto">
@@ -289,6 +337,8 @@ export default function SubmitClient() {
                                 {errors.link?.type === 'required' && <span className="text-[13px] text-red-600">Bắt buộc nhập</span>}
                                 {errors.link?.type === 'pattern' && <span className="text-[13px] text-red-600">Đường dẫn không hợp lệ</span>}
                             </div>
+
+                            <div ref={turnstileContainerRef} />
 
                             {submitError && (
                                 <span className="text-[13px] text-red-600">{submitError}</span>
