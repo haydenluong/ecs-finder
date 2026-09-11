@@ -27,4 +27,15 @@ if (error) {
   process.exit(1);
 }
 
-console.log(`Seeded ${data.length} rows into activities_submissions.`);
+// Seeding inserts explicit ids, which does NOT advance the id sequence.
+// Realign it so later inserts (e.g. the /api/submit form) don't collide.
+// Requires the reset_activities_submissions_id_seq() function in the DB.
+const { error: seqError } = await supabase.rpc('reset_activities_submissions_id_seq');
+
+if (seqError) {
+  console.error('Seeded rows, but failed to realign the id sequence:', seqError.message);
+  console.error('Create the reset_activities_submissions_id_seq() function (see CLAUDE.md), then re-run.');
+  process.exit(1);
+}
+
+console.log(`Seeded ${data.length} rows into activities_submissions and realigned the id sequence.`);
