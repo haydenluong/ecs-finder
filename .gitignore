@@ -47,6 +47,10 @@ TO_DO.md
 
 design/
 
+supabase/migrations/
+.env.example
+TAILWIND-PLAN.md
+
 
 
 CLAUDE.md
