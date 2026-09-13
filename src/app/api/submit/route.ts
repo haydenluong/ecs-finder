@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
+import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { categorySet, topicSet, POSITIONS } from '@/data/tagData';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -20,19 +20,6 @@ async function detectImageType(file: File): Promise<string | null> {
 }
 
 export const runtime = 'nodejs';
-
-let _supabaseAdmin: SupabaseClient | null = null;
-
-function getSupabaseAdmin() {
-    if (!_supabaseAdmin) {
-        _supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            { auth: { persistSession: false } },
-        );
-    }
-    return _supabaseAdmin;
-}
 
 function fail(field: string, message: string) {
     return NextResponse.json({ ok: false, field, message }, { status: 400 });

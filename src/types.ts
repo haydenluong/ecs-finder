@@ -1,4 +1,7 @@
 export type Lang = 'VI' | 'EN';
+
+/** The statuses the /admin queue can be filtered to. 'archived' is not reachable from the UI. */
+export type ReviewStatus = 'pending' | 'approved' | 'rejected';
 export type DeadlineFilter = '' | 'week' | 'month';
 
 export interface SubtopicFilter {
@@ -50,5 +53,16 @@ export interface Activity {
   image: string;
   image_position?: ImagePosition | null;
   link: string;
-  status?: "pending" | "approved" | "rejected" | "archived"; 
+  status?: "pending" | "approved" | "rejected" | "archived";
+
+  // Automated check results from /api/submit, shown to a reviewer on /admin.
+  // null means "not checked" — the row predates the column, or the check itself
+  // failed (both fail open), so it must not be read as a pass.
+  link_check_passed?: boolean | null;
+  content_check_verdict?: "ok" | "spam" | "review" | null;
+  content_check_reason?: string | null;
+
+  // Written by /api/admin/decide. reviewed_by is the approver's ADMIN_USERS label.
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
 }
