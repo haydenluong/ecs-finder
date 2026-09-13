@@ -20,6 +20,7 @@ declare global {
                 'expired-callback'?: () => void;
             }) => string;
             reset: (widgetId: string) => void;
+            remove: (widgetId: string) => void;
         };
     }
 }
@@ -102,16 +103,30 @@ export default function SubmitClient() {
     const turnstileContainerRef = useRef<HTMLDivElement | null>(null);
     const turnstileWidgetId = useRef<string | null>(null);
     const [turnstileToken, setTurnstileToken] = useState('');
-    const [turnstileReady, setTurnstileReady] = useState(false);
 
-    useEffect(() => {
-        if (!turnstileReady || !turnstileContainerRef.current || !window.turnstile) return;
+    // Renders the widget if the script is already loaded. Called both from the
+    // effect below (covers client-side navigation, where api.js loaded on an
+    // earlier visit and next/script's onLoad won't fire again) and from the
+    // Script's onLoad (covers the very first load in a session).
+    function renderTurnstile() {
+        if (turnstileWidgetId.current || !turnstileContainerRef.current || !window.turnstile) return;
         turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
             sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
             callback: token => setTurnstileToken(token),
             'expired-callback': () => setTurnstileToken(''),
         });
-    }, [turnstileReady]);
+    }
+
+    useEffect(() => {
+        renderTurnstile();
+
+        return () => {
+            if (turnstileWidgetId.current && window.turnstile) {
+                window.turnstile.remove(turnstileWidgetId.current);
+            }
+            turnstileWidgetId.current = null;
+        };
+    }, []);
 
     async function onSubmit(data: SubmitFormValues) {
         setSubmitError('');
@@ -162,7 +177,7 @@ export default function SubmitClient() {
             <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="afterInteractive"
-                onLoad={() => setTurnstileReady(true)}
+                onLoad={renderTurnstile}
             />
             <Navbar lang={lang} onLangChange={setLang} />
             <main className="bg-sky min-h-screen py-10 px-5">

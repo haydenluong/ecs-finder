@@ -1,10 +1,11 @@
-import { cookies } from 'next/headers';
-import { createClient } from '@/../utils/supabase/server';
+import { createPublicClient } from '@/../utils/supabase/server';
 import HomeClient from './HomeClient';
 import type { Activity } from '@/types';
 
+export const revalidate = 60;
+
 export default async function Home() {
-  const supabase = createClient(await cookies());
+  const supabase = createPublicClient();
 
   const {data, error} = await supabase 
   .from('activities_submissions')

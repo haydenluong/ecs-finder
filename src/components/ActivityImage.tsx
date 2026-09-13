@@ -8,6 +8,7 @@ interface ActivityImageProps {
     alt: string;
     position?: ImagePosition | null;
     onError?: () => void;
+    priority?: boolean;
 }
 
 function isUsable(p: ImagePosition | null | undefined): p is ImagePosition {
@@ -28,7 +29,7 @@ export function positionStyle(p: ImagePosition): CSSProperties {
     };
 }
 
-export default function ActivityImage({ src, alt, position, onError }: ActivityImageProps) {
+export default function ActivityImage({ src, alt, position, onError, priority }: ActivityImageProps) {
     if (!isUsable(position)) {
         return (
             <img
@@ -36,6 +37,8 @@ export default function ActivityImage({ src, alt, position, onError }: ActivityI
                 alt={alt}
                 referrerPolicy="no-referrer"
                 onError={onError}
+                loading={priority ? 'eager' : 'lazy'}
+                fetchPriority={priority ? 'high' : 'auto'}
                 className="absolute inset-0 w-full h-full object-cover"
             />
         );
@@ -47,6 +50,8 @@ export default function ActivityImage({ src, alt, position, onError }: ActivityI
             alt={alt}
             referrerPolicy="no-referrer"
             onError={onError}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             style={positionStyle(position)}
             className="absolute max-w-none"
         />

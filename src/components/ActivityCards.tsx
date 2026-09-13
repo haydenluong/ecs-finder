@@ -79,6 +79,7 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
                     src={activity.image}
                     alt={activity.name}
                     position={activity.image_position}
+                    priority={index === 0}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.28)_0%,rgba(0,0,0,0.05)_60%,rgba(0,0,0,0.18)_100%)]" />
                 <span className="relative z-[1] text-[10.5px] font-bold text-white uppercase tracking-[0.05em] bg-[rgba(9,20,40,0.34)] border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px]">
