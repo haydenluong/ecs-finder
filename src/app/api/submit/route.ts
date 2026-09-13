@@ -119,7 +119,7 @@ Respond with ONLY a JSON object, no other text: {"verdict": "ok" | "spam" | "ina
                 'content-type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'claude-haiku-4-5-20251001',
+                model: 'claude-haiku-4-5',
                 max_tokens: 150,
                 system: systemPrompt,
                 messages: [{ role: 'user', content: 'Classify the submission now.' }],
@@ -154,9 +154,11 @@ Respond with ONLY a JSON object, no other text: {"verdict": "ok" | "spam" | "ina
         return null;
     }
 
+    const unfenced = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+
     let parsed: unknown;
     try {
-        parsed = JSON.parse(text);
+        parsed = JSON.parse(unfenced);
     } catch {
         console.error('Content check: model output was not valid JSON:', text);
         return null;
