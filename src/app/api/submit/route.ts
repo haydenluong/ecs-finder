@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
 import { categorySet, topicSet, POSITIONS } from '@/data/tagData';
 
@@ -21,11 +21,18 @@ async function detectImageType(file: File): Promise<string | null> {
 
 export const runtime = 'nodejs';
 
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-);
+let _supabaseAdmin: SupabaseClient | null = null;
+
+function getSupabaseAdmin() {
+    if (!_supabaseAdmin) {
+        _supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            { auth: { persistSession: false } },
+        );
+    }
+    return _supabaseAdmin;
+}
 
 function fail(field: string, message: string) {
     return NextResponse.json({ ok: false, field, message }, { status: 400 });
@@ -181,6 +188,7 @@ function normalizeName(s: string): string {
 }
 
 export async function POST(request: Request) {
+    const supabaseAdmin = getSupabaseAdmin();
     const fd = await request.formData();
     const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
 
