@@ -170,9 +170,9 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
 
     'hero.count.one': '{count} activity open for registration',
     'hero.count.other': '{count} activities open for registration',
-    'hero.title.before': 'Light up your ',
+    'hero.title.before': 'Light up your',
     'hero.title.typed': 'extracurricular',
-    'hero.title.after': ' journey',
+    'hero.title.after': 'journey',
     'hero.subtitle': 'Discover clubs, competitions, projects and events for students across Vietnam.',
     'hero.randomTopic': 'Pick a random topic',
     'hero.random': 'Random',

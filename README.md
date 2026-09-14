@@ -37,8 +37,20 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 ```bash
 npm install
-cp .env.example .env    # then fill in the values
-npm run dev             # http://localhost:3000
+npm run dev       # http://localhost:3000
+```
+
+The app needs a `.env` file at the repo root before it will run:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=          # Supabase project URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=   # Supabase anon key
+SUPABASE_SERVICE_ROLE_KEY=         # bypasses RLS - server-side only, never NEXT_PUBLIC_
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=    # Cloudflare Turnstile
+TURNSTILE_SECRET_KEY=
+ANTHROPIC_API_KEY=                 # content check + description translation
+SESSION_SECRET=                    # signs the /admin cookie, 32+ chars
+ADMIN_USERS=                       # comma-separated label:password pairs
 ```
 
 ### Prerequisites
@@ -49,7 +61,7 @@ npm run dev             # http://localhost:3000
 - An Anthropic API key (for the content check and description translation)
 - A Cloudflare Turnstile site/secret key pair (for the submission form)
 
-`.env.example` documents every variable and what happens if it is missing. `.env` is gitignored and never committed.
+`.env` is gitignored and never committed. The same variables must also be set in the Vercel project settings; if `SESSION_SECRET` or `ADMIN_USERS` is missing in production, `/admin` fails closed and nobody can log in.
 
 ---
 
@@ -77,8 +89,6 @@ ecs-finder/
 ├── scripts/
 │   ├── seed.ts                  # Upsert starter activities (service-role key)
 │   └── backfill-translations.ts  # One-off desc → desc_en backfill
-├── supabase/
-│   └── migrations/              # Timestamped SQL migrations
 ├── utils/supabase/
 │   ├── server.ts                # Client for Server Components (anon key)
 │   ├── client.ts                # Client for browser code (anon key)
@@ -115,7 +125,7 @@ ecs-finder/
 │   └── data/
 │       ├── Activities.ts        # filterActivities(), daysLeft(), and the seed array
 │       └── tagData.ts           # topicSet, categorySet, POSITIONS, TOPIC_ACCENTS, English labels
-├── .env                         # gitignored — see .env.example
+├── .env                         # gitignored — see Getting started
 └── package.json
 ```
 
@@ -173,7 +183,16 @@ The link and content checks are deliberately **soft**: a failed check records a 
 
 ### Database setup
 
-Apply the migrations in `supabase/migrations/` in filename order. They set up the table, the public read policy (`anon` can select `status = 'approved'` only), the rate-limit function, and the id-sequence reset function.
+The schema is managed outside this repo, in the Supabase project itself. A new environment needs:
+
+- the `activities_submissions` table, matching the model above (the `desc` column must be created quoted as `"desc"`)
+- an `activity-images` Storage bucket, public-read
+- `grant usage on schema public` and `grant select on public.activities_submissions` to `anon` and `authenticated`
+- RLS enabled, with one `select` policy for `anon`/`authenticated` using `status = 'approved'`
+- a `check_rate_limit(p_ip, p_max_requests, p_window_seconds)` function, called by `/api/submit`
+- a `reset_activities_submissions_id_seq()` function, called by `npm run seed`
+
+Ask the maintainer for the DDL - it is not committed.
 
 Two independent gates guard every query, and both must pass: table-level `GRANT`, then the Row Level Security policy. With RLS on and no matching policy a `select` returns **zero rows and no error** — an empty grid with nothing in the logs. A seed script succeeding proves nothing about the read path, since it runs as `service_role` and skips both gates.
 

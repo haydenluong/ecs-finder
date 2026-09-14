@@ -110,7 +110,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         lang === 'EN' ? 'max-w-[16ch] hero:max-w-[24ch] hero:text-balance' : 'max-w-[16ch]'
                     }`}>
                         {t('hero.title.before')}{' '}
-                        <span className="text-primary">
+                        <span className="text-primary mr-[0.25em]">
                             {typedWord}
                             <span aria-hidden="true" className="inline-block w-0 font-normal animate-[blink_0.9s_step-end_infinite]">|</span>
                             <span className="invisible">{fullTypedWord.slice(typedWord.length)}</span>
