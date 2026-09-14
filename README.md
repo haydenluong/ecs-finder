@@ -9,7 +9,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 ## Features
 
 - Browse activity cards with name, image, location, deadline, and open positions
-- Filter by **category** — Dự án & CLB, Cuộc thi, Sự kiện
+- Filter by **category** — Dự án & CLB, Cuộc thi (hosting or entering), Sự kiện
 - Filter by **topic & subtopic** — STEM, Xã hội, Môi trường, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
 - Filter by **deadline** — within a week or month
 - Filter by **open position** — find activities recruiting specific roles
@@ -43,7 +43,7 @@ npm run dev             # http://localhost:3000
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+ (required by Next 16, and by the `--env-file` flag the scripts use)
 - npm
 - A Supabase project
 - An Anthropic API key (for the content check and description translation)
@@ -63,6 +63,7 @@ npm run dev             # http://localhost:3000
 | `npm run lint` | Run ESLint |
 | `npm run seed` | Upsert the starter activities into Supabase |
 | `npm run backfill-translations` | Translate `desc` → `desc_en` for approved rows that predate the column. Safe to re-run |
+| `npm run doctor` | React diagnostics via `react-doctor` |
 | `npx tsc --noEmit` | Typecheck |
 
 There is no test suite configured.
@@ -218,4 +219,4 @@ Fonts: **Montserrat** (headings, 500–800) and **Be Vietnam Pro** (body, 400–
 
 ## Contributing
 
-To submit an activity for listing, use the form at [/submit](https://ecs-finder.vercel.app/submit). For code contributions, open a pull request against `main`.
+To submit an activity for listing, use the form at [/submit](https://timkiemhdnk.com/submit). For code contributions, open a pull request against `main`.

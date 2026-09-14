@@ -103,7 +103,12 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         </span>
                     </div>
 
-                    <h1 className="font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text max-w-[16ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px]">
+                    <h1 className={`font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px] ${
+                        // "extracurricular" is 15 characters, so at 16ch English takes three
+                        // lines. Widened above the hero breakpoint only: below it the grid
+                        // column is narrower than one English line.
+                        lang === 'EN' ? 'max-w-[16ch] hero:max-w-[24ch] hero:text-balance' : 'max-w-[16ch]'
+                    }`}>
                         {t('hero.title.before')}{' '}
                         <span className="text-primary">
                             {typedWord}
