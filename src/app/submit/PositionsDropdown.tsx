@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { POSITIONS } from '@/data/tagData';
+import { POSITIONS, positionLabel } from '@/data/tagData';
+import { useLang } from '@/i18n/LangProvider';
 
 interface PositionsDropdownProps {
     value: string[];
@@ -9,6 +10,7 @@ interface PositionsDropdownProps {
 }
 
 export default function PositionsDropdown({ value, onChange }: PositionsDropdownProps) {
+    const { t, lang } = useLang();
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +37,9 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
                 className="w-full flex items-center justify-between gap-2 bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-left text-[14px] text-text"
             >
                 <span className={value.length === 0 ? 'text-text-faint' : 'text-text'}>
-                    {value.length === 0 ? 'Chọn vị trí tuyển...' : value.join(' · ')}
+                    {value.length === 0
+                        ? t('submit.positionsPlaceholder')
+                        : value.map(p => positionLabel(p, lang)).join(' · ')}
                 </span>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}>
                     <path d="M2.5 4.5L6 8l3.5-3.5" stroke="var(--color-text-dim)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -52,7 +56,7 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
                                 role="checkbox"
                                 tabIndex={0}
                                 aria-checked={checked}
-                                aria-label={pos}
+                                aria-label={positionLabel(pos, lang)}
                                 onClick={() => toggle(pos)}
                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(pos); } }}
                                 className={`flex items-center gap-[9px] py-[7px] px-[9px] rounded-[9px] cursor-pointer select-none min-h-[44px] transition-[background-color] duration-150 ${
@@ -68,7 +72,7 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
                                         </svg>
                                     )}
                                 </div>
-                                <span className={`text-[13px] ${checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'}`}>{pos}</span>
+                                <span className={`text-[13px] ${checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'}`}>{positionLabel(pos, lang)}</span>
                             </div>
                         );
                     })}

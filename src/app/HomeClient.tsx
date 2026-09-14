@@ -1,11 +1,11 @@
 'use client';
 
-import { useReducer, useState } from 'react'
+import { useReducer } from 'react'
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import MainContent from '@/components/MainContent';
 import Footer from '@/components/Footer';
-import type { Activity, Lang, DeadlineFilter, TopicFilter, Tag } from '@/types';
+import type { Activity, DeadlineFilter, TopicFilter, Tag } from '@/types';
 
 interface HomeClientProps {
   activities: Activity[];
@@ -50,7 +50,6 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
 }
 
 function HomeClient({activities} : HomeClientProps) {
-  const [lang, setLang] = useState<Lang>('VI');
   const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const { searchQuery, topicFilters, categoryFilter, deadlineFilter, positionFilters } = filters;
 
@@ -75,7 +74,7 @@ function HomeClient({activities} : HomeClientProps) {
 
   return (
     <div id="top">
-      <Navbar lang={lang} onLangChange={setLang} />
+      <Navbar />
       <HeroSection
         activitiesCount={activities.length}
         searchQuery={searchQuery}

@@ -1,3 +1,4 @@
+import { useLang } from '@/i18n/LangProvider';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 import FilterSections from './FilterSections';
 
@@ -24,19 +25,20 @@ function FilterRail({
     onClearAll,
     className = 'flex',
 }: FilterRailProps) {
+    const { t } = useLang();
     const hasAnyFilter = categoryFilter || deadlineFilter ||
         topicFilters.topics.length > 0 || positionFilters.length > 0;
 
     return (
         <div className={`flex flex-col gap-5 sticky top-[82px] max-h-[calc(100vh-100px)] overflow-y-auto w-[238px] pr-1 ${className}`}>
             <div className="flex justify-between items-center">
-                <span className="font-heading font-bold text-[15px] text-text">Bộ lọc</span>
+                <span className="font-heading font-bold text-[15px] text-text">{t('filters.title')}</span>
                 {hasAnyFilter && (
                     <button
                         type="button"
                         onClick={onClearAll}
                         className="text-[13px] text-primary bg-transparent border-none p-0 cursor-pointer underline"
-                    >Xoá tất cả</button>
+                    >{t('filters.clearAll')}</button>
                 )}
             </div>
 

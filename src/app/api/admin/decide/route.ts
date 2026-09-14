@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { ADMIN_COOKIE, verifySessionToken } from '@/lib/adminAuth';
+import { translateDesc } from '@/lib/translateDesc';
 
 export const runtime = 'nodejs';
 
@@ -39,12 +40,37 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: false, message: 'Hành động không hợp lệ.' }, { status: 400 });
     }
 
-    const { data, error } = await getSupabaseAdmin()
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Read `desc` rather than taking it from the request body — this route holds
+    // the service-role key and re-verifies everything itself.
+    let descEn: string | null = null;
+    if (action === 'approve') {
+        const { data: row, error: readError } = await supabaseAdmin
+            .from('activities_submissions')
+            .select('desc, desc_en')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (readError) {
+            console.error('Admin decision read failed:', readError);
+            return NextResponse.json({ ok: false, message: 'Không thể cập nhật, vui lòng thử lại.' }, { status: 500 });
+        }
+        if (!row) {
+            return NextResponse.json({ ok: false, message: 'Không tìm thấy hoạt động.' }, { status: 404 });
+        }
+        if (!row.desc_en) {
+            descEn = await translateDesc(row.desc);
+        }
+    }
+
+    const { data, error } = await supabaseAdmin
         .from('activities_submissions')
         .update({
             status: ACTIONS[action as Action],
             reviewed_by: session.sub,
             reviewed_at: new Date().toISOString(),
+            ...(descEn ? { desc_en: descEn } : {}),
         })
         .eq('id', id)
         .select('id');

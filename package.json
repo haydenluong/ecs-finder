@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "seed": "node --env-file=.env --import tsx scripts/seed.ts",
+    "backfill-translations": "node --env-file=.env --import tsx scripts/backfill-translations.ts",
     "doctor": "npx react-doctor@latest"
   },
   "dependencies": {

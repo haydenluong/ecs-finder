@@ -1,3 +1,5 @@
+import { useLang } from '@/i18n/LangProvider';
+
 interface SearchBarProps {
   searchQuery: string;
   onChange: (query: string) => void;
@@ -5,6 +7,7 @@ interface SearchBarProps {
 }
 
 function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
+    const { t } = useLang();
     return (
         <div className="flex justify-start w-full max-w-[560px]">
             <div className="flex items-center gap-2.5 w-full bg-glass rounded-[14px] py-[7px] pr-2 pl-[18px] shadow-[0_10px_26px_rgba(20,44,68,0.09)]">
@@ -15,8 +18,8 @@ function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
 
                 <input
                     type="text"
-                    aria-label="Tìm kiếm hoạt động"
-                    placeholder="Tìm câu lạc bộ, cuộc thi, dự án, sự kiện..."
+                    aria-label={t('search.label')}
+                    placeholder={t('search.placeholder')}
                     value={searchQuery}
                     onChange={e => onChange(e.target.value)}
                     className="flex-1 border-none outline-none bg-transparent text-[16px] text-text"
@@ -24,7 +27,7 @@ function SearchBar({ searchQuery, onChange, resultCount }: SearchBarProps) {
 
                 {resultCount !== undefined && (
                     <span className="font-semibold text-[12.5px] text-text-dim whitespace-nowrap px-2.5 py-1 bg-glass-2 rounded-[7px] border border-border">
-                        {resultCount} kết quả
+                        {t('search.results', { count: resultCount })}
                     </span>
                 )}
             </div>

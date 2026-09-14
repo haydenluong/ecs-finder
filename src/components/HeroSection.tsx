@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import SearchBar from './SearchBar';
-import { topicSet, accentVars } from '../data/tagData';
+import { topicSet, accentVars, topicLabel } from '../data/tagData';
+import { useLang } from '@/i18n/LangProvider';
 import type { TopicFilter, Tag } from '../types';
 
 interface ChipPosition {
@@ -27,7 +28,6 @@ const MAG_TRANSFORMS = [
     'translate(-38px,64px) rotate(-10deg) scale(1.05)',
 ] as const;
 
-const TYPED_WORD = 'ngoại khoá';
 
 const CHIP_POSITIONS: ChipPosition[] = [
     { top: 30,  left: 2,   animDelay: '0s',   animDur: '5s' },
@@ -45,22 +45,26 @@ function pickSlotTopics(): string[] {
 }
 
 function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
+    const { t, lang } = useLang();
     const [displayCount, setDisplayCount] = useState<number>(0);
     const [hoverTag, setHoverTag] = useState<number | null>(null);
     const [slotTopics, setSlotTopics] = useState<string[]>(() => topicSet.slice(0, 3).map(t => t.name));
     const [animKey, setAnimKey] = useState<number>(0);
     const [typedWord, setTypedWord] = useState<string>('');
 
-    // typing animation
+    // typing animation — restarts on a language change, since the word differs
+    const fullTypedWord = t('hero.title.typed');
     useEffect(() => {
         let i = 0;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- reset before retyping the new language's word
+        setTypedWord('');
         const id = setInterval(() => {
             i++;
-            setTypedWord(TYPED_WORD.slice(0, i));
-            if (i >= TYPED_WORD.length) clearInterval(id);
+            setTypedWord(fullTypedWord.slice(0, i));
+            if (i >= fullTypedWord.length) clearInterval(id);
         }, 55);
         return () => clearInterval(id);
-    }, []);
+    }, [fullTypedWord]);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- randomize only after hydration, so server and client HTML match
@@ -95,22 +99,22 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     <div className="inline-flex items-center gap-2 bg-glass border border-border rounded-full py-1.5 px-3.5 w-fit animate-[fadeUp_0.7s_cubic-bezier(0.16,1,0.3,1)_0ms_both]">
                         <span className="w-2 h-2 rounded-full bg-primary inline-block shrink-0" />
                         <span className="font-semibold text-[12.5px] text-primary">
-                            {displayCount} hoạt động đang mở đăng ký
+                            {t('hero.count', { count: displayCount })}
                         </span>
                     </div>
 
                     <h1 className="font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text max-w-[16ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px]">
-                        Soi sáng hành trình{' '}
+                        {t('hero.title.before')}{' '}
                         <span className="text-primary">
                             {typedWord}
                             <span aria-hidden="true" className="inline-block w-0 font-normal animate-[blink_0.9s_step-end_infinite]">|</span>
-                            <span className="invisible">{TYPED_WORD.slice(typedWord.length)}</span>
+                            <span className="invisible">{fullTypedWord.slice(typedWord.length)}</span>
                         </span>
-                        {' '}của bạn
+                        {' '}{t('hero.title.after')}
                     </h1>
 
                     <p className="font-normal text-[16.5px] leading-[1.6] text-text-dim max-w-[48ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_120ms_both]">
-                        Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam.
+                        {t('hero.subtitle')}
                     </p>
 
                     <div className="animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_180ms_both]">
@@ -189,7 +193,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                 }`}
                             >
                                 <span className="w-2 h-2 rounded-full bg-[var(--topic)] inline-block shrink-0" />
-                                {slotTopics[i]}
+                                {topicLabel(slotTopics[i], lang)}
                             </button>
                         );
                     })}
@@ -197,7 +201,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     {/* Randomizer button */}
                     <button
                         type="button"
-                        aria-label="Chọn chủ đề ngẫu nhiên"
+                        aria-label={t('hero.randomTopic')}
                         onClick={randomizeTags}
                         className="group absolute left-[-16px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 bg-transparent border-none cursor-pointer z-[3]"
                     >
@@ -207,7 +211,7 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                 <path d="M6 4l-2.5 2L6 8M6 12l-2.5 2 2.5 2" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
                             </svg>
                         </span>
-                        <span className="font-semibold text-[12px] text-text-dim">Ngẫu nhiên</span>
+                        <span className="font-semibold text-[12px] text-text-dim">{t('hero.random')}</span>
                     </button>
                 </div>
             </div>

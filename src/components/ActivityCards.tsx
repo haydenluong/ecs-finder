@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { filterActivities, daysLeft } from '../data/Activities';
-import { accentVars } from '../data/tagData';
+import { accentVars, topicLabel, subtopicLabel, categoryLabel, positionLabel, locationLabel } from '../data/tagData';
+import { useLang } from '@/i18n/LangProvider';
 import ActivityImage from './ActivityImage';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
@@ -44,6 +45,7 @@ function formatDeadlineDisplay(iso: string): string {
 }
 
 function DaysBadge({ iso }: DaysBadgeProps) {
+    const { t } = useLang();
     const days = daysLeft(iso);
     if (days === null) return null;
     const closed = days < 0;
@@ -52,12 +54,13 @@ function DaysBadge({ iso }: DaysBadgeProps) {
         <span className={`text-[11px] font-semibold text-white border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px] whitespace-nowrap ${
             closed ? 'bg-[#546675]' : urgent ? 'bg-[#e33f3f]' : 'bg-[rgba(9,20,40,0.42)]'
         }`}>
-            {closed ? 'Đã đóng' : `${days} ngày`}
+            {closed ? t('card.closed') : t('card.daysLeft', { count: days })}
         </span>
     );
 }
 
 function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
+    const { t, lang } = useLang();
     return (
         <div
             role="button"
@@ -83,7 +86,7 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.28)_0%,rgba(0,0,0,0.05)_60%,rgba(0,0,0,0.18)_100%)]" />
                 <span className="relative z-[1] text-[10.5px] font-bold text-white uppercase tracking-[0.05em] bg-[rgba(9,20,40,0.34)] border border-[rgba(255,255,255,0.32)] rounded-[7px] py-1 px-[9px]">
-                    {activity.category}
+                    {categoryLabel(activity.category, lang)}
                 </span>
                 <div className="relative z-[1]">
                     <DaysBadge iso={activity.deadline} />
@@ -99,7 +102,7 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
                     {activity.location && (
                         <span className="flex items-center gap-1 text-[13px] text-text-dim">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--color-primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--color-primary)" strokeWidth="1.3"/></svg>
-                            {activity.location}
+                            {locationLabel(activity.location, lang)}
                         </span>
                     )}
                     {activity.deadline && (
@@ -113,19 +116,19 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
                 {(activity.topic || activity.subtopic) && (
                     <div className="flex gap-1.5 flex-wrap">
                         {activity.topic && (
-                            <span className="text-[12px] font-semibold py-[3px] px-2.5 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{activity.topic}</span>
+                            <span className="text-[12px] font-semibold py-[3px] px-2.5 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{topicLabel(activity.topic, lang)}</span>
                         )}
                         {activity.subtopic && (
-                            <span className="text-[12px] font-medium py-[3px] px-2.5 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{activity.subtopic}</span>
+                            <span className="text-[12px] font-medium py-[3px] px-2.5 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{subtopicLabel(activity.subtopic, lang)}</span>
                         )}
                     </div>
                 )}
 
                 {activity.positions?.length > 0 && (
                     <div className="border-t border-border pt-2.5 mt-0.5 text-[12px] text-text-faint">
-                        <span className="font-semibold tracking-[0.06em] uppercase text-[11.5px]">Vị trí: </span>
+                        <span className="font-semibold tracking-[0.06em] uppercase text-[11.5px]">{t('card.positionsInline')}</span>
                         <span className="text-accent-2 font-medium text-[12.5px]">
-                            {activity.positions.join(' · ')}
+                            {activity.positions.map(p => positionLabel(p, lang)).join(' · ')}
                         </span>
                     </div>
                 )}
@@ -136,6 +139,7 @@ function ActivityCard({ activity, index, onClick }: ActivityCardProps) {
 
 // modal that pops up when an activity card is clicked 
 function DetailModal({ activity, onClose }: DetailModalProps) {
+    const { t, lang } = useLang();
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         function onKey(e: KeyboardEvent): void { if (e.key === 'Escape') onClose(); }
@@ -167,7 +171,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.12)_55%,rgba(0,0,0,0.30)_100%)]" />
                     <button
                         type="button"
-                        aria-label="Đóng"
+                        aria-label={t('modal.close')}
                         onClick={onClose}
                         className="absolute top-4 right-4 w-9 h-9 rounded-[10px] border border-[rgba(255,255,255,0.3)] bg-[rgba(10,20,32,0.55)] cursor-pointer flex items-center justify-center text-white"
                     >
@@ -176,7 +180,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                         </svg>
                     </button>
                     <span className="relative z-[1] self-start text-[11.5px] font-bold text-white tracking-[0.08em] uppercase bg-[rgba(9,20,40,0.42)] border border-[rgba(255,255,255,0.3)] rounded-lg py-[5px] px-[11px]">
-                        {activity.category}
+                        {categoryLabel(activity.category, lang)}
                     </span>
                 </div>
 
@@ -187,11 +191,11 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
 
                     <div className="flex gap-5 flex-wrap">
                         {([
-                            { label: 'ĐỊA ĐIỂM', value: activity.location, icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--color-primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--color-primary)" strokeWidth="1.3"/></svg> },
-                            { label: 'HẠN ĐĂNG KÝ', value: formatDeadlineDisplay(activity.deadline), icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--color-primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--color-primary)" strokeWidth="1.3" strokeLinecap="round"/></svg> },
-                            { label: 'CHỦ ĐỀ', value: activity.topic, icon: null },
-                        ] as { label: string; value: string; icon: React.ReactNode }[]).filter(m => m.value).map(meta => (
-                            <div key={meta.label} className="flex flex-col gap-1">
+                            { id: 'location', label: t('modal.location'), value: locationLabel(activity.location, lang), icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.8 1 3 2.8 3 5c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="var(--color-primary)" strokeWidth="1.3"/><circle cx="7" cy="5" r="1.5" stroke="var(--color-primary)" strokeWidth="1.3"/></svg> },
+                            { id: 'deadline', label: t('modal.deadline'), value: formatDeadlineDisplay(activity.deadline), icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--color-primary)" strokeWidth="1.3"/><path d="M7 4.5v2.8l1.8 1.8" stroke="var(--color-primary)" strokeWidth="1.3" strokeLinecap="round"/></svg> },
+                            { id: 'topic', label: t('modal.topic'), value: topicLabel(activity.topic, lang), icon: null },
+                        ] as { id: string; label: string; value: string; icon: React.ReactNode }[]).filter(m => m.value).map(meta => (
+                            <div key={meta.id} className="flex flex-col gap-1">
                                 <span className="text-[11.5px] text-text-faint uppercase tracking-[0.06em] font-semibold">{meta.label}</span>
                                 <span className="flex items-center gap-[5px] text-[14px] text-text">
                                     {meta.icon}{meta.value}
@@ -202,26 +206,26 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
 
                     {activity.desc && (
                         <p className="text-[15px] leading-[1.72] text-text-dim m-0">
-                            {activity.desc}
+                            {(lang === 'EN' && activity.desc_en) || activity.desc}
                         </p>
                     )}
 
                     {(activity.topic || activity.subtopic) && (
                         <div>
-                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">Thẻ</span>
+                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">{t('modal.tags')}</span>
                             <div className="flex gap-[7px] flex-wrap">
-                                {activity.topic && <span className="text-[13px] font-semibold py-[5px] px-3 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{activity.topic}</span>}
-                                {activity.subtopic && <span className="text-[13px] font-medium py-[5px] px-3 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{activity.subtopic}</span>}
+                                {activity.topic && <span className="text-[13px] font-semibold py-[5px] px-3 rounded-full bg-[var(--topic-13)] text-[var(--topic)] border border-[var(--topic-27)]">{topicLabel(activity.topic, lang)}</span>}
+                                {activity.subtopic && <span className="text-[13px] font-medium py-[5px] px-3 rounded-full bg-[var(--topic-07)] text-[var(--topic)] border border-[var(--topic-20)]">{subtopicLabel(activity.subtopic, lang)}</span>}
                             </div>
                         </div>
                     )}
 
                     {activity.positions?.length > 0 && (
                         <div>
-                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">Vị trí tuyển</span>
+                            <span className="text-[11.5px] font-semibold text-text-faint uppercase tracking-[0.06em] block mb-2">{t('modal.positions')}</span>
                             <div className="flex gap-2 flex-wrap">
                                 {activity.positions.map(p => (
-                                    <span key={p} className="text-[13px] text-text py-1.5 px-3 rounded-lg bg-[rgba(47,123,255,0.12)] border border-[rgba(47,123,255,0.2)]">{p}</span>
+                                    <span key={p} className="text-[13px] text-text py-1.5 px-3 rounded-lg bg-[rgba(47,123,255,0.12)] border border-[rgba(47,123,255,0.2)]">{positionLabel(p, lang)}</span>
                                 ))}
                             </div>
                         </div>
@@ -233,7 +237,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2.5 bg-primary text-white p-[15px] rounded-full no-underline font-medium text-[15px] tracking-[0.02em] shadow-[0_10px_26px_rgba(26,111,208,0.28)]"
                     >
-                        Đăng ký ngay
+                        {t('modal.register')}
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                             <path d="M4 9h10M10 5l4 4-4 4" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
@@ -254,6 +258,7 @@ function ActivityCards({
     onResultCountChange,
     onPageInfoChange,
 }: ActivityCardsProps) {
+    const { t } = useLang();
     const [currentPage, setCurrentPage] = useState<number>(0);
 
     // set the modal state to the activity when its card is clicked 
@@ -273,10 +278,10 @@ function ActivityCards({
             {filtered.length === 0 ? (
                 <div className="bg-glass border border-border rounded-[18px] py-12 px-8 text-center">
                     <p className="font-heading font-bold text-[20px] text-text mb-2">
-                        Không tìm thấy hoạt động
+                        {t('card.empty.title')}
                     </p>
                     <p className="text-[14px] text-text-faint">
-                        Thử điều chỉnh bộ lọc hoặc từ khoá tìm kiếm.
+                        {t('card.empty.body')}
                     </p>
                 </div>
             ) : (
@@ -297,7 +302,7 @@ function ActivityCards({
                         <div className="flex items-center justify-center gap-1.5 mt-7">
                             <button
                                 type="button"
-                                aria-label="Trang trước"
+                                aria-label={t('card.prevPage')}
                                 onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
                                 disabled={currentPage === 0}
                                 className={`py-[7px] px-[13px] rounded-[9px] border border-border bg-glass font-semibold text-[14px] text-text-dim ${
@@ -308,7 +313,7 @@ function ActivityCards({
                                 <button
                                     type="button"
                                     key={i}
-                                    aria-label={`Trang ${i + 1}`}
+                                    aria-label={t('card.page', { page: i + 1 })}
                                     aria-current={i === currentPage ? 'page' : undefined}
                                     onClick={() => setCurrentPage(i)}
                                     className={`py-[7px] px-[13px] rounded-[9px] border border-border text-[14px] cursor-pointer ${
@@ -318,7 +323,7 @@ function ActivityCards({
                             ))}
                             <button
                                 type="button"
-                                aria-label="Trang sau"
+                                aria-label={t('card.nextPage')}
                                 onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={currentPage === totalPages - 1}
                                 className={`py-[7px] px-[13px] rounded-[9px] border border-border bg-glass font-semibold text-[14px] text-text-dim ${

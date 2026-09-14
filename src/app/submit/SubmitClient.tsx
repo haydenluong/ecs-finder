@@ -8,8 +8,10 @@ import Footer from '@/components/Footer';
 import PreviewCard from './PreviewCard';
 import PositionsDropdown from './PositionsDropdown';
 import ImageCropper from './ImageCropper';
-import { categorySet, topicSet } from '@/data/tagData';
-import type { Activity, ImagePosition, Lang } from '@/types';
+import { categorySet, topicSet, categoryLabel, topicLabel, subtopicLabel } from '@/data/tagData';
+import { useLang } from '@/i18n/LangProvider';
+import { isStringKey, type StringKey } from '@/i18n/strings';
+import type { Activity, ImagePosition } from '@/types';
 
 declare global {
     interface Window {
@@ -25,9 +27,21 @@ declare global {
     }
 }
 
-type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image'> & {
+type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' | 'desc_en'> & {
     image?: FileList;
 };
+
+// /api/submit reports which field an error belongs to. Everything except 'form'
+// is a real form field, so the error is shown next to that input instead of in
+// the page-level banner.
+const SERVER_FIELDS = [
+    'name', 'category', 'topic', 'subtopic', 'location',
+    'deadline', 'desc', 'link', 'image', 'positions',
+] as const;
+
+function isServerField(value: unknown): value is (typeof SERVER_FIELDS)[number] {
+    return typeof value === 'string' && (SERVER_FIELDS as readonly string[]).includes(value);
+}
 
 const MAX_DESC_WORDS = 350;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -41,24 +55,27 @@ function formatBytes(bytes: number): string {
     return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
 }
 
-function validateImage(files: FileList | undefined): true | string {
-    if (!files || files.length === 0) return 'Bắt buộc chọn ảnh';
-    if (files.length !== 1) return 'Chỉ có thể tải lên 1 ảnh';
+// Returns a string KEY, not a rendered message. react-hook-form only re-runs a
+// validator when the value changes, so a rendered string would stay in the old
+// language after a toggle; the display site translates it on every render.
+function validateImage(files: FileList | undefined): true | StringKey {
+    if (!files || files.length === 0) return 'error.image.required';
+    if (files.length !== 1) return 'error.image.tooMany';
 
     const file = files[0];
     if (file.type === '' || file.type === 'image/heic' || file.type === 'image/heif') {
-        return 'Ảnh HEIC (iPhone) chưa được hỗ trợ, vui lòng chọn JPEG/PNG/WebP';
+        return 'error.image.heic';
     }
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return 'Chỉ chấp nhận JPEG, PNG hoặc WebP';
-    if (file.size > MAX_IMAGE_BYTES) return `Ảnh quá lớn (${formatBytes(file.size)}), tối đa 5MB`;
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return 'error.image.badType';
+    if (file.size > MAX_IMAGE_BYTES) return 'error.image.tooLarge';
 
     return true;
 }
 
 export default function SubmitClient() {
-    const [lang, setLang] = useState<Lang>('VI');
+    const { t, lang } = useLang();
 
-    const { register, watch, resetField, setValue, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
+    const { register, watch, resetField, setValue, setError, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
         defaultValues: {
             name: '', category: '', topic: '', subtopic: null, location: '',
             deadline: '', positions: [], desc: '', link: '',
@@ -97,7 +114,7 @@ export default function SubmitClient() {
         setValue('image', dt.files, { shouldValidate: true });
     }
 
-    const [submitError, setSubmitError] = useState('');
+    const [submitErrorKey, setSubmitErrorKey] = useState<StringKey | ''>('');
     const [submitted, setSubmitted] = useState(false);
 
     const turnstileContainerRef = useRef<HTMLDivElement | null>(null);
@@ -129,10 +146,10 @@ export default function SubmitClient() {
     }, []);
 
     async function onSubmit(data: SubmitFormValues) {
-        setSubmitError('');
+        setSubmitErrorKey('');
 
         if (!turnstileToken) {
-            setSubmitError('Vui lòng xác minh bạn không phải robot.');
+            setSubmitErrorKey('error.turnstile.missing');
             return;
         }
 
@@ -156,11 +173,16 @@ export default function SubmitClient() {
             if (res.ok && body.ok) {
                 setSubmitted(true);
             } else {
-                setSubmitError(body.message ?? 'Gửi không thành công, vui lòng thử lại.');
+                const code = isStringKey(body.code) ? body.code : 'error.generic';
+                if (isServerField(body.field)) {
+                    setError(body.field, { type: 'server', message: code });
+                } else {
+                    setSubmitErrorKey(code);
+                }
                 resetTurnstile();
             }
         } catch {
-            setSubmitError('Không thể kết nối tới máy chủ, vui lòng thử lại.');
+            setSubmitErrorKey('error.network');
             resetTurnstile();
         }
     }
@@ -179,11 +201,11 @@ export default function SubmitClient() {
                 strategy="afterInteractive"
                 onLoad={renderTurnstile}
             />
-            <Navbar lang={lang} onLangChange={setLang} />
+            <Navbar />
             <main className="bg-sky min-h-screen py-10 px-5">
                 <div className="max-w-[1100px] mx-auto">
                     <h1 className="font-heading font-bold text-[26px] text-text mb-8">
-                        Đăng hoạt động của bạn
+                        {t('submit.title')}
                     </h1>
 
                     <div className="grid grid-cols-1 gap-[34px] items-start rail:grid-cols-[1fr_380px]">
@@ -204,78 +226,81 @@ export default function SubmitClient() {
 
                         <form onSubmit={handleSubmit(onSubmit)} className="bg-glass border border-border rounded-2xl p-6 flex flex-col gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Tên hoạt động</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.name')}</label>
                                 <input
                                     {...register('name', { required: true })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                 />
-                                {errors.name && <span className="text-[13px] text-red-600">Bắt buộc nhập</span>}
+                                {errors.name && <span className="text-[13px] text-red-600">{t(isStringKey(errors.name.message) ? errors.name.message : 'error.required')}</span>}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Danh mục</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.category')}</label>
                                 <select
                                     {...register('category', { required: true })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                 >
-                                    <option value="">Chọn danh mục...</option>
+                                    <option value="">{t('submit.categoryPlaceholder')}</option>
                                     {categorySet.map(c => (
-                                        <option key={c.label} value={c.label}>{c.label}</option>
+                                        <option key={c.label} value={c.label}>{categoryLabel(c.label, lang)}</option>
                                     ))}
                                 </select>
-                                {errors.category && <span className="text-[13px] text-red-600">Bắt buộc chọn</span>}
+                                {errors.category && <span className="text-[13px] text-red-600">{t(isStringKey(errors.category.message) ? errors.category.message : 'error.requiredSelect')}</span>}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Chủ đề</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.topic')}</label>
                                 <select
                                     {...register('topic', { required: true })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                 >
-                                    <option value="">Chọn chủ đề...</option>
-                                    {topicSet.map(t => (
-                                        <option key={t.name} value={t.name}>{t.name}</option>
+                                    <option value="">{t('submit.topicPlaceholder')}</option>
+                                    {topicSet.map(topic => (
+                                        <option key={topic.name} value={topic.name}>{topicLabel(topic.name, lang)}</option>
                                     ))}
                                 </select>
-                                {errors.topic && <span className="text-[13px] text-red-600">Bắt buộc chọn</span>}
+                                {errors.topic && <span className="text-[13px] text-red-600">{t(isStringKey(errors.topic.message) ? errors.topic.message : 'error.requiredSelect')}</span>}
                             </div>
 
                             {selectedTopic && subtopicsForTopic.length > 0 && (
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-[13px] text-text-dim">Chủ đề con</label>
+                                    <label className="text-[13px] text-text-dim">{t('submit.subtopic')}</label>
                                     <select
                                         {...register('subtopic')}
                                         className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                     >
-                                        <option value="">Không có</option>
+                                        <option value="">{t('submit.subtopicNone')}</option>
                                         {subtopicsForTopic.map(s => (
-                                            <option key={s} value={s}>{s}</option>
+                                            <option key={s} value={s}>{subtopicLabel(s, lang)}</option>
                                         ))}
                                     </select>
+                                    {isStringKey(errors.subtopic?.message) && (
+                                        <span className="text-[13px] text-red-600">{t(errors.subtopic.message)}</span>
+                                    )}
                                 </div>
                             )}
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Địa điểm</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.location')}</label>
                                 <input
                                     {...register('location', { required: true })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                 />
-                                {errors.location && <span className="text-[13px] text-red-600">Bắt buộc nhập</span>}
+                                {errors.location && <span className="text-[13px] text-red-600">{t(isStringKey(errors.location.message) ? errors.location.message : 'error.required')}</span>}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Hạn nộp</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.deadline')}</label>
                                 <input
                                     type="date"
                                     {...register('deadline', { required: true })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
                                 />
-                                {errors.deadline && <span className="text-[13px] text-red-600">Bắt buộc chọn</span>}
+                                {errors.deadline && <span className="text-[13px] text-red-600">{t(isStringKey(errors.deadline.message) ? errors.deadline.message : 'error.requiredSelect')}</span>}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Vị trí tuyển</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.positions')}</label>
                                 <Controller
                                     name="positions"
                                     control={control}
@@ -283,27 +308,38 @@ export default function SubmitClient() {
                                         <PositionsDropdown value={field.value} onChange={field.onChange} />
                                     )}
                                 />
+                                {isStringKey(errors.positions?.message) && (
+                                    <span className="text-[13px] text-red-600">{t(errors.positions.message)}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Mô tả</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.desc')}</label>
                                 <textarea
                                     rows={5}
                                     {...register('desc', {
                                         required: true,
-                                        validate: v => countWords(v) <= MAX_DESC_WORDS || `Tối đa ${MAX_DESC_WORDS} từ`,
+                                        validate: v => countWords(v) <= MAX_DESC_WORDS,
                                     })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none resize-y"
                                 />
                                 <span className={`text-[12px] ${countWords(watched.desc) > MAX_DESC_WORDS ? 'text-red-600' : 'text-text-faint'}`}>
-                                    {countWords(watched.desc)} / {MAX_DESC_WORDS} từ
+                                    {t('submit.wordCount', { count: countWords(watched.desc), max: MAX_DESC_WORDS })}
                                 </span>
-                                {errors.desc?.type === 'required' && <span className="text-[13px] text-red-600">Bắt buộc nhập</span>}
-                                {errors.desc?.type === 'validate' && <span className="text-[13px] text-red-600">{errors.desc.message}</span>}
+                                {errors.desc && (
+                                    <span className="text-[13px] text-red-600">
+                                        {t(
+                                            isStringKey(errors.desc.message) ? errors.desc.message
+                                                : errors.desc.type === 'validate' ? 'error.desc.tooLong'
+                                                : 'error.required',
+                                            { max: MAX_DESC_WORDS },
+                                        )}
+                                    </span>
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Ảnh hoạt động</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.image')}</label>
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
@@ -317,7 +353,7 @@ export default function SubmitClient() {
                                         onClick={() => imageInputRef.current?.click()}
                                         className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text cursor-pointer hover:border-primary transition-colors duration-150 shrink-0"
                                     >
-                                        Chọn ảnh...
+                                        {t('submit.chooseImage')}
                                     </button>
                                     {imageFile ? (
                                         <>
@@ -329,37 +365,48 @@ export default function SubmitClient() {
                                                 onClick={() => resetField('image')}
                                                 className="text-[13px] text-text-faint hover:text-primary cursor-pointer shrink-0 ml-auto"
                                             >
-                                                Xoá ảnh
+                                                {t('submit.removeImage')}
                                             </button>
                                         </>
                                     ) : (
-                                        <span className="text-[13px] text-text-faint">JPEG, PNG hoặc WebP · tối đa 5MB</span>
+                                        <span className="text-[13px] text-text-faint">{t('submit.imageHint')}</span>
                                     )}
                                 </div>
-                                {errors.image && <span className="text-[13px] text-red-600">{errors.image.message}</span>}
+                                {errors.image?.message && (
+                                    <span className="text-[13px] text-red-600">
+                                        {t(errors.image.message as StringKey, imageFile ? { size: formatBytes(imageFile.size) } : undefined)}
+                                    </span>
+                                )}
                                 {previewUrl && (
                                     <ImageCropper key={previewUrl} src={previewUrl} onChange={setImagePosition} />
                                 )}
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] text-text-dim">Liên kết đăng ký (URL)</label>
+                                <label className="text-[13px] text-text-dim">{t('submit.link')}</label>
                                 <input
                                     placeholder="https://..."
                                     {...register('link', { required: true, pattern: /^https?:\/\/.+/ })}
                                     className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text placeholder:text-text-faint focus:border-primary outline-none"
                                 />
-                                {errors.link?.type === 'required' && <span className="text-[13px] text-red-600">Bắt buộc nhập</span>}
-                                {errors.link?.type === 'pattern' && <span className="text-[13px] text-red-600">Đường dẫn không hợp lệ</span>}
+                                {errors.link && (
+                                    <span className="text-[13px] text-red-600">
+                                        {t(
+                                            isStringKey(errors.link.message) ? errors.link.message
+                                                : errors.link.type === 'pattern' ? 'error.link.invalid'
+                                                : 'error.required',
+                                        )}
+                                    </span>
+                                )}
                             </div>
 
                             <div ref={turnstileContainerRef} />
 
-                            {submitError && (
-                                <span className="text-[13px] text-red-600">{submitError}</span>
+                            {submitErrorKey && (
+                                <span className="text-[13px] text-red-600">{t(submitErrorKey)}</span>
                             )}
                             {submitted && (
-                                <span className="text-[13px] text-primary">Cảm ơn! Hoạt động của bạn đang chờ duyệt.</span>
+                                <span className="text-[13px] text-primary">{t('submit.success')}</span>
                             )}
 
                             <button
@@ -367,7 +414,7 @@ export default function SubmitClient() {
                                 disabled={isSubmitting}
                                 className="bg-primary text-white rounded-[14px] py-3 px-6 font-semibold text-[14px] mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-default"
                             >
-                                {isSubmitting ? 'Đang gửi...' : 'Gửi hoạt động'}
+                                {t(isSubmitting ? 'submit.submitting' : 'submit.submitButton')}
                             </button>
                         </form>
                     </div>

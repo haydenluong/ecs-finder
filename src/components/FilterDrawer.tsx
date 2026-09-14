@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useLang } from '@/i18n/LangProvider';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 import FilterSections from './FilterSections';
 
@@ -27,6 +28,7 @@ function FilterDrawer({
     positionFilters, onPositionFilterChange,
     onClearAll,
 }: FilterDrawerProps) {
+    const { t } = useLang();
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -62,13 +64,13 @@ function FilterDrawer({
 
                 {/* Header */}
                 <div className="flex justify-between items-center pt-2 px-5 pb-3 border-b border-border shrink-0">
-                    <span className="font-heading font-bold text-[16px] text-text">Bộ lọc</span>
+                    <span className="font-heading font-bold text-[16px] text-text">{t('filters.title')}</span>
                     {hasAnyFilter && (
                         <button
                             type="button"
                             onClick={onClearAll}
                             className="text-[13px] text-primary bg-transparent border-none p-0 cursor-pointer underline"
-                        >Xoá tất cả</button>
+                        >{t('filters.clearAll')}</button>
                     )}
                 </div>
 
@@ -94,7 +96,7 @@ function FilterDrawer({
                         onClick={onClose}
                         className="w-full py-3.5 px-5 rounded-full border-none bg-primary text-white font-semibold text-[15px] cursor-pointer tracking-[0.02em] shadow-[0_6px_20px_rgba(26,111,208,0.28)]"
                     >
-                        Xem {resultCount} kết quả
+                        {t('filters.viewResults', { count: resultCount })}
                     </button>
                 </div>
             </div>

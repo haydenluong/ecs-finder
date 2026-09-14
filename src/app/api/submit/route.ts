@@ -21,8 +21,10 @@ async function detectImageType(file: File): Promise<string | null> {
 
 export const runtime = 'nodejs';
 
-function fail(field: string, message: string) {
-    return NextResponse.json({ ok: false, field, message }, { status: 400 });
+// Returns a message CODE, not prose: the submitter's language is a client
+// concern, and SubmitClient maps the code through its own dictionary.
+function fail(field: string, code: string) {
+    return NextResponse.json({ ok: false, field, code }, { status: 400 });
 }
 
 // Verifies a Turnstile token server-to-server with Cloudflare. Never trust a
@@ -184,10 +186,10 @@ export async function POST(request: Request) {
     const turnstileToken = (fd.get('cf_turnstile_response') as string) ?? '';
     if (!turnstileToken) {
         console.error('Turnstile check skipped: no token in submission');
-        return fail('form', 'Xác minh không thành công, vui lòng thử lại.');
+        return fail('form', 'error.form.verifyFailed');
     }
     if (!(await verifyTurnstile(turnstileToken, ip))) {
-        return fail('form', 'Xác minh không thành công, vui lòng thử lại.');
+        return fail('form', 'error.form.verifyFailed');
     }
 
     const name = (fd.get('name') as string ?? '').trim();
@@ -201,44 +203,44 @@ export async function POST(request: Request) {
     const image = fd.get('image');
 
     if (!name || !category || !topic || !location || !deadline || !desc || !link) {
-        return fail('form', 'Vui lòng điền đầy đủ các trường bắt buộc.');
+        return fail('form', 'error.form.missingFields');
     }
 
     if (!(image instanceof File) || image.size === 0) {
-        return fail('image', 'Vui lòng chọn một ảnh.');
+        return fail('image', 'error.image.chooseOne');
     }
 
     let positions: unknown;
     try {
         positions = JSON.parse((fd.get('positions') as string) ?? '[]');
     } catch {
-        return fail('positions', 'Dữ liệu vị trí không hợp lệ.');
+        return fail('positions', 'error.positions.invalidData');
     }
     if (!Array.isArray(positions) || !positions.every(p => typeof p === 'string' && POSITIONS.includes(p))) {
-        return fail('positions', 'Vị trí không hợp lệ.');
+        return fail('positions', 'error.positions.invalid');
     }
 
     if (!categorySet.some(c => c.label === category)) {
-        return fail('category', 'Danh mục không hợp lệ.');
+        return fail('category', 'error.category.invalid');
     }
 
     const matchedTopic = topicSet.find(t => t.name === topic);
     if (!matchedTopic) {
-        return fail('topic', 'Chủ đề không hợp lệ.');
+        return fail('topic', 'error.topic.invalid');
     }
     if (subtopic && !matchedTopic.subtopics.includes(subtopic)) {
-        return fail('subtopic', 'Chủ đề con không hợp lệ.');
+        return fail('subtopic', 'error.subtopic.invalid');
     }
 
     try {
         const url = new URL(link);
         if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error();
     } catch {
-        return fail('link', 'Liên kết đăng ký không hợp lệ.');
+        return fail('link', 'error.link.invalidServer');
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
-        return fail('deadline', 'Ngày hạn nộp không hợp lệ.');
+        return fail('deadline', 'error.deadline.invalid');
     }
 // fail-open: still goes through with error
     const { data: withinLimit, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
@@ -251,7 +253,7 @@ export async function POST(request: Request) {
         console.error('check_rate_limit failed, allowing request through:', rateLimitError);
     } else if (!withinLimit) {
         return NextResponse.json(
-            { ok: false, field: 'form', message: 'Bạn đã gửi quá nhiều hoạt động. Vui lòng thử lại sau.' },
+            { ok: false, field: 'form', code: 'error.form.rateLimited' },
             { status: 429 },
         );
     }
@@ -261,29 +263,29 @@ export async function POST(request: Request) {
         .select('name');
 
     if (fetchError) {
-        return fail('form', 'Không thể kiểm tra trùng lặp, vui lòng thử lại.');
+        return fail('form', 'error.form.duplicateCheck');
     }
 
     const normalizedName = normalizeName(name);
     const isDuplicate = existing.some(row => normalizeName(row.name) === normalizedName);
     if (isDuplicate) {
-        return fail('name', 'Hoạt động này đã được gửi trước đó.');
+        return fail('name', 'error.name.duplicate');
     }
 
     const contentCheck = await checkContent({ name, desc, category, topic, link });
     if (contentCheck?.verdict === 'inappropriate') {
-        return fail('form', 'Nội dung không phù hợp, vui lòng chỉnh sửa và gửi lại.');
+        return fail('form', 'error.form.inappropriate');
     }
 
     const linkCheckPassed = await checkLinkLive(link);
 
     if (image.size > MAX_IMAGE_BYTES) {
-        return fail('image', 'Ảnh không được vượt quá 5MB.');
+        return fail('image', 'error.image.tooLargeServer');
     }
 
     const detectedType = await detectImageType(image);
     if (!detectedType) {
-        return fail('image', 'Tệp không phải là ảnh hợp lệ (JPEG, PNG, WebP).');
+        return fail('image', 'error.image.invalidFile');
     }
 
     const ext = MIME_TO_EXT[detectedType];
@@ -297,7 +299,7 @@ export async function POST(request: Request) {
         });
 
     if (uploadError) {
-        return fail('image', 'Không thể tải ảnh lên, vui lòng thử lại.');
+        return fail('image', 'error.image.uploadFailed');
     }
 
     const { data: publicUrlData } = supabaseAdmin.storage
@@ -345,7 +347,7 @@ export async function POST(request: Request) {
     if (insertError) {
         console.error('activities_submissions insert failed:', insertError);
         await supabaseAdmin.storage.from('activity-images').remove([storagePath]);
-        return fail('form', 'Không thể lưu hoạt động, vui lòng thử lại.');
+        return fail('form', 'error.form.saveFailed');
     }
 
     return NextResponse.json({ ok: true });

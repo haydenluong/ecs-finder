@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PreviewCard from '@/app/submit/PreviewCard';
-import type { Activity, Lang, ReviewStatus } from '@/types';
+import type { Activity, ReviewStatus } from '@/types';
 
 interface AdminClientProps {
     reviewer: string;
@@ -68,7 +68,6 @@ function LinkCheckSignal({ activity }: { activity: Activity }) {
 
 export default function AdminClient({ reviewer, status, activities, loadFailed }: AdminClientProps) {
     const router = useRouter();
-    const [lang, setLang] = useState<Lang>('VI');
     const [busyId, setBusyId] = useState<number | null>(null);
     const [error, setError] = useState('');
 
@@ -110,7 +109,7 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
 
     return (
         <>
-            <Navbar lang={lang} onLangChange={setLang} />
+            <Navbar />
             <main className="bg-sky min-h-screen py-10 px-5">
                 <div className="max-w-[1100px] mx-auto">
                     <div className="flex items-start justify-between gap-4 flex-wrap mb-6">

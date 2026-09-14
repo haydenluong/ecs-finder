@@ -2,24 +2,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import logo from "../assets/logo.jpg";
+import { useLang } from '@/i18n/LangProvider';
 import type { Lang } from '../types';
 
-interface NavbarProps {
-  lang: Lang;
-  onLangChange: (lang: Lang) => void;
-}
+function LangToggle() {
+    const { lang, setLang } = useLang();
 
-function LangToggle({ lang, onLangChange }: NavbarProps) {
     return (
         <div className="flex items-center gap-0.5 p-[3px] bg-[rgba(26,111,208,0.1)] border border-[rgba(26,111,208,0.2)] rounded-[10px]">
             {(['VI', 'EN'] as Lang[]).map(l => (
                 <button
                     type="button"
                     key={l}
-                    onClick={() => l === 'VI' && onLangChange('VI')}
-                    className={`py-[5px] px-3 rounded-[7px] border-none font-semibold text-[13px] transition-[background-color,color] duration-[180ms] ${
-                        l === 'EN' ? 'cursor-default' : 'cursor-pointer'
-                    } ${
+                    onClick={() => setLang(l)}
+                    className={`py-[5px] px-3 rounded-[7px] border-none font-semibold text-[13px] cursor-pointer transition-[background-color,color] duration-[180ms] ${
                         lang === l ? 'bg-primary text-white' : 'bg-transparent text-primary'
                     }`}
                 >
@@ -49,7 +45,8 @@ function NavLink({ href, active, children }: NavLinkProps) {
     );
 }
 
-function Navbar({ lang, onLangChange }: NavbarProps) {
+function Navbar() {
+    const { t, fixed } = useLang();
     const [navOpen, setNavOpen] = useState<boolean>(false);
     const pathname = usePathname();
 
@@ -80,20 +77,20 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
 
                 {/* Desktop: nav links, centered */}
                 <div className="col-start-2 hidden nav:flex items-center justify-center gap-6">
-                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
-                    <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
+                    <NavLink href="/" active={pathname === '/'}>{t('nav.home')}</NavLink>
+                    <NavLink href="/submit" active={pathname === '/submit'}>{t('nav.submit')}</NavLink>
                 </div>
 
                 {/* Desktop: lang toggle */}
                 <div className="col-start-3 hidden nav:flex items-center justify-self-end">
-                    <LangToggle lang={lang} onLangChange={onLangChange} />
+                    {!fixed && <LangToggle />}
                 </div>
 
                 {/* Mobile: hamburger, shares the third grid cell with the lang toggle above */}
                 <button
                     type="button"
                     onClick={() => setNavOpen(o => !o)}
-                    aria-label={navOpen ? 'Đóng menu' : 'Mở menu'}
+                    aria-label={navOpen ? t('nav.closeMenu') : t('nav.openMenu')}
                     className={`col-start-3 justify-self-end hidden max-nav:flex w-10 h-10 rounded-[10px] border border-border-bright cursor-pointer flex-col items-center justify-center gap-[5px] shrink-0 ${
                         navOpen ? 'bg-[rgba(26,111,208,0.1)]' : 'bg-glass'
                     }`}
@@ -113,9 +110,9 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
             {/* Mobile: slide-down panel */}
             {navOpen && (
                 <div className="hidden max-nav:flex bg-sky border-t border-border animate-nav-drop py-3.5 px-5 flex-col items-center gap-3.5">
-                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
-                    <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
-                    <LangToggle lang={lang} onLangChange={onLangChange} />
+                    <NavLink href="/" active={pathname === '/'}>{t('nav.home')}</NavLink>
+                    <NavLink href="/submit" active={pathname === '/submit'}>{t('nav.submit')}</NavLink>
+                    {!fixed && <LangToggle />}
                 </div>
             )}
         </nav>

@@ -1,3 +1,4 @@
+import { englishLabelsFor } from './tagData';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 export interface FilterParams {
@@ -22,7 +23,9 @@ export function filterActivities(activities: Activity[], { searchQuery, category
     return activities.filter(a => {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
-            const hit = [a.name, a.topic, a.subtopic, a.location]
+            // Both languages always, so a switch cannot change the result set —
+            // which is what lets pagination and an open modal survive it.
+            const hit = [a.name, a.topic, a.subtopic, a.location, ...englishLabelsFor(a)]
                 .filter(Boolean).some(s => s!.toLowerCase().includes(q));
             if (!hit) return false;
         }

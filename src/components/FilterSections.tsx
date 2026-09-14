@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
-import { topicSet, categorySet, accentVars, POSITIONS } from '../data/tagData';
+import { topicSet, categorySet, accentVars, POSITIONS, topicLabel, subtopicLabel, categoryLabel, positionLabel } from '../data/tagData';
+import { useLang } from '@/i18n/LangProvider';
+import type { StringKey } from '@/i18n/strings';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 
 const GROUP = 'py-3.5 px-1';
 
-const DEADLINE_OPTIONS: { label: string; value: DeadlineFilter }[] = [
-    { label: 'Tất cả',          value: '' },
-    { label: 'Trong tuần này',  value: 'week' },
-    { label: 'Trong tháng này', value: 'month' },
+const DEADLINE_OPTIONS: { key: StringKey; value: DeadlineFilter }[] = [
+    { key: 'filters.all',       value: '' },
+    { key: 'filters.thisWeek',  value: 'week' },
+    { key: 'filters.thisMonth', value: 'month' },
 ];
 
 interface SectionLabelProps {
@@ -86,6 +88,7 @@ function FilterSections({
     topicFilters, setTopicFilters,
     positionFilters, onPositionFilterChange,
 }: FilterSectionsProps) {
+    const { t, lang } = useLang();
     const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
@@ -157,10 +160,10 @@ function FilterSections({
                         <line x1="2" y1="8" x2="14" y2="8" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                         <line x1="2" y1="12" x2="10" y2="12" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                }>Loại hình</SectionLabel>
-                <RadioRow label="Tất cả" value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={activities.length} />
+                }>{t('filters.category')}</SectionLabel>
+                <RadioRow label={t('filters.all')} value="" selected={categoryFilter} onSelect={() => onCategoryChange('')} count={activities.length} />
                 {categorySet.map(c => (
-                    <RadioRow key={c.label} label={c.label} value={c.label} selected={categoryFilter}
+                    <RadioRow key={c.label} label={categoryLabel(c.label, lang)} value={c.label} selected={categoryFilter}
                         onSelect={() => onCategoryChange(categoryFilter === c.label ? '' : c.label)}
                         count={categoryCounts[c.label] ?? 0} />
                 ))}
@@ -173,9 +176,9 @@ function FilterSections({
                         <circle cx="8" cy="8" r="6" stroke="var(--color-primary)" strokeWidth="1.5"/>
                         <path d="M8 5v3l2 2" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                }>Hạn đăng ký</SectionLabel>
+                }>{t('filters.deadline')}</SectionLabel>
                 {DEADLINE_OPTIONS.map(opt => (
-                    <RadioRow key={opt.value} label={opt.label} value={opt.value} selected={deadlineFilter}
+                    <RadioRow key={opt.value} label={t(opt.key)} value={opt.value} selected={deadlineFilter}
                         onSelect={() => onDeadlineChange(deadlineFilter === opt.value ? '' : opt.value)} />
                 ))}
             </div>
@@ -187,7 +190,7 @@ function FilterSections({
                         <polygon points="8,1 14,5 14,11 8,15 2,11 2,5" stroke="var(--color-primary)" strokeWidth="1.5" fill="none"/>
                         <circle cx="8" cy="8" r="2" fill="var(--color-primary)"/>
                     </svg>
-                }>Chủ đề</SectionLabel>
+                }>{t('filters.topics')}</SectionLabel>
                 {topicSet.map(topic => {
                     const isChecked = selectedTopics.has(topic.name);
                     const isExpanded = expandedTopics[topic.name] ?? false;
@@ -199,7 +202,7 @@ function FilterSections({
                                     role="checkbox"
                                     tabIndex={0}
                                     aria-checked={isChecked}
-                                    aria-label={topic.name}
+                                    aria-label={topicLabel(topic.name, lang)}
                                     onClick={() => handleTopicCheck(topic.name, !isChecked)}
                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTopicCheck(topic.name, !isChecked); } }}
                                     className="flex items-center gap-2 flex-1 cursor-pointer"
@@ -217,12 +220,12 @@ function FilterSections({
                                     </div>
                                     <span className={`flex-1 font-semibold text-[13.5px] ${
                                         isChecked ? 'text-[var(--topic)]' : 'text-text'
-                                    }`}>{topic.name}</span>
+                                    }`}>{topicLabel(topic.name, lang)}</span>
                                 </div>
                                 {topic.subtopics.length > 0 && (
                                     <button
                                         type="button"
-                                        aria-label={isExpanded ? `Thu gọn ${topic.name}` : `Mở rộng ${topic.name}`}
+                                        aria-label={t(isExpanded ? 'filters.collapseTopic' : 'filters.expandTopic', { topic: topicLabel(topic.name, lang) })}
                                         aria-expanded={isExpanded}
                                         onClick={() => toggleExpand(topic.name)}
                                         className="bg-transparent border-none cursor-pointer py-0.5 px-1 rounded-[5px] leading-none text-text-faint text-[11px] min-w-6 min-h-6"
@@ -240,7 +243,7 @@ function FilterSections({
                                                 role="checkbox"
                                                 tabIndex={0}
                                                 aria-checked={subSelected}
-                                                aria-label={sub}
+                                                aria-label={subtopicLabel(sub, lang)}
                                                 onClick={() => handleSubtopicCheck(topic.name, sub, !subSelected)}
                                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSubtopicCheck(topic.name, sub, !subSelected); } }}
                                                 className={`flex items-center gap-2 py-[5px] px-1.5 rounded-[7px] cursor-pointer min-h-[44px] transition-[background-color] duration-150 ${
@@ -260,7 +263,7 @@ function FilterSections({
                                                 </div>
                                                 <span className={`text-[12.5px] ${
                                                     subSelected ? 'text-[var(--topic)] font-semibold' : 'text-text-dim font-normal'
-                                                }`}>{sub}</span>
+                                                }`}>{subtopicLabel(sub, lang)}</span>
                                             </div>
                                         );
                                     })}
@@ -278,7 +281,7 @@ function FilterSections({
                         <circle cx="8" cy="5" r="3" stroke="var(--color-primary)" strokeWidth="1.5"/>
                         <path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                }>Vị trí tuyển</SectionLabel>
+                }>{t('filters.positions')}</SectionLabel>
                 {POSITIONS.map(pos => {
                     const checked = selectedPositions.has(pos);
                     return (
@@ -286,7 +289,7 @@ function FilterSections({
                             role="checkbox"
                             tabIndex={0}
                             aria-checked={checked}
-                            aria-label={pos}
+                            aria-label={positionLabel(pos, lang)}
                             onClick={() => handlePositionCheck(pos, !checked)}
                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePositionCheck(pos, !checked); } }}
                             className={`flex items-center gap-[9px] py-[7px] px-[9px] rounded-[9px] cursor-pointer select-none min-h-[44px] transition-[background-color] duration-150 ${
@@ -304,7 +307,7 @@ function FilterSections({
                             </div>
                             <span className={`text-[13px] ${
                                 checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'
-                            }`}>{pos}</span>
+                            }`}>{positionLabel(pos, lang)}</span>
                         </div>
                     );
                 })}

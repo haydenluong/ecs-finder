@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import logo from '../assets/logo.jpg';
+import { useLang } from '@/i18n/LangProvider';
 
 const CONTACT_EMAIL = 'timkiemhoatdongngoaikhoa@gmail.com';
 
 function Footer() {
+    const { t } = useLang();
     const [copied, setCopied] = useState(false);
 
     function handleCopy() {
@@ -29,19 +31,19 @@ function Footer() {
                             <span className="font-heading font-bold text-[16px] tracking-[-0.01em] text-text">ECS Finder</span>
                         </div>
                         <p className="text-[13.5px] leading-[1.6] text-text-dim m-0 max-w-[32ch]">
-                            Khám phá hoạt động ngoại khoá dành cho học sinh &amp; sinh viên Việt Nam.
+                            {t('footer.tagline')}
                         </p>
                     </div>
 
                     {/* Contact block */}
                     <div className="flex flex-col gap-2.5 min-w-0">
-                        <span className="font-bold text-[11px] tracking-[0.09em] text-text-faint uppercase">Liên hệ</span>
+                        <span className="font-bold text-[11px] tracking-[0.09em] text-text-faint uppercase">{t('footer.contact')}</span>
 
                         {/* Copy email button */}
                         <button
                             type="button"
                             onClick={handleCopy}
-                            title="Sao chép địa chỉ email"
+                            title={t('footer.copyEmail')}
                             className={`flex items-center gap-2.5 py-2.5 px-3.5 rounded-[10px] border cursor-pointer min-w-0 transition-[background-color,border-color] duration-[180ms] ${
                                 copied
                                     ? 'border-[rgba(26,111,208,0.33)] bg-[rgba(26,111,208,0.08)]'
@@ -76,7 +78,7 @@ function Footer() {
                                 <path d="M7 4.5v2.8l1.8 1.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                             </svg>
                             <span className="text-[12.5px]">
-                                Phản hồi trong vòng 24 giờ
+                                {t('footer.responseTime')}
                             </span>
                         </div>
                     </div>
@@ -88,7 +90,7 @@ function Footer() {
                         © 2025 ECS Finder. All rights reserved.
                     </span>
                     <span className="text-[12.5px] text-text-faint">
-                        Dành cho học sinh &amp; sinh viên Việt Nam
+                        {t('footer.forStudents')}
                     </span>
                 </div>
             </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import FilterRail from './FilterRail';
 import FilterDrawer from './FilterDrawer';
 import ActivityCards from './ActivityCards';
+import { useLang } from '@/i18n/LangProvider';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 interface MainContentProps {  
@@ -27,6 +28,7 @@ function MainContent({
     positionFilters, setPositionFilters,
     onClearAll,
 }: MainContentProps) {
+    const { t } = useLang();
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [resultCount, setResultCount] = useState<number>(0);
     const [pageInfo, setPageInfo] = useState<{ page: number; total: number }>({ page: 0, total: 1 });
@@ -83,7 +85,7 @@ function MainContent({
                         <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                         <line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    Bộ lọc
+                    {t('filters.title')}
                     {activeFilterCount > 0 && (
                         <span className="bg-primary text-white rounded-full text-[11px] font-bold py-px px-[7px] min-w-5 text-center">{activeFilterCount}</span>
                     )}
@@ -92,12 +94,12 @@ function MainContent({
 
             <div className="flex items-center justify-between mb-5">
                 <h2 className="font-heading font-bold text-[22px] tracking-[-0.02em] text-text m-0">
-                    {hasFilters ? 'Kết quả lọc' : 'Tất cả hoạt động'}
+                    {t(hasFilters ? 'results.filtered' : 'results.all')}
                 </h2>
 
                 {pageInfo.total > 1 && (
                     <span className="text-[13px] text-text-faint font-medium shrink-0">
-                        Trang {pageInfo.page + 1}/{pageInfo.total}
+                        {t('results.page', { page: pageInfo.page + 1, total: pageInfo.total })}
                     </span>
                 )}
             </div>

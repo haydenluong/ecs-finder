@@ -4,11 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import type { Lang } from '@/types';
 
 export default function LoginClient() {
     const router = useRouter();
-    const [lang, setLang] = useState<Lang>('VI');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -45,7 +43,7 @@ export default function LoginClient() {
 
     return (
         <>
-            <Navbar lang={lang} onLangChange={setLang} />
+            <Navbar />
             <main className="bg-sky min-h-screen py-10 px-5">
                 <div className="max-w-[420px] mx-auto">
                     <h1 className="font-heading font-bold text-[26px] text-text mb-2">Duyệt hoạt động</h1>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLang } from '@/i18n/LangProvider';
 import Cropper, { type Area, type Point } from 'react-easy-crop';
 import { CARD_IMAGE_ASPECT } from '@/components/ActivityImage';
 import type { ImagePosition } from '@/types';
@@ -12,6 +13,7 @@ interface ImageCropperProps {
 }
 
 export default function ImageCropper({ src, onChange }: ImageCropperProps) {
+    const { t } = useLang();
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(MIN_ZOOM);
 
@@ -36,20 +38,20 @@ export default function ImageCropper({ src, onChange }: ImageCropperProps) {
                 />
             </div>
             <div className="flex items-center gap-3">
-                <span className="text-[12px] text-text-faint shrink-0">Phóng to</span>
+                <span className="text-[12px] text-text-faint shrink-0">{t('submit.crop.zoom')}</span>
                 <input
                     type="range"
                     min={MIN_ZOOM}
                     max={MAX_ZOOM}
                     step={0.05}
                     value={zoom}
-                    aria-label="Phóng to ảnh"
+                    aria-label={t('submit.crop.zoomImage')}
                     onChange={e => setZoom(Number(e.target.value))}
                     className="w-full accent-primary cursor-pointer"
                 />
             </div>
             <span className="text-[12px] text-text-faint">
-                Kéo để chọn khung ảnh · cuộn để phóng to
+                {t('submit.crop.hint')}
             </span>
         </div>
     );

@@ -50,6 +50,11 @@ export interface Activity {
   deadline: string;
   positions: string[];
   desc: string;
+
+  // Written by /api/admin/decide at approval time. null means not translated —
+  // the read path renders `desc_en ?? desc`, so it must not be read as empty.
+  desc_en?: string | null;
+
   image: string;
   image_position?: ImagePosition | null;
   link: string;

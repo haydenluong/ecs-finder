@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { Topic, CategoryTag } from '../types';
+import type { Topic, CategoryTag, Lang } from '../types';
 
 export const TOPIC_ACCENTS: Record<string, string> = {
     'STEM':                     '#12a6c9',
@@ -80,3 +80,115 @@ export const POSITIONS = [
     'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
     'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
 ];
+
+// English display labels, keyed by the Vietnamese value. Vietnamese stays the
+// canonical id — the DB value, the filter-state value, and the TOPIC_ACCENTS key
+// — so these are only ever read at render. Add a label here whenever you add a
+// topic, subtopic, category or position above.
+const TOPIC_EN: Record<string, string> = {
+    'STEM':                     'STEM',
+    'Xã hội':                   'Society',
+    'Môi trường':               'Environment',
+    'Kinh tế':                  'Economics',
+    'Nghệ thuật & Sáng tạo':   'Arts & Creativity',
+    'Ngôn ngữ & Giao tiếp':    'Language & Communication',
+    'Sức khỏe':                 'Health',
+};
+
+const SUBTOPIC_EN: Record<string, string> = {
+    'Khoa học tự nhiên':                            'Natural Sciences',
+    'Lập trình / AI / Khoa học dữ liệu':            'Programming / AI / Data Science',
+    'Kỹ thuật / Robotics':                          'Engineering / Robotics',
+    'Thiện nguyện':                                 'Volunteering & Charity',
+    'Bình đẳng xã hội':                             'Social Equality',
+    'Văn hóa / Du học':                             'Culture / Studying Abroad',
+    'Tài chính & Kinh doanh':                       'Finance & Business',
+    'Marketing':                                    'Marketing',
+    'Gây quỹ':                                      'Fundraising',
+    'Văn học & Thơ':                                'Literature & Poetry',
+    'Hội họa':                                      'Painting',
+    'Viết':                                         'Writing',
+    'Thời trang':                                   'Fashion',
+    'Ngôn ngữ học':                                 'Linguistics',
+    'Tranh biện & Hùng biện':                       'Debate & Public Speaking',
+    'Tâm lý học':                                   'Psychology',
+    'Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Nutrition & Lifestyle / Physical Health',
+};
+
+const CATEGORY_EN: Record<string, string> = {
+    'Cuộc thi (Tổ chức cuộc thi)':          'Competitions (Hosting)',
+    'Cuộc thi (Tham gia cuộc thi)':         'Competitions (Entering)',
+    'Dự án & CLB':                          'Projects & Clubs',
+    'Sự kiện (Workshop, Talkshows, ...)':   'Events (Workshops, Talks, ...)',
+};
+
+const POSITION_EN: Record<string, string> = {
+    'Ban Nhân Sự':               'Human Resources',
+    'Ban Truyền Thông':          'Communications',
+    'Ban Dịch Thuật':            'Translation',
+    'Ban Nội Dung':              'Content',
+    'Ban Chuyên Môn':            'Academics',
+    'Ban Thiết Kế':              'Design',
+    'Ban Tài chính Đối ngoại':  'Finance & External Relations',
+    'CTV Truyền Thông':          'Communications Contributor',
+    'Tình nguyện viên':          'Volunteer',
+    'Khác':                      'Other',
+};
+
+// Locations are free text, so these are substituted wherever they appear rather
+// than matched whole — real values include "Đà Nẵng & Online" and "TP.HCM".
+// Longest first, so "TP. Hồ Chí Minh" is not half-replaced by "Hồ Chí Minh".
+const LOCATION_EN: [string, string][] = ([
+    ['TP. Hồ Chí Minh', 'Ho Chi Minh City'],
+    ['TP.Hồ Chí Minh', 'Ho Chi Minh City'],
+    ['Thành phố Hồ Chí Minh', 'Ho Chi Minh City'],
+    ['Hồ Chí Minh', 'Ho Chi Minh City'],
+    ['TP.HCM', 'Ho Chi Minh City'],
+    ['TPHCM', 'Ho Chi Minh City'],
+    ['Hà Nội', 'Hanoi'],
+    ['Đà Nẵng', 'Da Nang'],
+    ['Hải Phòng', 'Hai Phong'],
+    ['Cần Thơ', 'Can Tho'],
+    ['Cà Mau', 'Ca Mau'],
+    ['Huế', 'Hue'],
+    ['Toàn quốc', 'Nationwide'],
+    ['Trực tuyến', 'Online'],
+] as [string, string][]).sort((a, b) => b[0].length - a[0].length);
+
+function label(map: Record<string, string>, vi: string, lang: Lang): string {
+    return lang === 'EN' ? map[vi] ?? vi : vi;
+}
+
+export function topicLabel(vi: string, lang: Lang): string {
+    return label(TOPIC_EN, vi, lang);
+}
+
+export function subtopicLabel(vi: string, lang: Lang): string {
+    return label(SUBTOPIC_EN, vi, lang);
+}
+
+export function categoryLabel(vi: string, lang: Lang): string {
+    return label(CATEGORY_EN, vi, lang);
+}
+
+export function positionLabel(vi: string, lang: Lang): string {
+    return label(POSITION_EN, vi, lang);
+}
+
+export function locationLabel(vi: string, lang: Lang): string {
+    if (lang !== 'EN' || !vi) return vi;
+    return LOCATION_EN.reduce((out, [from, to]) => out.split(from).join(to), vi);
+}
+
+// Every English label, for the search index: search matches both languages
+// regardless of the current UI language, so switching cannot change results.
+export function englishLabelsFor(activity: {
+    category: string; topic: string; subtopic: string | null; location: string;
+}): string[] {
+    return [
+        CATEGORY_EN[activity.category],
+        TOPIC_EN[activity.topic],
+        activity.subtopic ? SUBTOPIC_EN[activity.subtopic] : undefined,
+        locationLabel(activity.location, 'EN'),
+    ].filter((s): s is string => Boolean(s));
+}
