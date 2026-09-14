@@ -2,7 +2,7 @@
 
 A community-driven directory for extracurricular activities, clubs, competitions, and events. Built for students to discover and filter opportunities by category, topic, deadline, and open positions.
 
-**Live site:** https://ecs-finder.vercel.app
+**Live site:** https://timkiemhdnk.com
 
 ---
 
@@ -13,8 +13,9 @@ A community-driven directory for extracurricular activities, clubs, competitions
 - Filter by **topic & subtopic** — STEM, Xã hội, Môi trường, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
 - Filter by **deadline** — within a week or month
 - Filter by **open position** — find activities recruiting specific roles
-- Full-text **search** across activity names and descriptions
-- **Submit an activity** via Google Form; approved submissions are synced through an automated pipeline
+- **Search** across activity names, topics, subtopics, and locations — in Vietnamese or English, whichever language the interface is in
+- **Vietnamese / English interface** — the VI/EN toggle in the navbar translates the site and the submission form, and activity descriptions are translated too
+- **Submit an activity** in-app at `/submit`, with automated spam, link, and content checks before a human reviews it at `/admin`
 - Mobile-responsive with a collapsible filter drawer
 
 ---
@@ -24,9 +25,10 @@ A community-driven directory for extracurricular activities, clubs, competitions
 | Layer | Tools |
 |-------|-------|
 | Frontend | React 19, TypeScript, Next.js 16 (App Router) |
-| Rendering | Static prerender at build time + client hydration |
-| Styling | Tailwind CSS 4 (theme tokens via `@theme` in `src/index.css`) |
-| Data pipeline | Node.js, Google Sheets API |
+| Rendering | Server Components fetch the data; static prerender + client hydration |
+| Styling | Tailwind CSS 4 (theme tokens via `@theme static` in `src/index.css`) |
+| Database & storage | Supabase (Postgres + Row Level Security, activity images in Storage) |
+| Automated checks | Cloudflare Turnstile, Claude (Haiku 4.5) for content moderation and description translation |
 | Hosting | Vercel (auto-deploy on push to `main`) |
 
 ---
@@ -35,13 +37,19 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 ```bash
 npm install
-npm run dev       # http://localhost:3000
+cp .env.example .env    # then fill in the values
+npm run dev             # http://localhost:3000
 ```
 
 ### Prerequisites
 
 - Node.js 18+
 - npm
+- A Supabase project
+- An Anthropic API key (for the content check and description translation)
+- A Cloudflare Turnstile site/secret key pair (for the submission form)
+
+`.env.example` documents every variable and what happens if it is missing. `.env` is gitignored and never committed.
 
 ---
 
@@ -53,7 +61,11 @@ npm run dev       # http://localhost:3000
 | `npm run build` | Production build into `.next/` |
 | `npm start` | Serve the production build locally |
 | `npm run lint` | Run ESLint |
-| `npm run sync` | Pull approved submissions from Google Sheet and publish |
+| `npm run seed` | Upsert the starter activities into Supabase |
+| `npm run backfill-translations` | Translate `desc` → `desc_en` for approved rows that predate the column. Safe to re-run |
+| `npx tsc --noEmit` | Typecheck |
+
+There is no test suite configured.
 
 ---
 
@@ -62,36 +74,57 @@ npm run dev       # http://localhost:3000
 ```
 ecs-finder/
 ├── scripts/
-│   └── sync.js              # Google Sheets → Activities.ts sync script
+│   ├── seed.ts                  # Upsert starter activities (service-role key)
+│   └── backfill-translations.ts  # One-off desc → desc_en backfill
+├── supabase/
+│   └── migrations/              # Timestamped SQL migrations
+├── utils/supabase/
+│   ├── server.ts                # Client for Server Components (anon key)
+│   ├── client.ts                # Client for browser code (anon key)
+│   └── admin.ts                 # Client for Route Handlers (service-role key)
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx       # Root layout — <html>/<body>, metadata, fonts
-│   │   ├── page.tsx         # "/" route (Server Component)
-│   │   └── HomeClient.tsx   # Client boundary — owns all filter and search state
-│   ├── types.ts             # Canonical TypeScript interfaces
-│   ├── index.css            # Design tokens + global styles
+│   │   ├── layout.tsx           # Root layout — <html>/<body>, metadata, fonts, LangProvider
+│   │   ├── page.tsx             # "/" route (Server Component) — fetches approved activities
+│   │   ├── HomeClient.tsx       # Client boundary — owns all filter and search state
+│   │   ├── submit/              # "/submit" — submission form, live preview, image cropper
+│   │   ├── admin/               # "/admin" — password-gated approval queue
+│   │   └── api/
+│   │       ├── submit/          # POST /api/submit — validation, checks, insert
+│   │       └── admin/           # login, logout, approve/reject
+│   ├── i18n/
+│   │   ├── strings.ts           # VI/EN string dictionary + translate()
+│   │   └── LangProvider.tsx     # Language context — useLang() → { lang, setLang, t }
+│   ├── lib/
+│   │   ├── adminAuth.ts         # Signed admin session cookie
+│   │   └── translateDesc.ts     # Vietnamese → English description translation
+│   ├── types.ts                 # Canonical TypeScript interfaces
+│   ├── index.css                # Design tokens + global styles
 │   ├── components/
-│   │   ├── Navbar.tsx       # Sticky nav with VI/EN toggle
-│   │   ├── HeroSection.tsx  # Hero with search bar and floating topic chips
-│   │   ├── SearchBar.tsx    # Controlled search input with result count
-│   │   ├── FilterLeft.tsx   # Sidebar filter rail (category, deadline, topics, positions)
-│   │   ├── FilterDrawer.tsx # Mobile filter drawer
-│   │   ├── FilterSections.tsx
-│   │   ├── MainContent.tsx  # Layout: filter rail + card grid
-│   │   ├── ActivityCards.tsx # Card grid, detail modal, pagination, client-side filtering
+│   │   ├── Navbar.tsx           # Sticky nav with the VI/EN toggle
+│   │   ├── HeroSection.tsx      # Hero with search bar and floating topic chips
+│   │   ├── SearchBar.tsx        # Controlled search input
+│   │   ├── FilterRail.tsx       # Sidebar filter rail (desktop)
+│   │   ├── FilterDrawer.tsx     # Mobile filter drawer
+│   │   ├── FilterSections.tsx   # The filter controls, shared by rail and drawer
+│   │   ├── MainContent.tsx      # Layout: filter rail + card grid
+│   │   ├── ActivityCards.tsx    # Card grid, detail modal, pagination, client-side filtering
+│   │   ├── ActivityImage.tsx    # Card/modal photo with saved crop position
 │   │   └── Footer.tsx
 │   └── data/
-│       ├── Activities.ts    # mockActivities — the only data array rendered by the UI
-│       └── tagData.ts       # topicSet, categorySet, TOPIC_ACCENTS, accentVars()
-├── .env                     # gitignored — see setup below
+│       ├── Activities.ts        # filterActivities(), daysLeft(), and the seed array
+│       └── tagData.ts           # topicSet, categorySet, POSITIONS, TOPIC_ACCENTS, English labels
+├── .env                         # gitignored — see .env.example
 └── package.json
 ```
+
+Activity data is fetched from Supabase in `src/app/page.tsx` and passed down as a prop. `mockActivities` in `Activities.ts` is only the seed source for `npm run seed` — nothing in the UI reads it.
 
 ---
 
 ## Activity data model
 
-Each entry in `src/data/Activities.ts` follows this shape:
+A row in the `activities_submissions` table, and the `Activity` interface in `src/types.ts`:
 
 ```ts
 {
@@ -104,50 +137,68 @@ Each entry in `src/data/Activities.ts` follows this shape:
   deadline: string,          // ISO date: "YYYY-MM-DD"
   positions: string[],       // open roles for recruitment
   desc: string,              // Vietnamese description shown in the modal
+  desc_en?: string | null,   // English translation, written on approval; null falls back to desc
   image: string,             // REQUIRED photo URL — card image area + modal header
+  image_position?: ImagePosition | null,  // saved crop from the submission form
   link: string,              // registration URL — opens in new tab from the modal CTA
+  status?: 'pending' | 'approved' | 'rejected' | 'archived',  // only 'approved' is public
+  created_at?: string,       // DB-assigned ISO timestamp
+  // Automated check results, shown to a reviewer on /admin
+  link_check_passed?: boolean | null,
+  content_check_verdict?: 'ok' | 'spam' | 'review' | null,
+  content_check_reason?: string | null,
+  // Written when a reviewer decides
+  reviewed_by?: string | null,
+  reviewed_at?: string | null,
 }
 ```
 
-To add a new topic, subtopic, or category, update `src/data/tagData.ts` first, then add entries to `Activities.ts`.
+To add a new topic, subtopic, category, or position, update `src/data/tagData.ts` — including its English label in the same file.
+
+> In SQL the `desc` column must be quoted as `"desc"`, since `DESC` is a reserved keyword. The JS client returns it as a plain `desc` key.
 
 ---
 
 ## Activity submission pipeline
 
-Activities are submitted via a public Google Form and reviewed before going live.
+Activities are submitted through the site itself and reviewed before going live.
 
-### How it works
+1. **Submit** — anyone fills in the form at `/submit`, with a live card preview and an image cropper.
+2. **Automated checks** — `POST /api/submit` verifies a Cloudflare Turnstile token, rate-limits by IP, rejects duplicate names, validates every field against `tagData.ts`, checks the image's actual byte signature, fetches the registration link to see whether it resolves, and asks Claude to classify the content as ok / spam / inappropriate / review. Clearly inappropriate content is rejected outright; the other verdicts are recorded for the reviewer. The row is inserted with `status: 'pending'` and the image uploaded to Supabase Storage.
+3. **Review** — an approver logs in at `/admin`, sees the automated check results alongside the submission, and approves or rejects it. Approving records who decided and translates the description into English.
+4. **Live** — the `/` route only ever selects rows with `status = 'approved'`, so approval is all it takes to publish. The page revalidates every 60 seconds.
 
-1. **Submit** — anyone fills out the Google Form
-2. **Review** — open the linked Google Sheet and set the `Status` column to `approved`
-3. **Sync** — run the sync script locally:
-   ```bash
-   npm run sync
-   ```
-   The script reads approved rows, appends them to `src/data/Activities.ts`, and auto-commits and pushes. Vercel redeploys on push.
+The link and content checks are deliberately **soft**: a failed check records a warning for the reviewer rather than blocking a submission, because Facebook pages and Google Forms routinely refuse automated requests. Description translation is soft in the same way — if it fails, the activity is still approved and the modal shows the Vietnamese original.
 
-### One-time setup
+### Database setup
 
-1. Enable **Google Sheets API** in [Google Cloud Console](https://console.cloud.google.com)
-2. Create a service account → download JSON key → save as `scripts/credentials.json`
-3. Share the Google Sheet with the service account email (Editor role)
-4. Copy `.env.example` to `.env` and fill in your values:
+Apply the migrations in `supabase/migrations/` in filename order. They set up the table, the public read policy (`anon` can select `status = 'approved'` only), the rate-limit function, and the id-sequence reset function.
 
-```env
-SPREADSHEET_ID=your_spreadsheet_id_here
-SHEET_NAME=Form Responses 1
-```
+Two independent gates guard every query, and both must pass: table-level `GRANT`, then the Row Level Security policy. With RLS on and no matching policy a `select` returns **zero rows and no error** — an empty grid with nothing in the logs. A seed script succeeding proves nothing about the read path, since it runs as `service_role` and skips both gates.
 
-> `scripts/credentials.json` and `.env` are gitignored and never committed.
+---
 
-> **Known issue:** `sync.js` still outputs the old tag-array activity shape and targets the old filename. Add activities manually in the new shape above until this is fixed.
+## Translation
+
+The VI/EN toggle in the navbar switches the whole public site and the submission form. `/admin` stays Vietnamese so reviewers always see the values they are approving.
+
+Three separate mechanisms, by the kind of text:
+
+| Text | How it's translated |
+|------|--------------------|
+| Interface copy | A keyed dictionary in `src/i18n/strings.ts`, read through `useLang().t()` |
+| Topics, categories, positions, locations | Lookup maps in `src/data/tagData.ts`, keyed by the Vietnamese value |
+| Activity descriptions | Claude, once per activity, at approval time — cached in the `desc_en` column |
+
+Activity **names are not translated** — organisation and competition names stay as submitted. Search matches both languages regardless of the interface language, so a switch never changes which results you see.
+
+Vietnamese is the canonical value everywhere: it is what the database stores, what the filters compare against, and what the topic accent colours are keyed by. English exists only at render time.
 
 ---
 
 ## Design tokens
 
-Defined in the `@theme` block in `src/index.css`, so each is available both as a Tailwind utility and as a CSS variable:
+Defined in the `@theme static` block in `src/index.css`, so each is available both as a Tailwind utility and as a CSS variable:
 
 | Token | Value | Utility | Usage |
 |-------|-------|---------|-------|
@@ -159,10 +210,12 @@ Defined in the `@theme` block in `src/index.css`, so each is available both as a
 | `--color-glass` | `#ffffff` | `bg-glass` | Card and panel surfaces |
 | `--color-border` | `rgba(20,52,80,0.13)` | `border-border` | Borders and dividers |
 
+Each topic also has an accent colour in `TOPIC_ACCENTS` (`src/data/tagData.ts`), applied via `accentVars()` as CSS custom properties.
+
 Fonts: **Montserrat** (headings, 500–800) and **Be Vietnam Pro** (body, 400–600), loaded from Google Fonts.
 
 ---
 
 ## Contributing
 
-To submit an activity for listing, use the public submission form linked on the site. For code contributions, open a pull request against `main`.
+To submit an activity for listing, use the form at [/submit](https://ecs-finder.vercel.app/submit). For code contributions, open a pull request against `main`.
