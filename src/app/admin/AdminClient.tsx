@@ -198,6 +198,15 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
                                             {activity.link}
                                         </a>
 
+                                        {activity.email && (
+                                            <a
+                                                href={`mailto:${activity.email}`}
+                                                className="text-[13px] text-primary underline break-all"
+                                            >
+                                                {activity.email}
+                                            </a>
+                                        )}
+
                                         <p className="text-[12px] text-text-faint">
                                             #{activity.id} · Gửi lúc {formatTimestamp(activity.created_at)}
                                             {activity.reviewed_by && (

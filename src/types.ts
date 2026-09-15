@@ -60,6 +60,8 @@ export interface Activity {
   link: string;
   status?: "pending" | "approved" | "rejected" | "archived";
 
+  email?: string | null;
+
   // Automated check results from /api/submit, shown to a reviewer on /admin.
   // null means "not checked" — the row predates the column, or the check itself
   // failed (both fail open), so it must not be read as a pass.

@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { ADMIN_COOKIE, verifySessionToken } from '@/lib/adminAuth';
 import { translateDesc } from '@/lib/translateDesc';
+import { sendMail } from '@/lib/mailer';
+import { approvedEmail, rejectedEmail } from '@/lib/submissionEmails';
 
 export const runtime = 'nodejs';
 
@@ -44,24 +46,23 @@ export async function POST(request: Request) {
 
     // Read `desc` rather than taking it from the request body — this route holds
     // the service-role key and re-verifies everything itself.
-    let descEn: string | null = null;
-    if (action === 'approve') {
-        const { data: row, error: readError } = await supabaseAdmin
-            .from('activities_submissions')
-            .select('desc, desc_en')
-            .eq('id', id)
-            .maybeSingle();
+    const { data: row, error: readError } = await supabaseAdmin
+        .from('activities_submissions')
+        .select('name, email, desc, desc_en')
+        .eq('id', id)
+        .maybeSingle();
 
-        if (readError) {
-            console.error('Admin decision read failed:', readError);
-            return NextResponse.json({ ok: false, message: 'Không thể cập nhật, vui lòng thử lại.' }, { status: 500 });
-        }
-        if (!row) {
-            return NextResponse.json({ ok: false, message: 'Không tìm thấy hoạt động.' }, { status: 404 });
-        }
-        if (!row.desc_en) {
-            descEn = await translateDesc(row.desc);
-        }
+    if (readError) {
+        console.error('Admin decision read failed:', readError);
+        return NextResponse.json({ ok: false, message: 'Không thể cập nhật, vui lòng thử lại.' }, { status: 500 });
+    }
+    if (!row) {
+        return NextResponse.json({ ok: false, message: 'Không tìm thấy hoạt động.' }, { status: 404 });
+    }
+
+    let descEn: string | null = null;
+    if (action === 'approve' && !row.desc_en) {
+        descEn = await translateDesc(row.desc);
     }
 
     const { data, error } = await supabaseAdmin
@@ -84,6 +85,13 @@ export async function POST(request: Request) {
     // turns a nonexistent id into a 404 instead of a misleading success.
     if (!data || data.length === 0) {
         return NextResponse.json({ ok: false, message: 'Không tìm thấy hoạt động.' }, { status: 404 });
+    }
+
+    // After the commit: the decision stands whether or not the notice goes out.
+    // Rows submitted before the email column existed have none.
+    if (row.email) {
+        const notice = action === 'approve' ? approvedEmail(row.name) : rejectedEmail(row.name);
+        await sendMail(row.email, notice.subject, notice.text);
     }
 
     return NextResponse.json({ ok: true });

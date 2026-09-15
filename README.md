@@ -51,6 +51,12 @@ TURNSTILE_SECRET_KEY=
 ANTHROPIC_API_KEY=                 # content check + description translation
 SESSION_SECRET=                    # signs the /admin cookie, 32+ chars
 ADMIN_USERS=                       # comma-separated label:password pairs
+SMTP_HOST=smtp.gmail.com           # submission status emails
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=                         # the sending mailbox
+SMTP_PASS=                         # Gmail app password, not the account password
+MAIL_FROM=                         # must name the same mailbox as SMTP_USER
 ```
 
 ### Prerequisites
@@ -62,6 +68,8 @@ ADMIN_USERS=                       # comma-separated label:password pairs
 - A Cloudflare Turnstile site/secret key pair (for the submission form)
 
 `.env` is gitignored and never committed. The same variables must also be set in the Vercel project settings; if `SESSION_SECRET` or `ADMIN_USERS` is missing in production, `/admin` fails closed and nobody can log in.
+
+The `SMTP_*` variables fail open, not closed: without them submissions and approvals still work, they just send no email and log `Mail not configured`. `SMTP_PASS` is a Google App Password (Google Account → Security → App passwords, requires 2-Step Verification) — a normal account password will not authenticate over SMTP.
 
 ---
 

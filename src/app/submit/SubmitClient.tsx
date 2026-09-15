@@ -12,6 +12,7 @@ import ImageCropper from './ImageCropper';
 import { categorySet, topicSet, categoryLabel, topicLabel, subtopicLabel } from '@/data/tagData';
 import { useLang } from '@/i18n/LangProvider';
 import { isStringKey, type StringKey } from '@/i18n/strings';
+import { EMAIL_RE } from '@/lib/emailFormat';
 import type { Activity, ImagePosition } from '@/types';
 
 declare global {
@@ -28,8 +29,9 @@ declare global {
     }
 }
 
-type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' | 'desc_en'> & {
+type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' | 'desc_en' | 'email'> & {
     image?: FileList;
+    email: string;
 };
 
 // /api/submit reports which field an error belongs to. Everything except 'form'
@@ -37,7 +39,7 @@ type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' 
 // the page-level banner.
 const SERVER_FIELDS = [
     'name', 'category', 'topic', 'subtopic', 'location',
-    'deadline', 'desc', 'link', 'image', 'positions',
+    'deadline', 'desc', 'link', 'image', 'positions', 'email',
 ] as const;
 
 function isServerField(value: unknown): value is (typeof SERVER_FIELDS)[number] {
@@ -111,7 +113,7 @@ export default function SubmitClient() {
     const { register, watch, reset, resetField, getValues, setValue, setError, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
         defaultValues: {
             name: '', category: '', topic: '', subtopic: null, location: '',
-            deadline: '', positions: [], desc: '', link: '',
+            deadline: '', positions: [], desc: '', link: '', email: '',
         },
     });
 
@@ -200,6 +202,7 @@ export default function SubmitClient() {
         fd.append('deadline', data.deadline);
         fd.append('desc', data.desc);
         fd.append('link', data.link);
+        fd.append('email', data.email);
         fd.append('positions', JSON.stringify(data.positions));
         fd.append('image', data.image![0]);
         fd.append('image_position', JSON.stringify(imagePosition));
@@ -225,10 +228,10 @@ export default function SubmitClient() {
     }
 
     function handleSubmitAnother() {
-        const { category, topic, subtopic, location } = getValues();
+        const { category, topic, subtopic, location, email } = getValues();
         reset({
             name: '', deadline: '', positions: [], desc: '', link: '', image: undefined,
-            category, topic, subtopic, location,
+            category, topic, subtopic, location, email,
         });
         setImagePosition(null);
         setSubmitErrorKey('');
@@ -443,6 +446,26 @@ export default function SubmitClient() {
                                         {t(
                                             isStringKey(errors.link.message) ? errors.link.message
                                                 : errors.link.type === 'pattern' ? 'error.link.invalid'
+                                                : 'error.required',
+                                        )}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[13px] text-text-dim">{t('submit.email')}</label>
+                                <input
+                                    type="email"
+                                    placeholder="ban@example.com"
+                                    {...register('email', { required: true, pattern: EMAIL_RE })}
+                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text placeholder:text-text-faint focus:border-primary outline-none"
+                                />
+                                <span className="text-[13px] text-text-faint">{t('submit.emailHint')}</span>
+                                {errors.email && (
+                                    <span className="text-[13px] text-red-600">
+                                        {t(
+                                            isStringKey(errors.email.message) ? errors.email.message
+                                                : errors.email.type === 'pattern' ? 'error.email.invalid'
                                                 : 'error.required',
                                         )}
                                     </span>

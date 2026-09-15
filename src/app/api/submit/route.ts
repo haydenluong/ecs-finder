@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
+import { resolve, resolveMx } from 'node:dns/promises';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { categorySet, topicSet, POSITIONS } from '@/data/tagData';
+import { EMAIL_RE } from '@/lib/emailFormat';
+import { sendMail } from '@/lib/mailer';
+import { pendingEmail } from '@/lib/submissionEmails';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MIME_TO_EXT: Record<string, string> = {
@@ -51,6 +55,34 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
         console.error('Turnstile verification rejected:', result['error-codes']);
     }
     return result.success;
+}
+
+// Rejects only a domain DNS is certain does not accept mail. A lookup that times
+// out or errors passes: a resolver hiccup must not block a real submission, and a
+// bad address is caught later by the bounce, not here.
+async function emailDomainAcceptsMail(email: string): Promise<boolean> {
+    const domain = email.split('@')[1];
+    if (!domain) return false;
+
+    try {
+        const mx = await resolveMx(domain);
+        if (mx.length > 0) return true;
+    } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code !== 'ENODATA' && code !== 'ENOTFOUND') {
+            console.error('MX lookup failed, allowing submission:', domain, code);
+            return true;
+        }
+    }
+
+    // No MX record is not conclusive: a domain with only an A record still
+    // accepts mail there under the legacy fallback.
+    try {
+        await resolve(domain);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 // Soft check: a failed fetch does not reject the submission (Facebook/Google
@@ -200,10 +232,19 @@ export async function POST(request: Request) {
     const deadline = (fd.get('deadline') as string ?? '').trim();
     const desc = (fd.get('desc') as string ?? '').trim();
     const link = (fd.get('link') as string ?? '').trim();
+    const email = (fd.get('email') as string ?? '').trim();
     const image = fd.get('image');
 
-    if (!name || !category || !topic || !location || !deadline || !desc || !link) {
+    if (!name || !category || !topic || !location || !deadline || !desc || !link || !email) {
         return fail('form', 'error.form.missingFields');
+    }
+
+    if (!EMAIL_RE.test(email)) {
+        return fail('email', 'error.email.invalidServer');
+    }
+
+    if (!(await emailDomainAcceptsMail(email))) {
+        return fail('email', 'error.email.unknownDomain');
     }
 
     if (!(image instanceof File) || image.size === 0) {
@@ -334,7 +375,7 @@ export async function POST(request: Request) {
         .insert({
             name, category, topic,
             subtopic: subtopic || null,
-            location, deadline, desc, link,
+            location, deadline, desc, link, email,
             positions,
             image: publicUrlData.publicUrl,
             image_position: imagePosition,
@@ -349,6 +390,11 @@ export async function POST(request: Request) {
         await supabaseAdmin.storage.from('activity-images').remove([storagePath]);
         return fail('form', 'error.form.saveFailed');
     }
+
+    // After the commit and deliberately not part of the rollback: the submission
+    // is saved whether or not the confirmation goes out.
+    const confirmation = pendingEmail(name);
+    await sendMail(email, confirmation.subject, confirmation.text);
 
     return NextResponse.json({ ok: true });
 }
