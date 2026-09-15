@@ -45,6 +45,27 @@ function NavLink({ href, active, children }: NavLinkProps) {
     );
 }
 
+interface SheetLinkProps extends NavLinkProps {
+    onNavigate: () => void;
+}
+
+function SheetLink({ href, active, onNavigate, children }: SheetLinkProps) {
+    return (
+        <Link
+            href={href}
+            onClick={onNavigate}
+            className={`flex items-center justify-between gap-3 min-h-[52px] px-3 rounded-[12px] text-[15px] no-underline transition-colors duration-[180ms] ${
+                active ? 'font-bold text-primary bg-[rgba(26,111,208,0.1)]' : 'font-medium text-text-dim'
+            }`}
+        >
+            <span>{children}</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true" className="shrink-0 opacity-50">
+                <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+        </Link>
+    );
+}
+
 function Navbar() {
     const { t, fixed } = useLang();
     const [navOpen, setNavOpen] = useState<boolean>(false);
@@ -107,12 +128,40 @@ function Navbar() {
                 </button>
             </div>
 
-            {/* Mobile: slide-down panel */}
+            {/* Mobile: bottom sheet. The scrim is structural, so tapping outside closes it. */}
             {navOpen && (
-                <div className="hidden max-nav:flex bg-sky border-t border-border animate-nav-drop py-3.5 px-5 flex-col items-center gap-3.5">
-                    <NavLink href="/" active={pathname === '/'}>{t('nav.home')}</NavLink>
-                    <NavLink href="/submit" active={pathname === '/submit'}>{t('nav.submit')}</NavLink>
-                    {!fixed && <LangToggle />}
+                <div
+                    className="hidden max-nav:flex fixed inset-0 z-[100] flex-col justify-end bg-[rgba(18,40,62,0.5)]"
+                    onClick={() => setNavOpen(false)}
+                >
+                    <div
+                        className="flex flex-col bg-glass rounded-t-[22px] animate-sheet-up pb-[max(18px,env(safe-area-inset-bottom))]"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Handle */}
+                        <div className="flex justify-center pt-3 pb-1">
+                            <div className="w-9 h-1 rounded-full bg-[rgba(20,52,80,0.18)]" />
+                        </div>
+
+                        {/* Header */}
+                        <div className="pt-2 px-5 pb-3 border-b border-border">
+                            <span className="font-heading font-bold text-[16px] text-text">{t('nav.menu')}</span>
+                        </div>
+
+                        {/* Links. Closing here rather than in an effect on pathname:
+                            Navbar survives client-side navigation, so nothing else resets navOpen. */}
+                        <div className="flex flex-col gap-1 px-3 py-2.5">
+                            <SheetLink href="/" active={pathname === '/'} onNavigate={() => setNavOpen(false)}>{t('nav.home')}</SheetLink>
+                            <SheetLink href="/submit" active={pathname === '/submit'} onNavigate={() => setNavOpen(false)}>{t('nav.submit')}</SheetLink>
+                        </div>
+
+                        {!fixed && (
+                            <div className="flex items-center justify-between gap-3 mx-5 pt-3.5 border-t border-border">
+                                <span className="text-[13.5px] font-medium text-text-faint">{t('nav.language')}</span>
+                                <LangToggle />
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </nav>

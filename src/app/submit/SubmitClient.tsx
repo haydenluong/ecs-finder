@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Script from 'next/script';
+import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -72,10 +73,42 @@ function validateImage(files: FileList | undefined): true | StringKey {
     return true;
 }
 
+function SuccessPanel({ onSubmitAnother }: { onSubmitAnother: () => void }) {
+    const { t } = useLang();
+    return (
+        <div className="bg-glass border border-border rounded-2xl p-6 flex flex-col items-center text-center gap-3">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[rgba(26,111,208,0.1)] border border-[rgba(26,111,208,0.2)]">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+                    <path d="M6 13.5L11 18.5L20 8" stroke="var(--color-primary)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </div>
+
+            <h2 className="font-heading font-bold text-[19px] text-text">{t('submit.successTitle')}</h2>
+            <p className="text-[14px] leading-[1.6] text-text-dim max-w-[38ch]">{t('submit.successBody')}</p>
+
+            <div className="flex flex-col items-stretch gap-2.5 w-full max-w-[280px] mt-2">
+                <button
+                    type="button"
+                    onClick={onSubmitAnother}
+                    className="bg-primary text-white rounded-[14px] py-3 px-6 font-semibold text-[14px] cursor-pointer"
+                >
+                    {t('submit.submitAnother')}
+                </button>
+                <Link
+                    href="/"
+                    className="rounded-[14px] py-3 px-6 font-semibold text-[14px] text-primary no-underline text-center border border-[rgba(26,111,208,0.2)] bg-[rgba(26,111,208,0.1)]"
+                >
+                    {t('submit.browse')}
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default function SubmitClient() {
     const { t, lang } = useLang();
 
-    const { register, watch, resetField, setValue, setError, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
+    const { register, watch, reset, resetField, getValues, setValue, setError, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
         defaultValues: {
             name: '', category: '', topic: '', subtopic: null, location: '',
             deadline: '', positions: [], desc: '', link: '',
@@ -134,15 +167,19 @@ export default function SubmitClient() {
         });
     }
 
-    useEffect(() => {
-        renderTurnstile();
-
-        return () => {
-            if (turnstileWidgetId.current && window.turnstile) {
-                window.turnstile.remove(turnstileWidgetId.current);
-            }
+    // A callback ref, not a mount effect: the success panel unmounts the form,
+    // so the container comes and goes while SubmitClient stays mounted. An
+    // effect with [] deps would never re-run, and renderTurnstile would then
+    // early-return on the stale widget id, leaving "submit another" with no
+    // widget and no way to submit.
+    const mountTurnstile = useCallback((node: HTMLDivElement | null) => {
+        turnstileContainerRef.current = node;
+        if (node) {
+            renderTurnstile();
+        } else if (turnstileWidgetId.current && window.turnstile) {
+            window.turnstile.remove(turnstileWidgetId.current);
             turnstileWidgetId.current = null;
-        };
+        }
     }, []);
 
     async function onSubmit(data: SubmitFormValues) {
@@ -187,6 +224,18 @@ export default function SubmitClient() {
         }
     }
 
+    function handleSubmitAnother() {
+        const { category, topic, subtopic, location } = getValues();
+        reset({
+            name: '', deadline: '', positions: [], desc: '', link: '', image: undefined,
+            category, topic, subtopic, location,
+        });
+        setImagePosition(null);
+        setSubmitErrorKey('');
+        setSubmitted(false);
+        resetTurnstile();
+    }
+
     function resetTurnstile() {
         setTurnstileToken('');
         if (turnstileWidgetId.current && window.turnstile) {
@@ -220,11 +269,11 @@ export default function SubmitClient() {
                             positions={watched.positions}
                             image={previewUrl}
                             imagePosition={imagePosition}
-                            onFileSelect={selectImageFile}
-                            onBrowse={() => imageInputRef.current?.click()}
+                            onFileSelect={submitted ? undefined : selectImageFile}
+                            onBrowse={submitted ? undefined : () => imageInputRef.current?.click()}
                         />
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="bg-glass border border-border rounded-2xl p-6 flex flex-col gap-4">
+                        {submitted ? <SuccessPanel onSubmitAnother={handleSubmitAnother} /> : <form onSubmit={handleSubmit(onSubmit)} className="bg-glass border border-border rounded-2xl p-6 flex flex-col gap-4">
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[13px] text-text-dim">{t('submit.name')}</label>
                                 <input
@@ -400,13 +449,10 @@ export default function SubmitClient() {
                                 )}
                             </div>
 
-                            <div ref={turnstileContainerRef} />
+                            <div ref={mountTurnstile} />
 
                             {submitErrorKey && (
                                 <span className="text-[13px] text-red-600">{t(submitErrorKey)}</span>
-                            )}
-                            {submitted && (
-                                <span className="text-[13px] text-primary">{t('submit.success')}</span>
                             )}
 
                             <button
@@ -416,7 +462,7 @@ export default function SubmitClient() {
                             >
                                 {t(isSubmitting ? 'submit.submitting' : 'submit.submitButton')}
                             </button>
-                        </form>
+                        </form>}
                     </div>
                 </div>
             </main>

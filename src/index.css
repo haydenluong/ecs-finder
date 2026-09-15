@@ -28,7 +28,6 @@
 
   --animate-fade-up: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
   --animate-sheet-up: sheetUp 0.28s cubic-bezier(0.16,1,0.3,1) both;
-  --animate-nav-drop: navDrop 0.2s ease both;
   --animate-float-mag: floatMag 6s ease-in-out infinite;
   --animate-blink: blink 1s step-end infinite;
 }
@@ -83,11 +82,6 @@ body::before {
 
 @keyframes sheetUp {
   from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-@keyframes navDrop {
-  from { transform: translateY(-8px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 

@@ -132,6 +132,7 @@ const POSITION_EN: Record<string, string> = {
     'Ban Tài chính Đối ngoại':  'Finance & External Relations',
     'CTV Truyền Thông':          'Communications Contributor',
     'Tình nguyện viên':          'Volunteer',
+    'Thí sinh':                  'Contestant',
     'Khác':                      'Other',
 };
 
