@@ -5,6 +5,7 @@ import { ADMIN_COOKIE, verifySessionToken } from '@/lib/adminAuth';
 import { translateDesc } from '@/lib/translateDesc';
 import { sendMail } from '@/lib/mailer';
 import { approvedEmail, rejectedEmail } from '@/lib/submissionEmails';
+import { deleteActivityImages } from '@/lib/activityImages';
 
 export const runtime = 'nodejs';
 
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     // the service-role key and re-verifies everything itself.
     const { data: row, error: readError } = await supabaseAdmin
         .from('activities_submissions')
-        .select('name, email, desc, desc_en')
+        .select('name, email, image, desc, desc_en')
         .eq('id', id)
         .maybeSingle();
 
@@ -85,6 +86,13 @@ export async function POST(request: Request) {
     // turns a nonexistent id into a 404 instead of a misleading success.
     if (!data || data.length === 0) {
         return NextResponse.json({ ok: false, message: 'Không tìm thấy hoạt động.' }, { status: 404 });
+    }
+
+    // Also after the commit, and the reason /admin's "Đã từ chối" tab shows an
+    // empty image box: a rejected photo is never displayed publicly and is the
+    // bulk of what fills Storage, so it is not worth keeping for the record.
+    if (action === 'reject') {
+        await deleteActivityImages([row.image]);
     }
 
     // After the commit: the decision stands whether or not the notice goes out.

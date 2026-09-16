@@ -114,17 +114,13 @@ function FilterSections({
 
 
     function handleSubtopicCheck(parent: string, sub: string, checked: boolean): void {
-       if (checked) {
-        const switchingTopic = !topicFilters.topics.includes(parent);
-        const keep = switchingTopic ? [] : topicFilters.subtopics;   // drop old topic's subtopics
-        if (switchingTopic) setExpandedTopics({ [parent]: true });   // collapse the old topic
-        setTopicFilters({ topics: [parent], subtopics: [...keep, { parent, subtopic: sub }] });
-    } else {
-        setTopicFilters({
-            topics: topicFilters.topics,
-            subtopics: topicFilters.subtopics.filter(s => !(s.parent === parent && s.subtopic === sub)),
-        });
-    }
+        if (checked) {
+            // one subtopic at a time: the pick replaces whatever was selected before
+            setTopicFilters({ topics: [parent], subtopics: [{ parent, subtopic: sub }] });
+            setExpandedTopics({ [parent]: true });
+        } else {
+            setTopicFilters({ topics: topicFilters.topics, subtopics: [] });
+        }
     }
 
     function isSubSelected(parent: string, sub: string): boolean {
@@ -207,7 +203,7 @@ function FilterSections({
                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTopicCheck(topic.name, !isChecked); } }}
                                     className="flex items-center gap-2 flex-1 cursor-pointer"
                                 >
-                                    <div className={`w-[17px] h-[17px] rounded-[5px] shrink-0 border-2 flex items-center justify-center box-border transition-[background-color,border-color,box-shadow] duration-150 ${
+                                    <div className={`w-[17px] h-[17px] rounded-full shrink-0 border-2 flex items-center justify-center box-border transition-[background-color,border-color,box-shadow] duration-150 ${
                                         isChecked
                                             ? 'border-[var(--topic)] bg-[var(--topic)] shadow-[0_0_9px_var(--topic-60)]'
                                             : 'border-text-faint bg-transparent shadow-none'

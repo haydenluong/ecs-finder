@@ -301,14 +301,20 @@ export async function POST(request: Request) {
 
     const { data: existing, error: fetchError } = await supabaseAdmin
         .from('activities_submissions')
-        .select('name');
+        .select('name, status');
 
     if (fetchError) {
         return fail('form', 'error.form.duplicateCheck');
     }
 
+    // Archived rows do not count: most activities recur annually, so an expired
+    // 2025 edition must not block the 2026 one. Filtered here rather than with
+    // .neq() because Postgres drops NULLs from an inequality, which would also
+    // hide any row whose status was never set.
     const normalizedName = normalizeName(name);
-    const isDuplicate = existing.some(row => normalizeName(row.name) === normalizedName);
+    const isDuplicate = existing
+        .filter(row => row.status !== 'archived')
+        .some(row => normalizeName(row.name) === normalizedName);
     if (isDuplicate) {
         return fail('name', 'error.name.duplicate');
     }

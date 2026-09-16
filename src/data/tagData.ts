@@ -4,6 +4,8 @@ import type { Topic, CategoryTag, Lang } from '../types';
 export const TOPIC_ACCENTS: Record<string, string> = {
     'STEM':                     '#12a6c9',
     'Xã hội':                   '#0db87a',
+    // 'Môi trường' is a subtopic of 'Xã hội' now; kept so rows still carrying it
+    // as their topic keep their colour until the DB is migrated.
     'Môi trường':               '#0dba45',
     'Kinh tế':                  '#0d7aba',
     'Nghệ thuật & Sáng tạo':   '#7a5cff',
@@ -44,11 +46,7 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Xã hội',
-        subtopics: ['Thiện nguyện', 'Bình đẳng xã hội', 'Văn hóa / Du học']
-    },
-    {
-        name: 'Môi trường',
-        subtopics: []
+        subtopics: ['Thiện nguyện', 'Bình đẳng xã hội', 'Văn hóa / Du học', 'Môi trường']
     },
     {
         name: 'Kinh tế',
@@ -102,6 +100,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Thiện nguyện':                                 'Volunteering & Charity',
     'Bình đẳng xã hội':                             'Social Equality',
     'Văn hóa / Du học':                             'Culture / Studying Abroad',
+    'Môi trường':                                   'Environment',
     'Tài chính & Kinh doanh':                       'Finance & Business',
     'Marketing':                                    'Marketing',
     'Gây quỹ':                                      'Fundraising',

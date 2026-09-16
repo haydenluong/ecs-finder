@@ -17,6 +17,15 @@ export function daysLeft(iso: string): number | null {
     return Math.round((deadline.getTime() - today.getTime()) / 86400000);
 }
 
+export function todayInVietnam(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(new Date());
+}
+
 export function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
     const selectedTopics = new Set(topicFilters.topics);
     const selectedPositions = new Set(positionFilters);
@@ -96,8 +105,8 @@ export const mockActivities: Activity[] = [
     id: 4,
     name: 'Dự Án Xanh - Bảo Vệ Rừng Ngập Mặn',
     category: 'Dự án & CLB',
-    topic: 'Môi trường',
-    subtopic: null,
+    topic: 'Xã hội',
+    subtopic: 'Môi trường',
     location: 'Cà Mau',
     deadline: '2025-09-01',
     positions: ['Tình nguyện viên', 'Ban Nội Dung', 'Ban Truyền Thông'],

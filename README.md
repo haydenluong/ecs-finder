@@ -10,7 +10,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 - Browse activity cards with name, image, location, deadline, and open positions
 - Filter by **category** — Dự án & CLB, Cuộc thi (hosting or entering), Sự kiện
-- Filter by **topic & subtopic** — STEM, Xã hội, Môi trường, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
+- Filter by **topic & subtopic** — STEM, Xã hội, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
 - Filter by **deadline** — within a week or month
 - Filter by **open position** — find activities recruiting specific roles
 - **Search** across activity names, topics, subtopics, and locations — in Vietnamese or English, whichever language the interface is in
