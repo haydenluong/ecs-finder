@@ -8,14 +8,10 @@ export interface SubmissionEmail {
 
 export function pendingEmail(activityName: string): SubmissionEmail {
     return {
-        subject: `Đã nhận hoạt động "${activityName}" | Submission received`,
+        subject: `Xác nhận về "${activityName}" tại ECs Finder | Submission received for ECs Finder`,
         text: `Chào bạn,
 
-ECs Finder đã nhận được hoạt động "${activityName}" bạn gửi lên website.
-
-Hoạt động hiện đang chờ duyệt. Tụi mình sẽ xem trong vài ngày tới và báo lại cho bạn ngay khi có kết quả. Bạn không cần gửi lại.
-
-Có thắc mắc gì, bạn cứ trả lời thẳng email này nhé.
+ECs Finder vừa nhận được ${activityName} bạn gửi qua. Thông tin về hoạt động sẽ được duyệt qua, và ECs Finder sẽ gửi email báo kết quả cho bạn trong một vài giờ.
 
 ---
 
@@ -36,11 +32,14 @@ export function approvedEmail(activityName: string): SubmissionEmail {
         subject: `Hoạt động "${activityName}" đã được duyệt | Submission approved`,
         text: `Chào bạn,
 
-Hoạt động "${activityName}" của bạn đã được duyệt và hiện đang hiển thị trên Tìm Kiếm HDNK.
+Chào bạn,
 
-Bạn xem tại: ${SITE_URL}
+${activityName} đã được duyệt và hiện đang có mặt trên ECs Finder: ${SITE_URL}
 
-Nếu cần sửa hay gỡ thông tin, bạn trả lời email này là được.
+Nếu bạn cần chỉnh sửa thông tin hoặc muốn gỡ hoạt động xuống, hãy liên hệ với ECs Finder để được hỗ trợ.
+
+Cảm ơn bạn,
+ECs Finder
 
 ---
 
@@ -59,12 +58,12 @@ export function rejectedEmail(activityName: string): SubmissionEmail {
         subject: `Hoạt động "${activityName}" chưa được duyệt | Submission not approved`,
         text: `Chào bạn,
 
-Cảm ơn bạn đã gửi hoạt động "${activityName}" lên Tìm Kiếm HDNK. Lần này tụi mình chưa đăng được hoạt động này.
+${activityName} đã không vượt qua kiểm duyệt để được đăng lên ECs Finder. 
 
-Thường là do thông tin chưa đủ rõ, link đăng ký không còn hoạt động, hoặc hoạt động không phù hợp với các mục trên trang. Nếu bạn nghĩ có nhầm lẫn, hoặc muốn biết lý do cụ thể, bạn cứ trả lời email này — tụi mình sẽ phản hồi.
+Nếu bạn muốn biết lý do cụ thể hoặc cho rằng đây là một sự nhầm lẫn, hãy liên hệ với ECs Finder để được giải đáp. Bạn cũng có thể chỉnh sửa thông tin và gửi lại tại ${SITE_URL}/submit.
 
-Bạn cũng có thể chỉnh lại thông tin và gửi lại bất cứ lúc nào tại ${SITE_URL}/submit
-
+Cảm ơn bạn,
+ECs Finder
 ---
 
 Hi,
