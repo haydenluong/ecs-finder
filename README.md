@@ -83,6 +83,7 @@ New submissions are pushed to a Telegram chat with inline approve/reject buttons
 
 1. Create a bot with [@BotFather](https://t.me/BotFather) → `TELEGRAM_BOT_TOKEN`.
 2. Send the bot a message, then read your chat id from `getUpdates` → `TELEGRAM_CHAT_ID`. This only works *before* a webhook is registered; afterwards Telegram pushes updates instead of queueing them.
+   To add reviewers, have each of them message the bot and comma-separate the ids: `TELEGRAM_CHAT_ID=123456789,987654321`. Each reviewer gets their own copy of every submission and whoever taps first decides; the others' buttons then report that it has already been handled. Only ids in this list can decide anything, so adding someone is the single act of granting them approval rights.
 3. `openssl rand -base64 32` → `TELEGRAM_WEBHOOK_SECRET`. Use base64url or strip `+` and `/`: Telegram only accepts `A-Z a-z 0-9 _ -` in that header.
 4. Set all three in Vercel and deploy.
 5. Register the webhook once:
