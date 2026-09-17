@@ -76,7 +76,6 @@ function HomeClient({activities} : HomeClientProps) {
     <div id="top">
       <Navbar />
       <HeroSection
-        activitiesCount={activities.length}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         topicFilters={topicFilters}

@@ -90,7 +90,7 @@ New submissions are pushed to a Telegram chat with inline approve/reject buttons
 
 ```bash
 curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -d "url=https://timkiemhdnk.com/api/telegram/webhook" \
+  -d "url=https://www.timkiemhdnk.com/api/telegram/webhook" \
   -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>" \
   -d 'allowed_updates=["callback_query"]' \
   -d "drop_pending_updates=true"

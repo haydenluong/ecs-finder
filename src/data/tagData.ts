@@ -11,6 +11,7 @@ export const TOPIC_ACCENTS: Record<string, string> = {
     'Nghệ thuật & Sáng tạo':   '#7a5cff',
     'Ngôn ngữ & Giao tiếp':    '#3d5cff',
     'Sức khỏe':                 '#c933e6',
+    'Giáo dục':                 '#e07a1f',
 };
 
 const FALLBACK_ACCENT = '#1a6fd0';
@@ -63,6 +64,10 @@ export const topicSet: Topic[] = [
     {
         name: 'Sức khỏe',
         subtopics: ['Tâm lý học', 'Dinh dưỡng & Lối sống / Sức khỏe thể chất']
+    },
+    {
+        name: 'Giáo dục',
+        subtopics: ['Dạy học (phi lợi nhuận)', 'Nghiên cứu khoa học']
     }
 ];
 
@@ -74,8 +79,9 @@ export const categorySet: CategoryTag[] = [
 ];
 
 export const POSITIONS = [
+    'Co-Founder',
     'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
-    'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
+    'Ban Podcast', 'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
     'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
 ];
 
@@ -91,6 +97,7 @@ const TOPIC_EN: Record<string, string> = {
     'Nghệ thuật & Sáng tạo':   'Arts & Creativity',
     'Ngôn ngữ & Giao tiếp':    'Language & Communication',
     'Sức khỏe':                 'Health',
+    'Giáo dục':                 'Education',
 };
 
 const SUBTOPIC_EN: Record<string, string> = {
@@ -112,6 +119,8 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Tranh biện & Hùng biện':                       'Debate & Public Speaking',
     'Tâm lý học':                                   'Psychology',
     'Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Nutrition & Lifestyle / Physical Health',
+    'Dạy học (phi lợi nhuận)':                      'Non-profit Teaching',
+    'Nghiên cứu khoa học':                          'Scientific Research',
 };
 
 const CATEGORY_EN: Record<string, string> = {
@@ -122,10 +131,12 @@ const CATEGORY_EN: Record<string, string> = {
 };
 
 const POSITION_EN: Record<string, string> = {
+    'Co-Founder':                'Co-Founder',
     'Ban Nhân Sự':               'Human Resources',
     'Ban Truyền Thông':          'Communications',
     'Ban Dịch Thuật':            'Translation',
     'Ban Nội Dung':              'Content',
+    'Ban Podcast':               'Podcast',
     'Ban Chuyên Môn':            'Academics',
     'Ban Thiết Kế':              'Design',
     'Ban Tài chính Đối ngoại':  'Finance & External Relations',
@@ -138,7 +149,7 @@ const POSITION_EN: Record<string, string> = {
 // Locations are free text, so these are substituted wherever they appear rather
 // than matched whole — real values include "Đà Nẵng & Online" and "TP.HCM".
 // Longest first, so "TP. Hồ Chí Minh" is not half-replaced by "Hồ Chí Minh".
-const LOCATION_EN: [string, string][] = ([
+const LOCATION_EN: [RegExp, string][] = ([
     ['TP. Hồ Chí Minh', 'Ho Chi Minh City'],
     ['TP.Hồ Chí Minh', 'Ho Chi Minh City'],
     ['Thành phố Hồ Chí Minh', 'Ho Chi Minh City'],
@@ -152,8 +163,11 @@ const LOCATION_EN: [string, string][] = ([
     ['Cà Mau', 'Ca Mau'],
     ['Huế', 'Hue'],
     ['Toàn quốc', 'Nationwide'],
+    ['Toàn cầu', 'Global'],
     ['Trực tuyến', 'Online'],
-] as [string, string][]).sort((a, b) => b[0].length - a[0].length);
+] as [string, string][])
+    .sort((a, b) => b[0].length - a[0].length)
+    .map(([from, to]) => [new RegExp(from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), to]);
 
 function label(map: Record<string, string>, vi: string, lang: Lang): string {
     return lang === 'EN' ? map[vi] ?? vi : vi;
@@ -177,7 +191,7 @@ export function positionLabel(vi: string, lang: Lang): string {
 
 export function locationLabel(vi: string, lang: Lang): string {
     if (lang !== 'EN' || !vi) return vi;
-    return LOCATION_EN.reduce((out, [from, to]) => out.split(from).join(to), vi);
+    return LOCATION_EN.reduce((out, [pattern, to]) => out.replace(pattern, to), vi);
 }
 
 // Every English label, for the search index: search matches both languages

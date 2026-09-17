@@ -15,7 +15,6 @@ interface ChipPosition {
 }
 
 interface HeroSectionProps {
-    activitiesCount: number;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     topicFilters: TopicFilter;
@@ -35,8 +34,10 @@ const CHIP_POSITIONS: ChipPosition[] = [
     { bottom: 40, left: 34, animDelay: '0.9s', animDur: '5.6s' },
 ];
 
-function pickSlotTopics(): string[] {
-    const pool = topicSet.map(t => t.name);
+function pickSlotTopics(exclude: string[] = []): string[] {
+    const all = topicSet.map(t => t.name);
+    const pool = all.filter(name => !exclude.includes(name));
+    if (pool.length < 3) pool.push(...all.filter(name => !pool.includes(name)));
     const out: string[] = [];
     for (let i = 0; i < 3; i++) {
         out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
@@ -44,13 +45,15 @@ function pickSlotTopics(): string[] {
     return out;
 }
 
-function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
+function HeroSection({ searchQuery, onSearchChange, topicFilters, onTagClick }: HeroSectionProps) {
     const { t, lang } = useLang();
-    const [displayCount, setDisplayCount] = useState<number>(0);
     const [hoverTag, setHoverTag] = useState<number | null>(null);
     const [slotTopics, setSlotTopics] = useState<string[]>(() => topicSet.slice(0, 3).map(t => t.name));
     const [animKey, setAnimKey] = useState<number>(0);
     const [typedWord, setTypedWord] = useState<string>('');
+
+    const selectedTag = slotTopics.findIndex(name => topicFilters.topics.includes(name));
+    const leanTag = hoverTag ?? (selectedTag === -1 ? null : selectedTag);
 
     // typing animation — restarts on a language change, since the word differs
     const fullTypedWord = t('hero.title.typed');
@@ -71,43 +74,20 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
         setSlotTopics(pickSlotTopics());
     }, []);
 
-    useEffect(() => {
-        if (activitiesCount === 0) return;
-        const duration = 1000;
-        const start = performance.now();
-        let raf: number;
-        function tick(now: number) {
-            const t = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - t, 3);
-            setDisplayCount(Math.round(eased * activitiesCount));
-            if (t < 1) raf = requestAnimationFrame(tick);
-        }
-        raf = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(raf);
-    }, [activitiesCount]);
-
     function randomizeTags(): void {
-        setSlotTopics(pickSlotTopics());
+        setSlotTopics(pickSlotTopics(slotTopics));
         setAnimKey(k => k + 1);
     }
 
     return (
         <section className="max-w-[1320px] mx-auto pt-12 px-[18px] pb-[30px] sm2:px-[22px] hero:pt-11 hero:px-10">
-            <div className="grid grid-cols-1 gap-11 items-center hero:grid-cols-[minmax(0,1fr)_minmax(0,430px)]">
-                {/* Left column */}
-                <div className="flex flex-col gap-5">
-                    <div className="inline-flex items-center gap-2 bg-glass border border-border rounded-full py-1.5 px-3.5 w-fit animate-[fadeUp_0.7s_cubic-bezier(0.16,1,0.3,1)_0ms_both]">
-                        <span className="w-2 h-2 rounded-full bg-primary inline-block shrink-0" />
-                        <span className="font-semibold text-[12.5px] text-primary">
-                            {t('hero.count', { count: displayCount })}
-                        </span>
-                    </div>
-
-                    <h1 className={`font-heading font-extrabold text-[42px] leading-[1.05] tracking-[-0.015em] text-text m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] hero:text-[50px] ${
-                        // "extracurricular" is 15 characters, so at 16ch English takes three
-                        // lines. Widened above the hero breakpoint only: below it the grid
-                        // column is narrower than one English line.
-                        lang === 'EN' ? 'max-w-[16ch] hero:max-w-[24ch] hero:text-balance' : 'max-w-[16ch]'
+            <div className="grid grid-cols-1 gap-x-11 gap-y-5 items-center hero:grid-cols-[minmax(0,1fr)_minmax(0,330px)] rail:grid-cols-[minmax(0,1fr)_minmax(0,430px)]">
+                {/* Headline block */}
+                <div className="flex flex-col gap-5 hero:col-start-1 hero:row-start-1">
+                    <h1 className={`font-heading font-extrabold leading-[1.08] tracking-[-0.015em] text-text m-0 whitespace-pre-line animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_60ms_both] ${
+                        lang === 'EN'
+                            ? 'text-[clamp(20px,6.2vw,40px)] hero:text-[clamp(28px,3.1vw,46px)] max-w-[16em]'
+                            : 'text-[clamp(23px,7.2vw,42px)] hero:text-[clamp(30px,3.6vw,50px)] max-w-[14em]'
                     }`}>
                         {t('hero.title.before')}{' '}
                         <span className="text-primary mr-[0.25em]">
@@ -121,26 +101,22 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     <p className="font-normal text-[16.5px] leading-[1.6] text-text-dim max-w-[48ch] m-0 animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_120ms_both]">
                         {t('hero.subtitle')}
                     </p>
-
-                    <div className="animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_180ms_both]">
-                        <SearchBar searchQuery={searchQuery} onChange={onSearchChange} />
-                    </div>
                 </div>
 
-                {/* Right column — hidden on mobile */}
-                <div className="relative hidden hero:flex items-center justify-center">
+                {/* Visual column — sits between the headline and the search bar on mobile,
+                    and spans both rows of the second column above the hero breakpoint */}
+                <div className="relative flex items-center justify-center w-full max-w-[340px] min-h-[250px] mx-auto hero:max-w-none hero:min-h-0 hero:mx-0 hero:col-start-2 hero:row-start-1 hero:row-span-2 hero:self-center">
                     <div className="absolute w-40 h-40 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.82)_0%,rgba(255,255,255,0.38)_45%,transparent_72%)] z-0 pointer-events-none translate-x-[-22px] translate-y-[-18px]" />
 
                     <div
-                        style={{ transform: hoverTag !== null ? MAG_TRANSFORMS[hoverTag] : 'translate(0,0) rotate(0deg) scale(1)' }}
+                        style={{ transform: leanTag !== null ? MAG_TRANSFORMS[leanTag] : 'translate(0,0) rotate(0deg) scale(1)' }}
                         className="transition-transform duration-[550ms] ease-[cubic-bezier(0.34,1.4,0.4,1)]"
                     >
                         <svg
-                            width="248"
                             viewBox="0 0 200 200"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            className="relative z-[1] opacity-72 drop-shadow-[0_16px_24px_rgba(26,111,208,0.14)] animate-float-mag"
+                            className="relative z-[1] w-[178px] h-auto opacity-72 drop-shadow-[0_16px_24px_rgba(26,111,208,0.14)] animate-float-mag hero:w-[248px]"
                         >
                             {/* magnifying glass draw */}
                             <defs>
@@ -179,8 +155,8 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                                 type="button"
                                 key={`${slotTopics[i]}-${animKey}`}
                                 onClick={() => onTagClick({ type: 'topic', label: slotTopics[i] })}
-                                onMouseEnter={() => setHoverTag(i)}
-                                onMouseLeave={() => setHoverTag(null)}
+                                onPointerEnter={e => { if (e.pointerType === 'mouse') setHoverTag(i); }}
+                                onPointerLeave={e => { if (e.pointerType === 'mouse') setHoverTag(null); }}
                                 style={{
                                     ...accentVars(slotTopics[i]),
                                     top: pos.top,
@@ -223,6 +199,10 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                         </span>
                         <span className="font-semibold text-[12px] text-text-dim">{t('hero.random')}</span>
                     </button>
+                </div>
+
+                <div className="animate-[fadeUp_0.8s_cubic-bezier(0.16,1,0.3,1)_180ms_both] hero:col-start-1 hero:row-start-2">
+                    <SearchBar searchQuery={searchQuery} onChange={onSearchChange} />
                 </div>
             </div>
         </section>

@@ -92,10 +92,16 @@ function MainContent({
                 </button>
             </div>
 
-            <div className="flex items-center justify-between mb-5">
-                <h2 className="font-heading font-bold text-[22px] tracking-[-0.02em] text-text m-0">
-                    {t(hasFilters ? 'results.filtered' : 'results.all')}
-                </h2>
+            <div className="flex items-end justify-between gap-3 mb-5">
+                <div className="flex items-center gap-3 flex-wrap min-w-0">
+                    <h2 className="font-heading font-bold text-[22px] tracking-[-0.02em] text-text m-0">
+                        {t(hasFilters ? 'results.filtered' : 'results.all')}
+                    </h2>
+                    <span className="flex items-center gap-2 font-heading text-[11px] font-bold uppercase tracking-[0.11em] text-text-faint">
+                        <span aria-hidden="true" className="h-[2px] w-[18px] rounded-full bg-primary shrink-0" />
+                        {t('results.openCount', { count: resultCount })}
+                    </span>
+                </div>
 
                 {pageInfo.total > 1 && (
                     <span className="text-[13px] text-text-faint font-medium shrink-0">

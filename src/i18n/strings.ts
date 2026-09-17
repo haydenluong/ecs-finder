@@ -26,6 +26,7 @@ export const vi = {
 
     'results.filtered': 'Kết quả lọc',
     'results.all': 'Tất cả hoạt động',
+    'results.openCount': '{count} hoạt động đang mở đăng ký',
     'results.page': 'Trang {page}/{total}',
 
     'card.closed': 'Đã đóng',
@@ -45,10 +46,9 @@ export const vi = {
     'modal.positions': 'Vị trí tuyển',
     'modal.register': 'Đăng ký ngay',
 
-    'hero.count': '{count} hoạt động đang mở đăng ký',
-    'hero.title.before': 'Soi sáng hành trình',
-    'hero.title.typed': 'ngoại khoá',
-    'hero.title.after': 'của bạn',
+    'hero.title.before': 'Trải nghiệm hết nấc\nnhững',
+    'hero.title.typed': 'ngoại khóa',
+    'hero.title.after': 'chất',
     'hero.subtitle': 'Khám phá câu lạc bộ, cuộc thi, dự án và sự kiện dành cho học sinh, sinh viên trên khắp Việt Nam.',
     'hero.randomTopic': 'Chọn chủ đề ngẫu nhiên',
     'hero.random': 'Ngẫu nhiên',
@@ -160,6 +160,8 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
 
     'results.filtered': 'Filtered results',
     'results.all': 'All activities',
+    'results.openCount.one': '{count} activity open for registration',
+    'results.openCount.other': '{count} activities open for registration',
     'results.page': 'Page {page} of {total}',
 
     'card.closed': 'Closed',
@@ -180,11 +182,9 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
     'modal.positions': 'Open roles',
     'modal.register': 'Register now',
 
-    'hero.count.one': '{count} activity open for registration',
-    'hero.count.other': '{count} activities open for registration',
-    'hero.title.before': 'Light up your',
-    'hero.title.typed': 'extracurricular',
-    'hero.title.after': 'journey',
+    'hero.title.before': 'Find your',
+    'hero.title.typed': 'extracurriculars',
+    'hero.title.after': '\n the easy way',
     'hero.subtitle': 'Discover clubs, competitions, projects and events for students across Vietnam.',
     'hero.randomTopic': 'Pick a random topic',
     'hero.random': 'Random',
