@@ -6,6 +6,7 @@ import { categorySet, topicSet, POSITIONS } from '@/data/tagData';
 import { EMAIL_RE } from '@/lib/emailFormat';
 import { sendMail } from '@/lib/mailer';
 import { pendingEmail } from '@/lib/submissionEmails';
+import { notifyNewSubmission } from '@/lib/submissionTelegram';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MIME_TO_EXT: Record<string, string> = {
@@ -307,10 +308,7 @@ export async function POST(request: Request) {
         return fail('form', 'error.form.duplicateCheck');
     }
 
-    // Archived rows do not count: most activities recur annually, so an expired
-    // 2025 edition must not block the 2026 one. Filtered here rather than with
-    // .neq() because Postgres drops NULLs from an inequality, which would also
-    // hide any row whose status was never set.
+   
     const normalizedName = normalizeName(name);
     const isDuplicate = existing
         .filter(row => row.status !== 'archived')
@@ -376,7 +374,7 @@ export async function POST(request: Request) {
         imagePosition = null;
     }
 
-    const { error: insertError } = await supabaseAdmin
+    const { data: inserted, error: insertError } = await supabaseAdmin
         .from('activities_submissions')
         .insert({
             name, category, topic,
@@ -389,7 +387,9 @@ export async function POST(request: Request) {
             content_check_verdict: contentCheck?.verdict ?? null,
             content_check_reason: contentCheck?.reason ?? null,
             status: 'pending',
-        });
+        })
+        .select('id')
+        .single();
 
     if (insertError) {
         console.error('activities_submissions insert failed:', insertError);
@@ -401,6 +401,18 @@ export async function POST(request: Request) {
     // is saved whether or not the confirmation goes out.
     const confirmation = pendingEmail(name);
     await sendMail(email, confirmation.subject, confirmation.text);
+
+    await notifyNewSubmission({
+        id: inserted.id,
+        name, category, topic,
+        subtopic: subtopic || null,
+        location, deadline, desc, link, email,
+        positions,
+        image: publicUrlData.publicUrl,
+        linkCheckPassed,
+        contentCheckVerdict: contentCheck?.verdict ?? null,
+        contentCheckReason: contentCheck?.reason ?? null,
+    });
 
     return NextResponse.json({ ok: true });
 }

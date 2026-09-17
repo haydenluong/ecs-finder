@@ -57,6 +57,10 @@ SMTP_SECURE=true
 SMTP_USER=                         # the sending mailbox
 SMTP_PASS=                         # Gmail app password, not the account password
 MAIL_FROM=                         # must name the same mailbox as SMTP_USER
+CRON_SECRET=                       # authorises the nightly archive job, 16+ chars
+TELEGRAM_BOT_TOKEN=                # @BotFather, for review notifications
+TELEGRAM_CHAT_ID=                  # the private chat that receives them
+TELEGRAM_WEBHOOK_SECRET=           # authorises button taps, 32+ chars
 ```
 
 ### Prerequisites
@@ -70,6 +74,32 @@ MAIL_FROM=                         # must name the same mailbox as SMTP_USER
 `.env` is gitignored and never committed. The same variables must also be set in the Vercel project settings; if `SESSION_SECRET` or `ADMIN_USERS` is missing in production, `/admin` fails closed and nobody can log in.
 
 The `SMTP_*` variables fail open, not closed: without them submissions and approvals still work, they just send no email and log `Mail not configured`. `SMTP_PASS` is a Google App Password (Google Account → Security → App passwords, requires 2-Step Verification) — a normal account password will not authenticate over SMTP.
+
+`CRON_SECRET` and `TELEGRAM_WEBHOOK_SECRET` both fail **closed**: `/api/cron/archive-expired` and `/api/telegram/webhook` sit outside the `middleware.ts` matcher, so each checks its own shared secret and rejects everything when the variable is missing or too short.
+
+### Telegram review bot (optional)
+
+New submissions are pushed to a Telegram chat with inline approve/reject buttons, so a decision can be made from a phone without opening `/admin`. Both surfaces call the same `decideSubmission()`, so the outcome is identical either way.
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) → `TELEGRAM_BOT_TOKEN`.
+2. Send the bot a message, then read your chat id from `getUpdates` → `TELEGRAM_CHAT_ID`. This only works *before* a webhook is registered; afterwards Telegram pushes updates instead of queueing them.
+3. `openssl rand -base64 32` → `TELEGRAM_WEBHOOK_SECRET`. Use base64url or strip `+` and `/`: Telegram only accepts `A-Z a-z 0-9 _ -` in that header.
+4. Set all three in Vercel and deploy.
+5. Register the webhook once:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://timkiemhdnk.com/api/telegram/webhook" \
+  -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>" \
+  -d 'allowed_updates=["callback_query"]' \
+  -d "drop_pending_updates=true"
+```
+
+`allowed_updates` restricted to `callback_query` means typed messages never reach a route that holds the service-role key. Rotating the secret requires re-running `setWebhook` — changing one without the other silently breaks every button.
+
+`curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"` is the only diagnostic Telegram offers; `last_error_message` and `pending_update_count` are how webhook problems get debugged. Telegram cannot reach `localhost`, so local testing needs a tunnel and a second bot.
+
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` fail open on the sending side: without them submissions still work and simply produce no notification, logging `Telegram not configured`. Submit a test activity after deploying rather than reading silence as "no submissions".
 
 ---
 

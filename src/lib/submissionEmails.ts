@@ -1,7 +1,6 @@
 const SITE_URL = 'https://timkiemhdnk.com';
 
-// Bilingual bodies: the submitter's language is not stored, and a decision email
-// is sent hours later from a different request, so there is nothing to pick from.
+// Bilingual bodies: the submitter's language is not stored, and a decision email is sent hours later from a different request, so there is nothing to pick from.
 export interface SubmissionEmail {
     subject: string;
     text: string;
@@ -12,9 +11,9 @@ export function pendingEmail(activityName: string): SubmissionEmail {
         subject: `Đã nhận hoạt động "${activityName}" | Submission received`,
         text: `Chào bạn,
 
-Tụi mình đã nhận được hoạt động "${activityName}" bạn gửi lên Tìm Kiếm HDNK.
+ECs Finder đã nhận được hoạt động "${activityName}" bạn gửi lên website.
 
-Hoạt động đang chờ duyệt. Tụi mình sẽ xem trong vài ngày tới và báo lại cho bạn ngay khi có kết quả. Bạn không cần gửi lại.
+Hoạt động hiện đang chờ duyệt. Tụi mình sẽ xem trong vài ngày tới và báo lại cho bạn ngay khi có kết quả. Bạn không cần gửi lại.
 
 Có thắc mắc gì, bạn cứ trả lời thẳng email này nhé.
 
