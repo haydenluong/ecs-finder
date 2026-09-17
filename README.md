@@ -10,7 +10,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 - Browse activity cards with name, image, location, deadline, and open positions
 - Filter by **category** — Dự án & CLB, Cuộc thi (hosting or entering), Sự kiện
-- Filter by **topic & subtopic** — STEM, Xã hội, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe
+- Filter by **topic & subtopic** — STEM, Xã hội, Kinh tế, Nghệ thuật & Sáng tạo, Ngôn ngữ & Giao tiếp, Sức khỏe, Giáo dục
 - Filter by **deadline** — within a week or month
 - Filter by **open position** — find activities recruiting specific roles
 - **Search** across activity names, topics, subtopics, and locations — in Vietnamese or English, whichever language the interface is in
@@ -29,6 +29,7 @@ A community-driven directory for extracurricular activities, clubs, competitions
 | Styling | Tailwind CSS 4 (theme tokens via `@theme static` in `src/index.css`) |
 | Database & storage | Supabase (Postgres + Row Level Security, activity images in Storage) |
 | Automated checks | Cloudflare Turnstile, Claude (Haiku 4.5) for content moderation and description translation |
+| Analytics | Google Analytics 4, mounted via `@next/third-parties` |
 | Hosting | Vercel (auto-deploy on push to `main`) |
 
 ---
@@ -61,6 +62,7 @@ CRON_SECRET=                       # authorises the nightly archive job, 16+ cha
 TELEGRAM_BOT_TOKEN=                # @BotFather, for review notifications
 TELEGRAM_CHAT_ID=                  # the private chat that receives them
 TELEGRAM_WEBHOOK_SECRET=           # authorises button taps, 32+ chars
+NEXT_PUBLIC_GA_ID=                 # GA4 Measurement ID (G-XXXXXXXXXX) — omit locally
 ```
 
 ### Prerequisites
@@ -76,6 +78,19 @@ TELEGRAM_WEBHOOK_SECRET=           # authorises button taps, 32+ chars
 The `SMTP_*` variables fail open, not closed: without them submissions and approvals still work, they just send no email and log `Mail not configured`. `SMTP_PASS` is a Google App Password (Google Account → Security → App passwords, requires 2-Step Verification) — a normal account password will not authenticate over SMTP.
 
 `CRON_SECRET` and `TELEGRAM_WEBHOOK_SECRET` both fail **closed**: `/api/cron/archive-expired` and `/api/telegram/webhook` sit outside the `middleware.ts` matcher, so each checks its own shared secret and rejects everything when the variable is missing or too short.
+
+### Analytics (optional)
+
+Page views go to Google Analytics 4 through `@next/third-parties/google`, mounted in `src/components/Analytics.tsx`.
+
+`NEXT_PUBLIC_GA_ID` is the GA4 **Measurement ID** (`G-XXXXXXXXXX`, from Admin → Data streams → your web stream), and it fails **open**: leave it unset and no analytics script is added to the page at all. Keeping it out of your local `.env` is therefore the intended setup — `npm run dev` then sends nothing, so development traffic never reaches the production property.
+
+Two things to know when changing it:
+
+- `NEXT_PUBLIC_*` values are inlined at **build** time, not read at runtime. Setting the variable in Vercel does nothing to deployments that were already built; trigger a redeploy.
+- `/admin` is excluded. `Analytics.tsx` returns `null` on those paths so reviewer sessions aren't counted as traffic.
+
+To verify a deploy, view the page source (not the element inspector) and search for `googletagmanager`; then watch GA4 → Reports → Realtime, which shows a visit within about 30 seconds. GA's "data collection isn't enabled" banner lags by up to 48 hours and is not a reliable signal.
 
 ### Telegram review bot (optional)
 
@@ -134,7 +149,7 @@ ecs-finder/
 │   └── admin.ts                 # Client for Route Handlers (service-role key)
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx           # Root layout — <html>/<body>, metadata, fonts, LangProvider
+│   │   ├── layout.tsx           # Root layout — <html>/<body>, metadata, fonts, LangProvider, Analytics
 │   │   ├── page.tsx             # "/" route (Server Component) — fetches approved activities
 │   │   ├── HomeClient.tsx       # Client boundary — owns all filter and search state
 │   │   ├── submit/              # "/submit" — submission form, live preview, image cropper
@@ -160,6 +175,7 @@ ecs-finder/
 │   │   ├── MainContent.tsx      # Layout: filter rail + card grid
 │   │   ├── ActivityCards.tsx    # Card grid, detail modal, pagination, client-side filtering
 │   │   ├── ActivityImage.tsx    # Card/modal photo with saved crop position
+│   │   ├── Analytics.tsx        # GA4 mount — skipped on /admin and when GA is unset
 │   │   └── Footer.tsx
 │   └── data/
 │       ├── Activities.ts        # filterActivities(), daysLeft(), and the seed array
