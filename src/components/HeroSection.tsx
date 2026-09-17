@@ -212,8 +212,13 @@ function HeroSection({ activitiesCount, searchQuery, onSearchChange, topicFilter
                     >
                         <span className="w-11 h-11 rounded-full bg-white flex items-center justify-center border border-border shadow-[0_12px_26px_rgba(20,44,68,0.15)] scale-100 transition-[transform,box-shadow,border-color] duration-[180ms] group-hover:border-primary group-hover:shadow-[0_12px_26px_rgba(20,44,68,0.22)] group-hover:scale-[1.08]">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M3 6h9.5M15 4l2.5 2L15 8M3 14h9.5M15 12l2.5 2-2.5 2" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M6 4l-2.5 2L6 8M6 12l-2.5 2 2.5 2" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                                <g stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M2.5 6H5l8 8h4.5"/>
+                                    <path d="M2.5 14H5l2.6-2.6"/>
+                                    <path d="M10.4 8.6 13 6h4.5"/>
+                                    <path d="m15 3.5 2.5 2.5-2.5 2.5"/>
+                                    <path d="m15 11.5 2.5 2.5-2.5 2.5"/>
+                                </g>
                             </svg>
                         </span>
                         <span className="font-semibold text-[12px] text-text-dim">{t('hero.random')}</span>

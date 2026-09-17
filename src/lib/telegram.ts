@@ -1,5 +1,7 @@
 import 'server-only';
 
+// send submission to telegram bot via API 
+
 const API = 'https://api.telegram.org';
 
 export interface InlineButton {
@@ -47,24 +49,33 @@ function linkPreview(previewImage?: string) {
         : { is_disabled: true };
 }
 
+export function allowedChatIds(): string[] {
+    return (process.env.TELEGRAM_CHAT_ID ?? '')
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean);
+}
+
 export async function sendMessage(
     text: string,
     replyMarkup?: InlineKeyboard,
     previewImage?: string,
 ): Promise<boolean> {
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (!chatId) {
+    const chatIds = allowedChatIds();
+    if (chatIds.length === 0) {
         console.error('Telegram not configured: TELEGRAM_CHAT_ID is required');
         return false;
     }
 
-    return call('sendMessage', {
+    const sent = await Promise.all(chatIds.map(chatId => call('sendMessage', {
         chat_id: chatId,
         text,
         parse_mode: 'HTML',
         link_preview_options: linkPreview(previewImage),
         ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
-    });
+    })));
+
+    return sent.some(Boolean);
 }
 
 export async function editMessageText(

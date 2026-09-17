@@ -87,7 +87,7 @@ function Footer() {
                 {/* Bottom bar */}
                 <div className="border-t border-border pt-5 flex items-center justify-between flex-wrap gap-2">
                     <span className="text-[12.5px] text-text-faint">
-                        © 2025 ECS Finder. All rights reserved.
+                        © 2026 ECS Finder. All rights reserved.
                     </span>
                     <span className="text-[12.5px] text-text-faint">
                         {t('footer.forStudents')}

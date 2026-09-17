@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { decideSubmission, type DecisionAction } from '@/lib/decideSubmission';
-import { answerCallbackQuery, editMessageText } from '@/lib/telegram';
+import { allowedChatIds, answerCallbackQuery, editMessageText } from '@/lib/telegram';
 import {
     newSubmissionNotice,
     confirmRejectNotice,
@@ -11,6 +11,8 @@ import {
     decisionFailedNotice,
     type SubmissionForNotice,
 } from '@/lib/submissionTelegram';
+
+// webhook
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -70,8 +72,8 @@ export async function POST(request: Request) {
         return new NextResponse(null, { status: 401 });
     }
 
-    const allowedChat = process.env.TELEGRAM_CHAT_ID;
-    if (!allowedChat) {
+    const allowedChats = allowedChatIds();
+    if (allowedChats.length === 0) {
         console.error('Telegram not configured: TELEGRAM_CHAT_ID is required');
         return new NextResponse(null, { status: 401 });
     }
@@ -88,7 +90,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true });
     }
 
-    if (String(cq.message?.chat?.id) !== allowedChat || String(cq.from?.id) !== allowedChat) {
+    const fromChat = String(cq.message?.chat?.id);
+    if (!allowedChats.includes(fromChat) || String(cq.from?.id) !== fromChat) {
         console.error('Telegram callback from an unexpected chat or user');
         return new NextResponse(null, { status: 401 });
     }
@@ -168,3 +171,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
 }
+
+// POST from Telegram
+//   → verify secret header          (is this Telegram?)
+//   → verify chat id + user id      (is this you?)
+//   → parse "a:412" → approve, 412
+//   → answerCallbackQuery           ← stops the spinner, immediately
+//   → return 200 to Telegram        ← Telegram is done waiting
+//   ┊
+//   └─ after(): decideSubmission → editMessageText
