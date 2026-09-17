@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { GoogleAnalytics } from '@next/third-parties/google';
+import Analytics from '@/components/Analytics';
 import LangProvider from '@/i18n/LangProvider';
 import '../index.css';
 
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <LangProvider>{children}</LangProvider>
-        {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
+        {GA_ID && <Analytics gaId={GA_ID} />}
       </body>
     </html>
   );
