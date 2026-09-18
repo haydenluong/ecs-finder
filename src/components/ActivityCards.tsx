@@ -205,7 +205,7 @@ function DetailModal({ activity, onClose }: DetailModalProps) {
                     </div>
 
                     {activity.desc && (
-                        <p className="text-[15px] leading-[1.72] text-text-dim m-0">
+                        <p className="text-[15px] leading-[1.72] text-text-dim m-0 whitespace-pre-line">
                             {(lang === 'EN' && activity.desc_en) || activity.desc}
                         </p>
                     )}
