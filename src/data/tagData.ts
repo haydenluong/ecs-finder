@@ -59,7 +59,7 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Ngôn ngữ & Giao tiếp',
-        subtopics: ['Ngôn ngữ học (Tiếng Anh, Tiếng Trung,..)', 'Tranh biện & Hùng biện']
+        subtopics: ['Ngôn ngữ học (Tiếng Anh, Tiếng Trung,..)', 'Tranh biện & Hùng biện', 'Ngoại giao & quan hệ quốc tế']
     },
     {
         name: 'Sức khỏe',
@@ -116,6 +116,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Thời trang':                                   'Fashion',
     'Ngôn ngữ học':                                 'Linguistics',
     'Tranh biện & Hùng biện':                       'Debate & Public Speaking',
+    'Ngoại giao & quan hệ quốc tế':                 'Diplomacy & International Relations',
     'Tâm lý học':                                   'Psychology',
     'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Sports / Nutrition & Lifestyle / Physical Health',
     'Dạy học (phi lợi nhuận)':                      'Non-profit Teaching',
