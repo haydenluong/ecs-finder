@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import logo from '../assets/logo.jpg';
 import { useLang } from '@/i18n/LangProvider';
 
@@ -89,9 +90,17 @@ function Footer() {
                     <span className="text-[12.5px] text-text-faint">
                         © 2026 ECS Finder. All rights reserved.
                     </span>
-                    <span className="text-[12.5px] text-text-faint">
-                        {t('footer.forStudents')}
-                    </span>
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <Link href="/terms" className="text-[12.5px] text-text-faint hover:text-primary transition-colors duration-150">
+                            {t('footer.terms')}
+                        </Link>
+                        <Link href="/privacy" className="text-[12.5px] text-text-faint hover:text-primary transition-colors duration-150">
+                            {t('footer.privacy')}
+                        </Link>
+                        <span className="text-[12.5px] text-text-faint">
+                            {t('footer.forStudents')}
+                        </span>
+                    </div>
                 </div>
             </div>
         </footer>

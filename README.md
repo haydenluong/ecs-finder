@@ -245,6 +245,7 @@ The schema is managed outside this repo, in the Supabase project itself. A new e
 - `grant usage on schema public` and `grant select on public.activities_submissions` to `anon` and `authenticated`
 - RLS enabled, with one `select` policy for `anon`/`authenticated` using `status = 'approved'`
 - a `check_rate_limit(p_ip, p_max_requests, p_window_seconds)` function, called by `/api/submit`
+- a `purge_rate_limits(p_older_than_seconds)` function, called by the nightly cron job
 - a `reset_activities_submissions_id_seq()` function, called by `npm run seed`
 
 Ask the maintainer for the DDL - it is not committed.

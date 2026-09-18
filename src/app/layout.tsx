@@ -27,8 +27,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <LangProvider>{children}</LangProvider>
-        {GA_ID && <Analytics gaId={GA_ID} />}
+        <LangProvider>
+          {children}
+          {GA_ID && <Analytics gaId={GA_ID} />}
+        </LangProvider>
       </body>
     </html>
   );

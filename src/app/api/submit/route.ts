@@ -236,6 +236,10 @@ export async function POST(request: Request) {
     const email = (fd.get('email') as string ?? '').trim();
     const image = fd.get('image');
 
+    if (fd.get('consent') !== 'true') {
+        return fail('consent', 'error.consent.required');
+    }
+
     if (!email) {
         return fail('form', 'error.form.missingFields');
     }
@@ -362,6 +366,7 @@ export async function POST(request: Request) {
         .insert({
             ...fields,
             email,
+            consent_at: new Date().toISOString(),
             image: publicUrlData.publicUrl,
             image_position: imagePosition,
             link_check_passed: linkCheckPassed,

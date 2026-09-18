@@ -32,6 +32,7 @@ declare global {
 type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' | 'desc_en' | 'email'> & {
     image?: FileList;
     email: string;
+    consent: boolean;
 };
 
 // /api/submit reports which field an error belongs to. Everything except 'form'
@@ -39,7 +40,7 @@ type SubmitFormValues = Omit<Activity, 'id' | 'status' | 'created_at' | 'image' 
 // the page-level banner.
 const SERVER_FIELDS = [
     'name', 'category', 'topic', 'subtopic', 'location',
-    'deadline', 'desc', 'link', 'image', 'positions', 'email',
+    'deadline', 'desc', 'link', 'image', 'positions', 'email', 'consent',
 ] as const;
 
 function isServerField(value: unknown): value is (typeof SERVER_FIELDS)[number] {
@@ -113,7 +114,7 @@ export default function SubmitClient() {
     const { register, watch, reset, resetField, getValues, setValue, setError, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SubmitFormValues>({
         defaultValues: {
             name: '', category: '', topic: '', subtopic: null, location: '',
-            deadline: '', positions: [], desc: '', link: '', email: '',
+            deadline: '', positions: [], desc: '', link: '', email: '', consent: false,
         },
     });
 
@@ -206,6 +207,7 @@ export default function SubmitClient() {
         fd.append('positions', JSON.stringify(data.positions));
         fd.append('image', data.image![0]);
         fd.append('image_position', JSON.stringify(imagePosition));
+        fd.append('consent', String(data.consent));
 
         try {
             const res = await fetch('/api/submit', { method: 'POST', body: fd });
@@ -477,6 +479,28 @@ export default function SubmitClient() {
                             {submitErrorKey && (
                                 <span className="text-[13px] text-red-600">{t(submitErrorKey)}</span>
                             )}
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="flex gap-2.5 items-start cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        {...register('consent', { required: true })}
+                                        className="w-[17px] h-[17px] mt-[2px] shrink-0 accent-primary cursor-pointer"
+                                    />
+                                    <span className="text-[12.5px] leading-[1.6] text-text-dim">
+                                        {t('submit.consent.before')}{' '}
+                                        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                                            {t('footer.terms')}
+                                        </Link>
+                                        {' '}{t('submit.consent.and')}{' '}
+                                        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                                            {t('footer.privacy')}
+                                        </Link>
+                                        . {t('submit.consent.minor')}
+                                    </span>
+                                </label>
+                                {errors.consent && <span className="text-[13px] text-red-600">{t('error.consent.required')}</span>}
+                            </div>
 
                             <button
                                 type="submit"

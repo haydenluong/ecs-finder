@@ -33,6 +33,15 @@ export async function GET(request: Request) {
 
     const supabaseAdmin = getSupabaseAdmin();
 
+    // Rate-limit rows are only meaningful inside their one-hour window, and the
+    // privacy policy says so. Failing here must not stop the archive work below.
+    const { data: purged, error: purgeError } = await supabaseAdmin
+        .rpc('purge_rate_limits', { p_older_than_seconds: 86400 });
+
+    if (purgeError) {
+        console.error('Rate-limit purge failed, continuing with archive:', purgeError);
+    }
+
     const { data: expired, error: readError } = await supabaseAdmin
         .from('activities_submissions')
         .select('id, image')
@@ -44,7 +53,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ ok: false }, { status: 500 });
     }
     if (expired.length === 0) {
-        return NextResponse.json({ ok: true, archived: 0, imagesDeleted: 0 });
+        return NextResponse.json({ ok: true, archived: 0, imagesDeleted: 0, rateLimitRowsPurged: purged ?? 0 });
     }
 
     const ids = expired.map(row => row.id);
@@ -65,5 +74,5 @@ export async function GET(request: Request) {
 
     const imagesDeleted = await deleteActivityImages(expired.map(row => row.image));
 
-    return NextResponse.json({ ok: true, archived: ids.length, imagesDeleted });
+    return NextResponse.json({ ok: true, archived: ids.length, imagesDeleted, rateLimitRowsPurged: purged ?? 0 });
 }
