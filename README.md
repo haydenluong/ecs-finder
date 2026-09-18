@@ -6,6 +6,37 @@ A community-driven directory for extracurricular activities, clubs, competitions
 
 ---
 
+## Project history — a note on the numbers
+
+An earlier version of this site listed **250+ verified activities** and drew **800+ monthly users**. Those figures were accurate for that version, and they are what my résumé refers to.
+
+The site has since been rebuilt from a Vite single-page app into a Next.js 16 application on Supabase. The rebuild replaced the data layer entirely, so the catalogue was reseeded from scratch rather than migrated — **the live listing count today is lower than 250 and is growing back as submissions come in through the new pipeline.**
+
+The rebuilt site launched on **17 September 2026**, so it is only days old at the time of writing and is still picking up traction — listings and traffic are both climbing daily as word spreads and submissions arrive.
+
+The traffic and listing figures therefore describe the project at its peak on the previous architecture, not a live count. If you are reading this to check the claim against the site, that gap is why.
+
+### What the rebuild changed
+
+| | Before | Now |
+|---|---|---|
+| Framework | Vite 7 SPA, client-rendered | Next.js 16 App Router — Server Components fetch the data, so the HTML ships with the listings in it |
+| Data | A Google Sheet, pulled by `npm run sync` and committed into the repo | Supabase Postgres, read at request time behind Row Level Security |
+| Submissions | An external Google Form, published only when the maintainer remembered to run the sync script | An in-app form at `/submit` with a live card preview and image cropper, writing straight to the database |
+| Screening | Manual — read every row by hand | `POST /api/submit` runs Cloudflare Turnstile, per-IP rate limiting, duplicate-name rejection, field validation, image byte-signature checks, a registration-link liveness fetch, and a Claude content classification |
+| Review | Editing the spreadsheet | A password-gated queue at `/admin` showing each automated check result, plus a Telegram bot with inline approve/reject buttons for deciding from a phone |
+| Notifications | None | Email to the submitter on decision (SMTP), Telegram push to reviewers on every new submission |
+| Translation | A VI/EN toggle that only swapped some interface copy | The full site and form translated from a keyed dictionary, plus Claude-generated English descriptions cached per activity at approval time; search matches both languages either way |
+| Images | URLs pasted by hand | Uploaded to Supabase Storage with the crop position saved alongside the row |
+| Housekeeping | None | A nightly cron job that archives expired activities and purges rate-limit records |
+| Styling | Inline style objects | Tailwind CSS 4 with design tokens in a `@theme static` block |
+| Analytics | None | Google Analytics 4, excluded from `/admin` so reviewer sessions aren't counted |
+| Hosting | `ecs-finder.vercel.app` | `timkiemhdnk.com` |
+
+The practical difference is that publishing an activity no longer requires the maintainer's laptop. A submission now goes from the form through automated screening to a reviewer's phone, and approving it publishes it within the next revalidation window.
+
+---
+
 ## Features
 
 - Browse activity cards with name, image, location, deadline, and open positions
