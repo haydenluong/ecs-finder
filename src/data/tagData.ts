@@ -63,7 +63,7 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Sức khỏe',
-        subtopics: ['Tâm lý học', 'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất']
+        subtopics: ['Tâm lý học / Sức khỏe tinh thần', 'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất']
     },
     {
         name: 'Giáo dục',
@@ -117,7 +117,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Ngôn ngữ học':                                 'Linguistics',
     'Tranh biện & Hùng biện':                       'Debate & Public Speaking',
     'Ngoại giao & quan hệ quốc tế':                 'Diplomacy & International Relations',
-    'Tâm lý học':                                   'Psychology',
+    'Tâm lý học / Sức khỏe tinh thần':                                   'Psychology / Mental Health',
     'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Sports / Nutrition & Lifestyle / Physical Health',
     'Dạy học (phi lợi nhuận)':                      'Non-profit Teaching',
     'Nghiên cứu khoa học':                          'Scientific Research',
