@@ -59,11 +59,11 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Ngôn ngữ & Giao tiếp',
-        subtopics: ['Ngôn ngữ học', 'Tranh biện & Hùng biện']
+        subtopics: ['Ngôn ngữ học (Tiếng Anh, Tiếng Trung,..)', 'Tranh biện & Hùng biện']
     },
     {
         name: 'Sức khỏe',
-        subtopics: ['Tâm lý học', 'Dinh dưỡng & Lối sống / Sức khỏe thể chất']
+        subtopics: ['Tâm lý học', 'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất']
     },
     {
         name: 'Giáo dục',
@@ -75,7 +75,9 @@ export const categorySet: CategoryTag[] = [
     { label: 'Cuộc thi (Tổ chức cuộc thi)', type: 'category' },
     { label: 'Cuộc thi (Tham gia cuộc thi)', type: 'category' },
     { label: 'Dự án & CLB', type: 'category' },
-    { label: 'Sự kiện (Workshop, Talkshows, ...)', type: 'category' }
+    { label: 'Sự kiện (Workshop, Talkshows, ...)', type: 'category' },
+    { label: 'Chương trình Thực tập', type: 'category' },
+    { label: 'Học bổng', type: 'category' }
 ];
 
 export const POSITIONS = [
@@ -85,10 +87,7 @@ export const POSITIONS = [
     'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
 ];
 
-// English display labels, keyed by the Vietnamese value. Vietnamese stays the
-// canonical id — the DB value, the filter-state value, and the TOPIC_ACCENTS key
-// — so these are only ever read at render. Add a label here whenever you add a
-// topic, subtopic, category or position above.
+
 const TOPIC_EN: Record<string, string> = {
     'STEM':                     'STEM',
     'Xã hội':                   'Society',
@@ -118,7 +117,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Ngôn ngữ học':                                 'Linguistics',
     'Tranh biện & Hùng biện':                       'Debate & Public Speaking',
     'Tâm lý học':                                   'Psychology',
-    'Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Nutrition & Lifestyle / Physical Health',
+    'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Sports / Nutrition & Lifestyle / Physical Health',
     'Dạy học (phi lợi nhuận)':                      'Non-profit Teaching',
     'Nghiên cứu khoa học':                          'Scientific Research',
 };
@@ -128,6 +127,8 @@ const CATEGORY_EN: Record<string, string> = {
     'Cuộc thi (Tham gia cuộc thi)':         'Competitions (Entering)',
     'Dự án & CLB':                          'Projects & Clubs',
     'Sự kiện (Workshop, Talkshows, ...)':   'Events (Workshops, Talks, ...)',
+    'Chương trình Thực tập':                'Internships',
+    'Học bổng':                             'Scholarships',
 };
 
 const POSITION_EN: Record<string, string> = {

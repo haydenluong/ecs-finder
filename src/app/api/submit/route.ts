@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { resolve, resolveMx } from 'node:dns/promises';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
-import { categorySet, topicSet, POSITIONS } from '@/data/tagData';
 import { EMAIL_RE } from '@/lib/emailFormat';
+import { validateSubmissionFields } from '@/lib/submissionFields';
 import { sendMail } from '@/lib/mailer';
 import { pendingEmail } from '@/lib/submissionEmails';
 import { notifyNewSubmission } from '@/lib/submissionTelegram';
@@ -236,7 +236,7 @@ export async function POST(request: Request) {
     const email = (fd.get('email') as string ?? '').trim();
     const image = fd.get('image');
 
-    if (!name || !category || !topic || !location || !deadline || !desc || !link || !email) {
+    if (!email) {
         return fail('form', 'error.form.missingFields');
     }
 
@@ -258,32 +258,15 @@ export async function POST(request: Request) {
     } catch {
         return fail('positions', 'error.positions.invalidData');
     }
-    if (!Array.isArray(positions) || !positions.every(p => typeof p === 'string' && POSITIONS.includes(p))) {
-        return fail('positions', 'error.positions.invalid');
-    }
 
-    if (!categorySet.some(c => c.label === category)) {
-        return fail('category', 'error.category.invalid');
+    const validated = validateSubmissionFields({
+        name, category, topic, subtopic, location, deadline, desc, link, positions,
+    });
+    if (!validated.ok) {
+        return fail(validated.field, validated.code);
     }
+    const fields = validated.value;
 
-    const matchedTopic = topicSet.find(t => t.name === topic);
-    if (!matchedTopic) {
-        return fail('topic', 'error.topic.invalid');
-    }
-    if (subtopic && !matchedTopic.subtopics.includes(subtopic)) {
-        return fail('subtopic', 'error.subtopic.invalid');
-    }
-
-    try {
-        const url = new URL(link);
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error();
-    } catch {
-        return fail('link', 'error.link.invalidServer');
-    }
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
-        return fail('deadline', 'error.deadline.invalid');
-    }
 // fail-open: still goes through with error
     const { data: withinLimit, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
         p_ip: ip,
@@ -377,10 +360,8 @@ export async function POST(request: Request) {
     const { data: inserted, error: insertError } = await supabaseAdmin
         .from('activities_submissions')
         .insert({
-            name, category, topic,
-            subtopic: subtopic || null,
-            location, deadline, desc, link, email,
-            positions,
+            ...fields,
+            email,
             image: publicUrlData.publicUrl,
             image_position: imagePosition,
             link_check_passed: linkCheckPassed,
@@ -404,10 +385,8 @@ export async function POST(request: Request) {
 
     await notifyNewSubmission({
         id: inserted.id,
-        name, category, topic,
-        subtopic: subtopic || null,
-        location, deadline, desc, link, email,
-        positions,
+        ...fields,
+        email,
         image: publicUrlData.publicUrl,
         linkCheckPassed,
         contentCheckVerdict: contentCheck?.verdict ?? null,

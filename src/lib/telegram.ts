@@ -6,7 +6,8 @@ const API = 'https://api.telegram.org';
 
 export interface InlineButton {
     text: string;
-    callback_data: string;
+    callback_data?: string;
+    url?: string;
 }
 
 export interface InlineKeyboard {

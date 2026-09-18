@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PreviewCard from '@/app/submit/PreviewCard';
+import EditSubmissionForm from './EditSubmissionForm';
 import type { Activity, ReviewStatus } from '@/types';
 
 interface AdminClientProps {
@@ -69,6 +70,7 @@ function LinkCheckSignal({ activity }: { activity: Activity }) {
 export default function AdminClient({ reviewer, status, activities, loadFailed }: AdminClientProps) {
     const router = useRouter();
     const [busyId, setBusyId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [error, setError] = useState('');
 
     async function decide(id: number, action: 'approve' | 'reject') {
@@ -173,6 +175,13 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
                                         imagePosition={activity.image_position}
                                     />
 
+                                    {editingId === activity.id ? (
+                                    <EditSubmissionForm
+                                        activity={activity}
+                                        onCancel={() => setEditingId(null)}
+                                        onSaved={() => { setEditingId(null); router.refresh(); }}
+                                    />
+                                    ) : (
                                     <div className="flex flex-col gap-3.5 min-w-0">
                                         <div className="flex gap-2 flex-wrap">
                                             <ContentCheckSignal activity={activity} />
@@ -215,6 +224,16 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
                                         </p>
 
                                         <div className="flex gap-2.5 flex-wrap mt-1">
+                                            {status === 'pending' && (
+                                                <button
+                                                    type="button"
+                                                    disabled={busyId === activity.id}
+                                                    onClick={() => setEditingId(activity.id)}
+                                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-5 font-semibold text-[14px] text-text cursor-pointer hover:border-primary transition-colors duration-150 disabled:opacity-60 disabled:cursor-default"
+                                                >
+                                                    Sửa
+                                                </button>
+                                            )}
                                             {status !== 'approved' && (
                                                 <button
                                                     type="button"
@@ -237,6 +256,7 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
                                             )}
                                         </div>
                                     </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
