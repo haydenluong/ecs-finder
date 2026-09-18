@@ -67,7 +67,7 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Giáo dục',
-        subtopics: ['Dạy học (phi lợi nhuận)', 'Nghiên cứu khoa học']
+        subtopics: ['Dạy học (phi lợi nhuận)', 'Nghiên cứu khoa học', 'Hướng nghiệp']
     }
 ];
 
@@ -120,6 +120,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Thể thao / Dinh dưỡng & Lối sống / Sức khỏe thể chất':   'Sports / Nutrition & Lifestyle / Physical Health',
     'Dạy học (phi lợi nhuận)':                      'Non-profit Teaching',
     'Nghiên cứu khoa học':                          'Scientific Research',
+    'Hướng nghiệp':                                 'Career Guidance',
 };
 
 const CATEGORY_EN: Record<string, string> = {
