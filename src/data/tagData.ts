@@ -84,7 +84,7 @@ export const POSITIONS = [
     'Co-Founder',
     'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
     'Ban Podcast', 'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
-    'CTV Truyền Thông', 'Tình nguyện viên', 'Khác',
+    'CTV Truyền Thông', 'Đại sứ truyền thông', 'Tình nguyện viên', 'Khác',
 ];
 
 
@@ -144,6 +144,7 @@ const POSITION_EN: Record<string, string> = {
     'Ban Thiết Kế':              'Design',
     'Ban Tài chính Đối ngoại':  'Finance & External Relations',
     'CTV Truyền Thông':          'Communications Contributor',
+    'Đại sứ truyền thông':       'Media Ambassador',
     'Tình nguyện viên':          'Volunteer',
     'Thí sinh':                  'Contestant',
     'Khác':                      'Other',
