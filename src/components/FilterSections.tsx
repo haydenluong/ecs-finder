@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { topicSet, categorySet, accentVars, POSITIONS, topicLabel, subtopicLabel, categoryLabel, positionLabel } from '../data/tagData';
+import { topicSet, categorySet, accentVars, BASE_POSITIONS, DEPARTMENTS, CORE_TEAM, coreTeamValue, topicLabel, subtopicLabel, categoryLabel, positionLabel } from '../data/tagData';
 import { useLang } from '@/i18n/LangProvider';
 import type { StringKey } from '@/i18n/strings';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
@@ -130,13 +130,27 @@ function FilterSections({
     function handlePositionCheck(pos: string, checked: boolean): void {
         const next = checked
             ? [...positionFilters, pos]
-            : positionFilters.filter(p => p !== pos);
+            : positionFilters.filter(p => p !== pos && p !== coreTeamValue(pos));
         onPositionFilterChange(next);
     }
 
-    // Set lookups instead of Array.includes inside the topic/position maps below.
+    function positionSelection(base: string): 'core' | 'plain' | null {
+        if (positionFilters.includes(coreTeamValue(base))) return 'core';
+        if (positionFilters.includes(base)) return 'plain';
+        return null;
+    }
+
+    function handleCoreTeamToggle(base: string): void {
+        const core = coreTeamValue(base);
+        onPositionFilterChange(
+            positionFilters.includes(core) || positionFilters.includes(base)
+                ? positionFilters.map(p => (p === base ? core : p === core ? base : p))
+                : [...positionFilters, core],
+        );
+    }
+
+    // Set lookups instead of Array.includes inside the topic map below.
     const selectedTopics = new Set(topicFilters.topics);
-    const selectedPositions = new Set(positionFilters);
 
     const categoryCounts = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -278,8 +292,10 @@ function FilterSections({
                         <path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                 }>{t('filters.positions')}</SectionLabel>
-                {POSITIONS.map(pos => {
-                    const checked = selectedPositions.has(pos);
+                {BASE_POSITIONS.map(pos => {
+                    const selection = positionSelection(pos);
+                    const checked = selection !== null;
+                    const isDepartment = DEPARTMENTS.includes(pos);
                     return (
                         <div key={pos}
                             role="checkbox"
@@ -304,6 +320,22 @@ function FilterSections({
                             <span className={`text-[13px] ${
                                 checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'
                             }`}>{positionLabel(pos, lang)}</span>
+
+                            {isDepartment && (
+                                <button
+                                    type="button"
+                                    aria-pressed={selection === 'core'}
+                                    aria-label={t('filters.coreTeamOnly', { name: positionLabel(pos, lang) })}
+                                    onClick={e => { e.stopPropagation(); handleCoreTeamToggle(pos); }}
+                                    className={`ml-auto shrink-0 rounded-full py-0.5 px-2 text-[11px] font-semibold border cursor-pointer transition-[background-color,border-color,color,opacity] duration-150 ${
+                                        selection === 'core'
+                                            ? 'bg-primary border-primary text-white opacity-100'
+                                            : 'bg-transparent border-border-bright text-text-faint opacity-70 hover:opacity-100 hover:border-primary hover:text-primary'
+                                    }`}
+                                >
+                                    {CORE_TEAM}
+                                </button>
+                            )}
                         </div>
                     );
                 })}

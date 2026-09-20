@@ -1,4 +1,4 @@
-import { englishLabelsFor } from './tagData';
+import { englishLabelsFor, positionMatches } from './tagData';
 import type { Activity, TopicFilter, DeadlineFilter } from '../types';
 
 export interface FilterParams {
@@ -28,7 +28,6 @@ export function todayInVietnam(): string {
 
 export function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
     const selectedTopics = new Set(topicFilters.topics);
-    const selectedPositions = new Set(positionFilters);
     return activities.filter(a => {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
@@ -55,7 +54,7 @@ export function filterActivities(activities: Activity[], { searchQuery, category
             }
         }
         if (positionFilters.length > 0) {
-            if (!a.positions?.some(p => selectedPositions.has(p))) return false;
+            if (!a.positions?.some(p => positionFilters.some(f => positionMatches(p, f)))) return false;
         }
         return true;
     });

@@ -23,6 +23,7 @@ export const vi = {
     'filters.collapseTopic': 'Thu gọn {topic}',
     'filters.expandTopic': 'Mở rộng {topic}',
     'filters.viewResults': 'Xem {count} kết quả',
+    'filters.coreTeamOnly': 'Chỉ Core Team của {name}',
 
     'legal.updated': 'Cập nhật lần cuối: {date}',
     'consent.title': 'Lựa chọn về cookie',
@@ -87,6 +88,7 @@ export const vi = {
     'submit.deadline': 'Hạn nộp',
     'submit.positions': 'Vị trí tuyển',
     'submit.positionsPlaceholder': 'Chọn vị trí tuyển...',
+    'submit.coreTeamToggle': 'Tuyển Core Team cho {name}',
     'submit.desc': 'Mô tả',
     'submit.wordCount': '{count} / {max} từ',
     'submit.image': 'Ảnh hoạt động',
@@ -169,6 +171,7 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
     'filters.expandTopic': 'Expand {topic}',
     'filters.viewResults.one': 'View {count} result',
     'filters.viewResults.other': 'View {count} results',
+    'filters.coreTeamOnly': '{name} core team only',
 
     'legal.updated': 'Last updated: {date}',
     'consent.title': 'Cookie choice',
@@ -236,6 +239,7 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
     'submit.deadline': 'Deadline',
     'submit.positions': 'Open roles',
     'submit.positionsPlaceholder': 'Choose open roles...',
+    'submit.coreTeamToggle': 'Recruiting Core Team for {name}',
     'submit.desc': 'Description',
     'submit.wordCount': '{count} / {max} words',
     'submit.image': 'Activity photo',

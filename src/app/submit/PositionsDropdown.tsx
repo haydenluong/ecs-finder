@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { POSITIONS, positionLabel } from '@/data/tagData';
+import { BASE_POSITIONS, DEPARTMENTS, CORE_TEAM, coreTeamValue, positionLabel } from '@/data/tagData';
 import { useLang } from '@/i18n/LangProvider';
 
 interface PositionsDropdownProps {
@@ -24,9 +24,23 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
-    function toggle(pos: string) {
-        const checked = value.includes(pos);
-        onChange(checked ? value.filter(p => p !== pos) : [...value, pos]);
+    function selectionFor(base: string): 'core' | 'plain' | null {
+        if (value.includes(coreTeamValue(base))) return 'core';
+        if (value.includes(base)) return 'plain';
+        return null;
+    }
+
+    function toggle(base: string) {
+        if (selectionFor(base)) {
+            onChange(value.filter(p => p !== base && p !== coreTeamValue(base)));
+        } else {
+            onChange([...value, base]);
+        }
+    }
+
+    function toggleCore(base: string) {
+        const core = coreTeamValue(base);
+        onChange(value.map(p => (p === base ? core : p === core ? base : p)));
     }
 
     return (
@@ -48,8 +62,10 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
 
             {open && (
                 <div className="absolute z-10 mt-1.5 w-full bg-glass border border-border-bright rounded-2xl shadow-[0_10px_26px_rgba(20,44,68,0.09)] p-1.5 max-h-[280px] overflow-y-auto">
-                    {POSITIONS.map(pos => {
-                        const checked = value.includes(pos);
+                    {BASE_POSITIONS.map(pos => {
+                        const selection = selectionFor(pos);
+                        const checked = selection !== null;
+                        const isDepartment = DEPARTMENTS.includes(pos);
                         return (
                             <div
                                 key={pos}
@@ -73,6 +89,22 @@ export default function PositionsDropdown({ value, onChange }: PositionsDropdown
                                     )}
                                 </div>
                                 <span className={`text-[13px] ${checked ? 'text-primary font-semibold' : 'text-text-dim font-normal'}`}>{positionLabel(pos, lang)}</span>
+
+                                {isDepartment && checked && (
+                                    <button
+                                        type="button"
+                                        aria-pressed={selection === 'core'}
+                                        aria-label={t('submit.coreTeamToggle', { name: positionLabel(pos, lang) })}
+                                        onClick={e => { e.stopPropagation(); toggleCore(pos); }}
+                                        className={`ml-auto shrink-0 rounded-full py-1 px-2.5 text-[11.5px] font-semibold border cursor-pointer transition-[background-color,border-color,color] duration-150 ${
+                                            selection === 'core'
+                                                ? 'bg-primary border-primary text-white'
+                                                : 'bg-transparent border-border-bright text-text-faint hover:border-primary hover:text-primary'
+                                        }`}
+                                    >
+                                        {CORE_TEAM}
+                                    </button>
+                                )}
                             </div>
                         );
                     })}

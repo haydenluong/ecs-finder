@@ -18,8 +18,8 @@
     "@supabase/supabase-js": "^2.110.9",
     "next": "^16.2.12",
     "nodemailer": "^10.0.10",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-easy-crop": "^6.2.3",
     "react-hook-form": "^7.83.0"
   },

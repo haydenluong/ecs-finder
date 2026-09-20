@@ -80,12 +80,41 @@ export const categorySet: CategoryTag[] = [
     { label: 'Học bổng', type: 'category' }
 ];
 
-export const POSITIONS = [
-    'Co-Founder',
+export const DEPARTMENTS = [
     'Ban Nhân Sự', 'Ban Truyền Thông', 'Ban Dịch Thuật', 'Ban Nội Dung',
     'Ban Podcast', 'Ban Chuyên Môn', 'Ban Thiết Kế', 'Ban Tài chính Đối ngoại',
+];
+
+export const CORE_TEAM = 'Core Team';
+const CORE_TEAM_SUFFIX = ` (${CORE_TEAM})`;
+
+const OTHER_POSITIONS = [
     'CTV Truyền Thông', 'Đại sứ truyền thông', 'Tình nguyện viên', 'Khác',
 ];
+
+export const BASE_POSITIONS = ['Co-Founder', ...DEPARTMENTS, ...OTHER_POSITIONS];
+
+export const POSITIONS = [
+    ...BASE_POSITIONS,
+    ...DEPARTMENTS.map(d => d + CORE_TEAM_SUFFIX),
+];
+
+export function isCoreTeam(position: string): boolean {
+    return position.endsWith(CORE_TEAM_SUFFIX);
+}
+
+export function departmentOf(position: string): string {
+    return isCoreTeam(position) ? position.slice(0, -CORE_TEAM_SUFFIX.length) : position;
+}
+
+export function coreTeamValue(department: string): string {
+    return department + CORE_TEAM_SUFFIX;
+}
+
+export function positionMatches(activityPosition: string, filterValue: string): boolean {
+    if (isCoreTeam(filterValue)) return activityPosition === filterValue;
+    return departmentOf(activityPosition) === filterValue;
+}
 
 
 const TOPIC_EN: Record<string, string> = {
@@ -135,6 +164,7 @@ const CATEGORY_EN: Record<string, string> = {
 
 const POSITION_EN: Record<string, string> = {
     'Co-Founder':                'Co-Founder',
+    'Core Team':                 'Core Team',
     'Ban Nhân Sự':               'Human Resources',
     'Ban Truyền Thông':          'Communications',
     'Ban Dịch Thuật':            'Translation',
@@ -190,6 +220,7 @@ export function categoryLabel(vi: string, lang: Lang): string {
 }
 
 export function positionLabel(vi: string, lang: Lang): string {
+    if (isCoreTeam(vi)) return label(POSITION_EN, departmentOf(vi), lang) + CORE_TEAM_SUFFIX;
     return label(POSITION_EN, vi, lang);
 }
 

@@ -1,10 +1,3 @@
-// Admin session handling for /admin. Deliberately not Supabase Auth: writes go
-// through a server route with the service-role key, so the browser needs no
-// write grant and the permission model in supabase/migrations stays unchanged.
-//
-// EDGE-SAFE: imported by middleware.ts, which runs on the Edge runtime. Use Web
-// Crypto and btoa/atob — `node:crypto` and Buffer do not exist there.
-
 export const ADMIN_COOKIE = 'ecs_admin_session';
 
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
@@ -23,12 +16,7 @@ interface Approver {
     password: string;
 }
 
-/**
- * Parses ADMIN_USERS="hayden:s3cret,linh:0ther".
- *
- * A password cannot contain a comma (commas separate entries) but may contain
- * colons — only the first colon in an entry is the separator.
- */
+
 function getApprovers(): Approver[] {
     return (process.env.ADMIN_USERS ?? '')
         .split(',')
@@ -42,14 +30,14 @@ function getApprovers(): Approver[] {
         .filter((a): a is Approver => a !== null && a.label !== '' && a.password !== '');
 }
 
-/** Returns null rather than throwing, so a misconfigured deploy fails closed instead of 500ing. */
+
 function getSecret(): string | null {
     const secret = process.env.SESSION_SECRET;
     if (!secret || secret.length < 32) return null;
     return secret;
 }
 
-/** Lets the login route report a misconfiguration instead of rejecting every correct password. */
+
 export function isAdminAuthConfigured(): boolean {
     return getSecret() !== null && getApprovers().length > 0;
 }
@@ -78,7 +66,7 @@ function toBase64Url(bytes: Uint8Array): string {
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-/** Throws on malformed input; callers treat a throw as "invalid token". */
+
 function fromBase64Url(value: string): Uint8Array {
     const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
@@ -88,13 +76,6 @@ function fromBase64Url(value: string): Uint8Array {
     return bytes;
 }
 
-/**
- * Returns the matching approver's label, or null.
- *
- * Compares HMACs rather than raw strings, and deliberately does not break out of
- * the loop on a match: an early return leaks password length and shared prefix
- * through response timing.
- */
 export async function findApproverByPassword(password: string): Promise<string | null> {
     const secret = getSecret();
     if (!secret) return null;
@@ -109,11 +90,7 @@ export async function findApproverByPassword(password: string): Promise<string |
     return match;
 }
 
-/**
- * Signs `<base64url(payload)>.<base64url(hmac)>`. The password never goes in the
- * cookie, so a stolen cookie cannot be turned back into one, and rotating
- * SESSION_SECRET invalidates every outstanding session.
- */
+
 export async function createSessionToken(sub: string): Promise<string | null> {
     const secret = getSecret();
     if (!secret) return null;
@@ -123,14 +100,7 @@ export async function createSessionToken(sub: string): Promise<string | null> {
     return `${body}.${toBase64Url(await hmac(secret, body))}`;
 }
 
-/**
- * Verifies signature, expiry, and that the approver is still listed in
- * ADMIN_USERS — that last check is what revokes a removed approver's live
- * cookie instead of leaving them logged in until it expires.
- *
- * Caveat: Next inlines process.env into the Edge bundle at build time, so on
- * Vercel a removal lands on the next deploy, not the moment you edit the var.
- */
+
 export async function verifySessionToken(token: string | undefined): Promise<AdminSession | null> {
     const secret = getSecret();
     if (!secret || !token) return null;
