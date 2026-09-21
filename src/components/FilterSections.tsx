@@ -8,6 +8,8 @@ const GROUP = 'py-3.5 px-1';
 
 const DEADLINE_OPTIONS: { key: StringKey; value: DeadlineFilter }[] = [
     { key: 'filters.all',       value: '' },
+    { key: 'filters.soonest',   value: 'soonest' },
+    { key: 'filters.latest',    value: 'latest' },
     { key: 'filters.thisWeek',  value: 'week' },
     { key: 'filters.thisMonth', value: 'month' },
 ];

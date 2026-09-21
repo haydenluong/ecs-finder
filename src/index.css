@@ -30,6 +30,8 @@
   --animate-sheet-up: sheetUp 0.28s cubic-bezier(0.16,1,0.3,1) both;
   --animate-float-mag: floatMag 6s ease-in-out infinite;
   --animate-blink: blink 1s step-end infinite;
+  --animate-filter-nudge: filterNudge 2.6s ease-out both;
+  --animate-tap-hand: tapHand 2.6s ease-out both;
 }
 
 html {
@@ -88,6 +90,30 @@ body::before {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
+}
+
+@keyframes filterNudge {
+  0%, 30%   { transform: scale(1);    box-shadow: 0 4px 14px rgba(26,111,208,0.3), 0 0 0 0 rgba(26,111,208,0.5); }
+  40%       { transform: scale(0.97); box-shadow: 0 2px 8px rgba(26,111,208,0.3),  0 0 0 0 rgba(26,111,208,0.5); }
+  52%       { transform: scale(1);    box-shadow: 0 4px 14px rgba(26,111,208,0.3), 0 0 0 15px rgba(26,111,208,0); }
+  64%       { transform: scale(0.97); box-shadow: 0 2px 8px rgba(26,111,208,0.3),  0 0 0 0 rgba(26,111,208,0.5); }
+  76%, 100% { transform: scale(1);    box-shadow: 0 4px 14px rgba(26,111,208,0.3), 0 0 0 15px rgba(26,111,208,0); }
+}
+
+@keyframes tapHand {
+  0%        { opacity: 0; transform: translate(6px, 20px) scale(0.86) rotate(-6deg); }
+  14%       { opacity: 1; transform: translate(0, 0)      scale(1)    rotate(0deg); }
+  30%       { opacity: 1; transform: translate(0, -7px)   scale(1.04) rotate(0deg); }
+  40%       { opacity: 1; transform: translate(0, 1px)    scale(0.95) rotate(0deg); }
+  52%       { opacity: 1; transform: translate(0, -7px)   scale(1.04) rotate(0deg); }
+  64%       { opacity: 1; transform: translate(0, 1px)    scale(0.95) rotate(0deg); }
+  78%       { opacity: 1; transform: translate(0, 0)      scale(1)    rotate(0deg); }
+  100%      { opacity: 0; transform: translate(6px, 16px) scale(0.88) rotate(-6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-filter-nudge,
+  .animate-tap-hand { animation: none; }
 }
 
 ::-webkit-scrollbar { width: 11px; height: 11px; }

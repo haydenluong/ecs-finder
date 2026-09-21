@@ -2,7 +2,7 @@ export type Lang = 'VI' | 'EN';
 
 /** The statuses the /admin queue can be filtered to. 'archived' is not reachable from the UI. */
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
-export type DeadlineFilter = '' | 'week' | 'month';
+export type DeadlineFilter = '' | 'week' | 'month' | 'soonest' | 'latest';
 
 export interface SubtopicFilter {
   parent: string;

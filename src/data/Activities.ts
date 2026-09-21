@@ -28,7 +28,7 @@ export function todayInVietnam(): string {
 
 export function filterActivities(activities: Activity[], { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters }: FilterParams): Activity[] {
     const selectedTopics = new Set(topicFilters.topics);
-    return activities.filter(a => {
+    const result = activities.filter(a => {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             // Both languages always, so a switch cannot change the result set —
@@ -58,6 +58,11 @@ export function filterActivities(activities: Activity[], { searchQuery, category
         }
         return true;
     });
+    if (deadlineFilter === 'soonest' || deadlineFilter === 'latest') {
+        const dir = deadlineFilter === 'soonest' ? 1 : -1;
+        result.sort((a, b) => dir * a.deadline.localeCompare(b.deadline));
+    }
+    return result;
 }
 
 export const mockActivities: Activity[] = [
