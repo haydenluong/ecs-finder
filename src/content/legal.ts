@@ -19,16 +19,32 @@ export interface LegalDoc {
 export const CONTACT_EMAIL = 'timkiemhoatdongngoaikhoa@gmail.com';
 
 export const termsDoc: LegalDoc = {
-    updated: '18.09.2026',
+    updated: '20.09.2026',
     title: {
         vi: 'Điều khoản sử dụng',
         en: 'Terms of Use',
     },
     intro: {
-        vi: 'ECS Finder là nơi tổng hợp thông tin về hoạt động ngoại khoá do cộng đồng gửi lên. Khi sử dụng website hoặc gửi một hoạt động, bạn đồng ý với các điều khoản dưới đây.',
-        en: 'ECS Finder is a directory of extracurricular activities submitted by the community. By using the site or submitting an activity, you agree to the terms below.',
+        vi: 'ECS Finder là nơi tổng hợp thông tin về hoạt động ngoại khoá dành cho học sinh, sinh viên Việt Nam. Phần lớn hoạt động trên website do chính nhóm ECS Finder tìm và biên soạn lại từ các nguồn công khai; một số khác do cộng đồng chủ động gửi lên qua biểu mẫu. Khi sử dụng website hoặc gửi một hoạt động, bạn đồng ý với các điều khoản dưới đây.',
+        en: 'ECS Finder is a directory of extracurricular activities for students in Vietnam. Most listings are found and written up by the ECS Finder team from publicly available sources; the rest are sent in by the community through our form. By using the site or submitting an activity, you agree to the terms below.',
     },
     sections: [
+        {
+            heading: {
+                vi: 'Hoạt động trên website đến từ đâu',
+                en: 'Where the listings come from',
+            },
+            body: [
+                {
+                    vi: 'Chúng tôi chủ động theo dõi các nguồn thông tin công khai — trang chính thức, fanpage, thông báo tuyển thành viên của các tổ chức — rồi tự biên soạn lại thành một mục hoạt động trên website. Trước khi đăng, chúng tôi đối chiếu lại thông tin với nguồn gốc một cách thiện chí và luôn kèm theo đường dẫn tới trang đăng ký chính thức để bạn tự kiểm chứng.',
+                    en: 'We actively follow publicly available sources — official pages, fanpages, recruitment announcements — and write them up as listings ourselves. Before publishing, we check the details against the original source in good faith, and every listing links to the official registration page so you can verify it yourself.',
+                },
+                {
+                    vi: 'Website cũng mở biểu mẫu để các tổ chức, câu lạc bộ và học sinh tự gửi hoạt động của mình. Những bài gửi này được kiểm duyệt theo cùng một quy trình trước khi hiển thị.',
+                    en: 'The site also has an open form so organisations, clubs and students can send in their own activities. Those submissions go through the same review before they appear.',
+                },
+            ],
+        },
         {
             heading: {
                 vi: 'ECS Finder là gì và không phải là gì',
@@ -36,8 +52,12 @@ export const termsDoc: LegalDoc = {
             },
             body: [
                 {
-                    vi: 'Chúng tôi tổng hợp và hiển thị thông tin về các hoạt động ngoại khoá do người dùng gửi lên. Chúng tôi không phải là đơn vị tổ chức, không đồng tổ chức, không tài trợ và không đại diện cho bất kỳ hoạt động nào được đăng tải.',
-                    en: 'We collect and display information about extracurricular activities submitted by users. We do not organise, co-organise, sponsor or represent any activity listed here.',
+                    vi: 'Việc một hoạt động xuất hiện trên website hoàn toàn không đồng nghĩa với việc chúng tôi có liên kết với đơn vị tổ chức, được họ uỷ quyền, hay được họ tài trợ. Chúng tôi không phải là đơn vị tổ chức, không đồng tổ chức và không đại diện cho bất kỳ hoạt động nào được đăng tải.',
+                    en: 'A listing appearing here does not mean we are affiliated with, endorsed by, authorised by or sponsored by the organisation behind it. We do not organise, co-organise or represent any activity listed here.',
+                },
+                {
+                    vi: 'Tên gọi, logo và nội dung mô tả của các tổ chức thuộc về chính họ; chúng tôi chỉ nhắc tới nhằm mục đích thông tin. Nếu bạn là đơn vị tổ chức và muốn chúng tôi sửa hoặc gỡ mục về hoạt động của mình, hãy xem phần "Báo cáo nội dung sai phạm" bên dưới — chúng tôi sẽ xử lý.',
+                    en: 'Organisation names, logos and descriptions belong to those organisations; we refer to them for informational purposes only. If you run an activity and want its listing corrected or removed, see "Reporting a listing" below — we will act on it.',
                 },
                 {
                     vi: 'Mọi thoả thuận về việc tham gia, tuyển chọn, học phí hay quyền lợi đều diễn ra trực tiếp giữa bạn và đơn vị tổ chức hoạt động đó.',
@@ -52,8 +72,8 @@ export const termsDoc: LegalDoc = {
             },
             body: [
                 {
-                    vi: 'Bằng việc gửi biểu mẫu, bạn xác nhận rằng:',
-                    en: 'By submitting the form, you confirm that:',
+                    vi: 'Phần này chỉ áp dụng cho các hoạt động do bạn tự gửi qua biểu mẫu, không áp dụng cho những mục do chính chúng tôi biên soạn. Bằng việc gửi biểu mẫu, bạn xác nhận rằng:',
+                    en: 'This section applies only to activities you send in through the form, not to listings we compile ourselves. By submitting the form, you confirm that:',
                 },
             ],
             bullets: [
@@ -82,8 +102,8 @@ export const termsDoc: LegalDoc = {
             },
             body: [
                 {
-                    vi: 'Mỗi bài gửi đều được xem xét trước khi đăng. Chúng tôi có quyền chỉnh sửa thông tin cho chính xác hoặc rõ ràng hơn (ví dụ: sửa lỗi chính tả, đổi chủ đề hoặc loại hình cho đúng), từ chối đăng, hoặc gỡ bỏ một hoạt động đã đăng, vào bất kỳ lúc nào và không cần báo trước.',
-                    en: 'Every submission is reviewed before it appears. We may edit a submission for accuracy or clarity (fixing typos, correcting the topic or type), decline to publish it, or remove a published activity at any time and without notice.',
+                    vi: 'Mọi hoạt động, dù do chúng tôi biên soạn hay do bạn gửi lên, đều được xem xét trước khi đăng. Chúng tôi có quyền chỉnh sửa thông tin cho chính xác hoặc rõ ràng hơn (ví dụ: sửa lỗi chính tả, đổi chủ đề hoặc loại hình cho đúng), từ chối đăng, hoặc gỡ bỏ một hoạt động đã đăng, vào bất kỳ lúc nào và không cần báo trước.',
+                    en: 'Every listing, whether we compiled it or you sent it in, is reviewed before it appears. We may edit it for accuracy or clarity (fixing typos, correcting the topic or type), decline to publish it, or remove a published activity at any time and without notice.',
                 },
                 {
                     vi: 'Hoạt động đã qua hạn đăng ký sẽ tự động được đưa vào lưu trữ và không còn hiển thị công khai.',
@@ -126,8 +146,8 @@ export const termsDoc: LegalDoc = {
             },
             body: [
                 {
-                    vi: 'Chúng tôi cố gắng kiểm duyệt mọi bài gửi, nhưng không thể xác minh tính chính xác, tính hợp pháp hay chất lượng của từng hoạt động. Thông tin trên website được cung cấp "nguyên trạng", không kèm theo bảo đảm nào.',
-                    en: 'We review every submission, but we cannot verify the accuracy, legality or quality of each activity. Everything here is provided "as is", with no warranty of any kind.',
+                    vi: 'Chúng tôi đối chiếu thông tin với nguồn công khai một cách thiện chí trước khi đăng, nhưng thông tin có thể thay đổi sau đó (hạn đăng ký được dời, vị trí tuyển đã đóng, hoạt động bị huỷ) và chúng tôi không thể bảo đảm tính chính xác, tính hợp pháp hay chất lượng của từng hoạt động. Thông tin trên website được cung cấp "nguyên trạng", không kèm theo bảo đảm nào. Trang chính thức của đơn vị tổ chức luôn là nguồn có giá trị cao nhất.',
+                    en: 'We check details against public sources in good faith before publishing, but things change afterwards — deadlines move, roles close, activities are cancelled — and we cannot guarantee the accuracy, legality or quality of any activity. Everything here is provided "as is", with no warranty of any kind. The organiser’s own page is always the authoritative source.',
                 },
                 {
                     vi: 'Hãy tự tìm hiểu kỹ trước khi đăng ký, cung cấp thông tin cá nhân hoặc thanh toán bất kỳ khoản phí nào cho một đơn vị tổ chức. Chúng tôi không chịu trách nhiệm về thiệt hại phát sinh từ việc bạn tham gia một hoạt động được liệt kê trên website.',
@@ -142,8 +162,8 @@ export const termsDoc: LegalDoc = {
             },
             body: [
                 {
-                    vi: 'Bạn giữ toàn bộ quyền đối với nội dung và hình ảnh bạn gửi; bạn chỉ cấp cho chúng tôi quyền hiển thị chúng trên website. Tên gọi, logo, thiết kế và mã nguồn của ECS Finder thuộc về dự án.',
-                    en: 'You keep all rights to the content and photos you submit; you grant us only the right to display them on this site. The ECS Finder name, logo, design and source code belong to the project.',
+                    vi: 'Bạn giữ toàn bộ quyền đối với nội dung và hình ảnh bạn gửi; bạn chỉ cấp cho chúng tôi quyền hiển thị chúng trên website. Với các mục do chúng tôi biên soạn, phần mô tả là do chúng tôi tự viết lại, còn tên gọi, logo và hình ảnh của hoạt động vẫn thuộc về đơn vị tổ chức. Tên gọi, logo, thiết kế và mã nguồn của ECS Finder thuộc về dự án.',
+                    en: 'You keep all rights to the content and photos you submit; you grant us only the right to display them on this site. In listings we compile, the description is written by us, while the activity’s name, logo and imagery remain the property of the organisation running it. The ECS Finder name, logo, design and source code belong to the project.',
                 },
             ],
         },
@@ -156,6 +176,10 @@ export const termsDoc: LegalDoc = {
                 {
                     vi: `Nếu bạn phát hiện một hoạt động sai sự thật, lừa đảo, vi phạm bản quyền, hoặc muốn gỡ hoạt động do chính bạn gửi, hãy email tới ${CONTACT_EMAIL} kèm đường dẫn hoặc tên hoạt động. Chúng tôi sẽ xem xét và gỡ bỏ nếu cần.`,
                     en: `If you find a listing that is false, fraudulent or infringing, or you want an activity you submitted taken down, email ${CONTACT_EMAIL} with the link or the activity name. We will review it and remove it if warranted.`,
+                },
+                {
+                    vi: 'Nếu bạn là đơn vị tổ chức và không muốn hoạt động của mình xuất hiện trên website, chỉ cần nói với chúng tôi qua email trên. Chúng tôi sẽ gỡ mục đó và không cần bạn giải thích lý do.',
+                    en: 'If you run an activity and would rather it was not listed here, just tell us at that address. We will take the listing down, and you do not have to give a reason.',
                 },
             ],
         },

@@ -1,9 +1,3 @@
-// Vietnamese -> English translation of a submitted activity description, used by
-// /api/admin/decide at approval time and by scripts/backfill-translations.ts.
-//
-// Fails open: every failure path returns null, the row is still approved, and the
-// read path falls back to the Vietnamese `desc`. A translation outage must never
-// stop a reviewer from approving.
 export async function translateDesc(desc: string): Promise<string | null> {
     const systemPrompt = `You translate Vietnamese descriptions of student extracurricular activities (clubs, competitions, volunteering, workshops) into English for ECS Finder, a site where Vietnamese students find those activities.
 

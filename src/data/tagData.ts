@@ -51,7 +51,7 @@ export const topicSet: Topic[] = [
     },
     {
         name: 'Kinh tế',
-        subtopics: ['Tài chính & Kinh doanh', 'Marketing', 'Gây quỹ']
+        subtopics: ['Tài chính & Kinh doanh', 'Marketing', 'Gây quỹ', 'Khởi nghiệp']
     },
     {
         name: 'Nghệ thuật & Sáng tạo',
@@ -139,6 +139,7 @@ const SUBTOPIC_EN: Record<string, string> = {
     'Tài chính & Kinh doanh':                       'Finance & Business',
     'Marketing':                                    'Marketing',
     'Gây quỹ':                                      'Fundraising',
+    'Khởi nghiệp':                                  'Entrepreneurship',
     'Văn học & Thơ':                                'Literature & Poetry',
     'Hội họa':                                      'Painting',
     'Viết':                                         'Writing',
