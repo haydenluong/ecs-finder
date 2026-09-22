@@ -112,19 +112,22 @@ function Navbar() {
                     type="button"
                     onClick={() => setNavOpen(o => !o)}
                     aria-label={navOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-                    className={`col-start-3 justify-self-end hidden max-nav:flex w-10 h-10 rounded-[10px] border border-border-bright cursor-pointer flex-col items-center justify-center gap-[5px] shrink-0 ${
-                        navOpen ? 'bg-[rgba(26,111,208,0.1)]' : 'bg-glass'
+                    className={`col-start-3 justify-self-end hidden max-nav:flex h-10 items-center gap-2 pl-3 pr-3.5 rounded-[10px] border cursor-pointer shrink-0 text-white shadow-[0_3px_10px_rgba(26,111,208,0.28)] transition-colors duration-200 ${
+                        navOpen ? 'bg-primary-2 border-primary-2' : 'bg-primary border-primary'
                     }`}
                 >
-                    <span className={`block w-[18px] h-[1.5px] bg-text rounded-full transition-[transform,opacity] duration-200 ${
-                        navOpen ? 'translate-y-[6.5px] rotate-45' : ''
-                    }`} />
-                    <span className={`block w-[18px] h-[1.5px] bg-text rounded-full transition-opacity duration-200 ${
-                        navOpen ? 'opacity-0' : 'opacity-100'
-                    }`} />
-                    <span className={`block w-[18px] h-[1.5px] bg-text rounded-full transition-[transform,opacity] duration-200 ${
-                        navOpen ? '-translate-y-[6.5px] -rotate-45' : ''
-                    }`} />
+                    <span aria-hidden="true" className="flex flex-col items-center gap-[5px]">
+                        <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-[transform,opacity] duration-200 ${
+                            navOpen ? 'translate-y-[6.5px] rotate-45' : ''
+                        }`} />
+                        <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-opacity duration-200 ${
+                            navOpen ? 'opacity-0' : 'opacity-100'
+                        }`} />
+                        <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-[transform,opacity] duration-200 ${
+                            navOpen ? '-translate-y-[6.5px] -rotate-45' : ''
+                        }`} />
+                    </span>
+                    <span className="font-semibold text-[13px] leading-none">{t('nav.menu')}</span>
                 </button>
             </div>
 

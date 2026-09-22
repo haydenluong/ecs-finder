@@ -224,7 +224,7 @@ export default function AdminClient({ reviewer, status, activities, loadFailed }
                                         </p>
 
                                         <div className="flex gap-2.5 flex-wrap mt-1">
-                                            {status === 'pending' && (
+                                            {status !== 'rejected' && (
                                                 <button
                                                     type="button"
                                                     disabled={busyId === activity.id}

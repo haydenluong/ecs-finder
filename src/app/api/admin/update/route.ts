@@ -23,7 +23,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: false, message: 'ID không hợp lệ.' }, { status: 400 });
     }
 
-    const result = await updateSubmission(id, pickPatch(body.patch));
+    const result = await updateSubmission(id, pickPatch(body.patch), {
+        editableStatuses: ['pending', 'approved'],
+    });
 
     switch (result.outcome) {
         case 'updated':
@@ -33,9 +35,9 @@ export async function POST(request: Request) {
                 { ok: false, field: result.field, code: result.code },
                 { status: 400 },
             );
-        case 'not-pending':
+        case 'not-editable':
             return NextResponse.json(
-                { ok: false, message: 'Hoạt động này đã được xử lý, không sửa được nữa.' },
+                { ok: false, message: 'Hoạt động này đã bị từ chối, không sửa được nữa.' },
                 { status: 409 },
             );
         case 'not-found':

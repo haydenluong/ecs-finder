@@ -208,7 +208,7 @@ export async function POST(request: Request) {
             }
 
             const result = await updateSubmission(id, patch);
-            if (result.outcome === 'not-pending') {
+            if (result.outcome === 'not-editable') {
                 await editMessageText(chatId, messageId, alreadyDecidedNotice(result.name, result.status));
                 return;
             }

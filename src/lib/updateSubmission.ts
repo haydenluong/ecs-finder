@@ -1,13 +1,20 @@
 import 'server-only';
 import { getSupabaseAdmin } from '@/../utils/supabase/admin';
 import { EDITABLE_FIELDS, validateSubmissionFields, type EditableField } from '@/lib/submissionFields';
+import { translateDesc } from '@/lib/translateDesc';
 
 export type SubmissionPatch = Partial<Record<EditableField, unknown>>;
+
+export type EditableStatus = 'pending' | 'approved';
+
+export interface UpdateOptions {
+    editableStatuses?: readonly EditableStatus[];
+}
 
 export type UpdateResult =
     | { outcome: 'updated'; name: string }
     | { outcome: 'invalid'; field: string; code: string }
-    | { outcome: 'not-pending'; status: string; name: string }
+    | { outcome: 'not-editable'; status: string; name: string }
     | { outcome: 'not-found' }
     | { outcome: 'failed' };
 
@@ -26,16 +33,21 @@ export function pickPatch(body: unknown): SubmissionPatch {
     return patch;
 }
 
-export async function updateSubmission(id: number, patch: SubmissionPatch): Promise<UpdateResult> {
+export async function updateSubmission(
+    id: number,
+    patch: SubmissionPatch,
+    options: UpdateOptions = {},
+): Promise<UpdateResult> {
     if (Object.keys(patch).length === 0) {
         return { outcome: 'invalid', field: 'form', code: 'error.form.missingFields' };
     }
 
+    const editableStatuses = options.editableStatuses ?? (['pending'] as const);
     const supabaseAdmin = getSupabaseAdmin();
 
     const { data: row, error: readError } = await supabaseAdmin
         .from('activities_submissions')
-        .select('name, category, topic, subtopic, location, deadline, desc, link, positions, status')
+        .select('name, category, topic, subtopic, location, deadline, desc, desc_en, link, positions, status')
         .eq('id', id)
         .maybeSingle();
 
@@ -46,8 +58,8 @@ export async function updateSubmission(id: number, patch: SubmissionPatch): Prom
     if (!row) {
         return { outcome: 'not-found' };
     }
-    if (row.status !== 'pending') {
-        return { outcome: 'not-pending', status: row.status, name: row.name };
+    if (!editableStatuses.includes(row.status)) {
+        return { outcome: 'not-editable', status: row.status, name: row.name };
     }
 
     const validated = validateSubmissionFields({
@@ -67,11 +79,16 @@ export async function updateSubmission(id: number, patch: SubmissionPatch): Prom
         return { outcome: 'invalid', field: validated.field, code: validated.code };
     }
 
+    const retranslate = row.desc_en !== null && validated.value.desc !== row.desc;
+    const translation = retranslate
+        ? { desc_en: await translateDesc(validated.value.desc) }
+        : {};
+
     const { data, error } = await supabaseAdmin
         .from('activities_submissions')
-        .update(validated.value)
+        .update({ ...validated.value, ...translation })
         .eq('id', id)
-        .eq('status', 'pending')
+        .eq('status', row.status)
         .select('id');
 
     if (error) {
@@ -79,7 +96,7 @@ export async function updateSubmission(id: number, patch: SubmissionPatch): Prom
         return { outcome: 'failed' };
     }
     if (!data || data.length === 0) {
-        return { outcome: 'not-pending', status: row.status, name: row.name };
+        return { outcome: 'not-editable', status: row.status, name: row.name };
     }
 
     return { outcome: 'updated', name: validated.value.name };
