@@ -34,12 +34,14 @@ interface NavLinkProps {
     href: string;
     active: boolean;
     children: React.ReactNode;
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-function NavLink({ href, active, children }: NavLinkProps) {
+function NavLink({ href, active, children, onClick }: NavLinkProps) {
     return (
         <Link
             href={href}
+            onClick={onClick}
             className={`text-[13px] no-underline whitespace-nowrap transition-colors duration-[180ms] ${
                 active ? 'font-bold text-primary' : 'font-medium text-text-dim hover:text-primary'
             }`}
@@ -52,6 +54,17 @@ function NavLink({ href, active, children }: NavLinkProps) {
 function Navbar({ lang, onLangChange }: NavbarProps) {
     const [navOpen, setNavOpen] = useState<boolean>(false);
     const pathname = usePathname();
+
+    const handleScrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        if (navOpen) setNavOpen(false);
+        if (pathname === '/') {
+            e.preventDefault();
+            if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    };
 
     useEffect(() => {
         const mq = window.matchMedia('(width >= 901px)');
@@ -69,18 +82,24 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
         <nav className="sticky top-0 z-40 bg-sky border-b border-border">
             <div className="py-3.5 px-5 grid grid-cols-[auto_1fr_auto] items-center gap-4 nav:px-10">
                 {/* Logo + wordmark */}
-                <div className="col-start-1 flex items-center gap-2.5">
+                <Link
+                    href="/"
+                    onClick={handleScrollToTop}
+                    className="col-start-1 flex items-center gap-2.5 no-underline select-none group cursor-pointer"
+                >
                     <img
                         src={logo.src}
                         alt="ECS Finder logo"
-                        className="w-11 h-11 rounded-[11px] object-cover border border-border"
+                        className="w-11 h-11 rounded-[11px] object-cover border border-border transition-transform duration-200 group-hover:scale-105"
                     />
-                    <span className="font-heading font-bold text-[18px] tracking-[-0.01em] text-text">ECS Finder</span>
-                </div>
+                    <span className="font-heading font-bold text-[18px] tracking-[-0.01em] text-text transition-colors duration-200 group-hover:text-primary">
+                        ECS Finder
+                    </span>
+                </Link>
 
                 {/* Desktop: nav links, centered */}
                 <div className="col-start-2 hidden nav:flex items-center justify-center gap-6">
-                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
+                    <NavLink href="/" active={pathname === '/'} onClick={handleScrollToTop}>Trang chủ</NavLink>
                     <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
                 </div>
 
@@ -113,8 +132,8 @@ function Navbar({ lang, onLangChange }: NavbarProps) {
             {/* Mobile: slide-down panel */}
             {navOpen && (
                 <div className="hidden max-nav:flex bg-sky border-t border-border animate-nav-drop py-3.5 px-5 flex-col items-center gap-3.5">
-                    <NavLink href="/" active={pathname === '/'}>Trang chủ</NavLink>
-                    <NavLink href="/submit" active={pathname === '/submit'}>Đăng hoạt động</NavLink>
+                    <NavLink href="/" active={pathname === '/'} onClick={handleScrollToTop}>Trang chủ</NavLink>
+                    <NavLink href="/submit" active={pathname === '/submit'} onClick={() => setNavOpen(false)}>Đăng hoạt động</NavLink>
                     <LangToggle lang={lang} onLangChange={onLangChange} />
                 </div>
             )}
