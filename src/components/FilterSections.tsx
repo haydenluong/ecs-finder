@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { topicSet, categorySet, accentVars, POSITIONS } from '../data/tagData';
 import type { Activity, DeadlineFilter, TopicFilter } from '../types';
 
@@ -86,14 +86,19 @@ function FilterSections({
     topicFilters, setTopicFilters,
     positionFilters, onPositionFilterChange,
 }: FilterSectionsProps) {
-    const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
+    const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>(() => (
+        topicFilters.topics[0] ? { [topicFilters.topics[0]]: true } : {}
+    ));
 
-    useEffect(() => {
-        if (topicFilters.topics.length > 0) {
-            // only one topic can be selected now, expand just that one, collapsing any other.
-            setExpandedTopics({ [topicFilters.topics[0]]: true });
+    const selectedTopic = topicFilters.topics[0] ?? '';
+    const [prevSelectedTopic, setPrevSelectedTopic] = useState<string>(selectedTopic);
+
+    if (prevSelectedTopic !== selectedTopic) {
+        setPrevSelectedTopic(selectedTopic);
+        if (selectedTopic) {
+            setExpandedTopics({ [selectedTopic]: true });
         }
-    }, [topicFilters.topics]);
+    }
 
     function toggleExpand(name: string): void {
         setExpandedTopics(prev => ({ ...prev, [name]: !prev[name] }));

@@ -261,7 +261,14 @@ function ActivityCards({
     const filtered = filterActivities(activities, { searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters });
     const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
 
-    useEffect(() => { setCurrentPage(0); }, [searchQuery, categoryFilter, deadlineFilter, topicFilters, positionFilters]);
+    const filterKey = `${searchQuery}|${categoryFilter}|${deadlineFilter}|${topicFilters.topics.join(',')}|${topicFilters.subtopics.map(s => `${s.parent}:${s.subtopic}`).join(',')}|${positionFilters.join(',')}`;
+    const [prevFilterKey, setPrevFilterKey] = useState<string>(filterKey);
+
+    if (prevFilterKey !== filterKey) {
+        setPrevFilterKey(filterKey);
+        setCurrentPage(0);
+    }
+
     useEffect(() => { onResultCountChange?.(filtered.length); }, [filtered.length, onResultCountChange]);
     useEffect(() => { onPageInfoChange?.(currentPage, totalPages); }, [currentPage, totalPages, onPageInfoChange]);
 
