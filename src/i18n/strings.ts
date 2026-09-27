@@ -28,10 +28,6 @@ export const vi = {
     'filters.coreTeamOnly': 'Chỉ Core Team của {name}',
 
     'legal.updated': 'Cập nhật lần cuối: {date}',
-    'consent.title': 'Lựa chọn về cookie',
-    'consent.body': 'Chúng tôi muốn dùng Google Analytics để biết website được sử dụng ra sao. Việc này không bắt buộc và bạn có thể từ chối. Tìm hiểu thêm:',
-    'consent.accept': 'Đồng ý',
-    'consent.decline': 'Từ chối',
     'submit.consent.before': 'Tôi đã đọc và đồng ý với',
     'submit.consent.and': 'và',
     'submit.consent.minor': 'Nếu tôi dưới 16 tuổi, tôi đã được cha mẹ hoặc người giám hộ cho phép gửi thông tin này.',
@@ -178,10 +174,6 @@ export const en: Partial<Record<StringKey | PluralKey, string>> = {
     'filters.coreTeamOnly': '{name} core team only',
 
     'legal.updated': 'Last updated: {date}',
-    'consent.title': 'Cookie choice',
-    'consent.body': 'We would like to use Google Analytics to understand how the site is used. It is optional and you can say no. Learn more:',
-    'consent.accept': 'Accept',
-    'consent.decline': 'Decline',
     'submit.consent.before': 'I have read and agree to the',
     'submit.consent.and': 'and',
     'submit.consent.minor': 'If I am under 16, I have my parent or guardian’s permission to submit this.',

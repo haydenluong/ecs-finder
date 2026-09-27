@@ -248,8 +248,8 @@ export const privacyDoc: LegalDoc = {
                     en: 'Your IP address: stored temporarily to enforce a submission limit (5 per hour) and prevent spam.',
                 },
                 {
-                    vi: 'Dữ liệu thống kê truy cập: chỉ khi bạn bấm "Đồng ý" ở thông báo cookie, Google Analytics mới được tải và ghi nhận lượt truy cập, trang đã xem và loại thiết bị ở dạng tổng hợp. Nếu bạn từ chối, chúng tôi không tải Google Analytics. Chúng tôi không dùng dữ liệu này để nhận dạng cá nhân.',
-                    en: 'Analytics: only if you press "Accept" on the cookie notice does Google Analytics load and record visits, pages viewed and device type in aggregate. If you decline, we do not load it at all. We never use this data to identify individuals.',
+                    vi: 'Dữ liệu thống kê truy cập: chúng tôi dùng Google Analytics để ghi nhận lượt truy cập, trang đã xem và loại thiết bị ở dạng tổng hợp. Chúng tôi không dùng dữ liệu này để nhận dạng cá nhân.',
+                    en: 'Analytics: we use Google Analytics to record visits, pages viewed and device type in aggregate. We never use this data to identify individuals.',
                 },
                 {
                     vi: 'Lựa chọn ngôn ngữ (Tiếng Việt / English): lưu trong trình duyệt của bạn và không được gửi về máy chủ.',
