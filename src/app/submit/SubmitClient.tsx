@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
@@ -74,6 +74,22 @@ function validateImage(files: FileList | undefined): true | StringKey {
     if (file.size > MAX_IMAGE_BYTES) return 'error.image.tooLarge';
 
     return true;
+}
+
+const FIELD = 'bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text placeholder:text-text-faint outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(26,111,208,0.18)]';
+
+function FormSection({ step, title, children }: { step: number; title: string; children: ReactNode }) {
+    return (
+        <section className="flex flex-col gap-4 p-4 max-sm2:p-3 rounded-2xl border border-[rgba(26,111,208,0.16)] bg-glass-2">
+            <div className="flex items-center gap-2.5">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white font-heading font-bold text-[13px] shadow-[0_3px_10px_rgba(26,111,208,0.3)] shrink-0">
+                    {step}
+                </span>
+                <h2 className="font-heading font-bold text-[15px] text-text m-0">{title}</h2>
+            </div>
+            {children}
+        </section>
+    );
 }
 
 function SuccessPanel({ onSubmitAnother }: { onSubmitAnother: () => void }) {
@@ -278,12 +294,13 @@ export default function SubmitClient() {
                             onBrowse={submitted ? undefined : () => imageInputRef.current?.click()}
                         />
 
-                        {submitted ? <SuccessPanel onSubmitAnother={handleSubmitAnother} /> : <form onSubmit={handleSubmit(onSubmit)} className="bg-glass border border-border rounded-2xl p-6 flex flex-col gap-4">
+                        {submitted ? <SuccessPanel onSubmitAnother={handleSubmitAnother} /> : <form onSubmit={handleSubmit(onSubmit)} className="bg-glass border border-border rounded-2xl p-6 max-sm2:p-3 flex flex-col gap-5">
+                            <FormSection step={1} title={t('submit.section.basics')}>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[13px] text-text-dim">{t('submit.name')}</label>
                                 <input
                                     {...register('name', { required: true })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                    className={FIELD}
                                 />
                                 {errors.name && <span className="text-[13px] text-red-600">{t(isStringKey(errors.name.message) ? errors.name.message : 'error.required')}</span>}
                             </div>
@@ -292,7 +309,7 @@ export default function SubmitClient() {
                                 <label className="text-[13px] text-text-dim">{t('submit.category')}</label>
                                 <select
                                     {...register('category', { required: true })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                    className={FIELD}
                                 >
                                     <option value="">{t('submit.categoryPlaceholder')}</option>
                                     {categorySet.map(c => (
@@ -306,7 +323,7 @@ export default function SubmitClient() {
                                 <label className="text-[13px] text-text-dim">{t('submit.topic')}</label>
                                 <select
                                     {...register('topic', { required: true })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                    className={FIELD}
                                 >
                                     <option value="">{t('submit.topicPlaceholder')}</option>
                                     {topicSet.map(topic => (
@@ -317,11 +334,14 @@ export default function SubmitClient() {
                             </div>
 
                             {selectedTopic && subtopicsForTopic.length > 0 && (
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-[13px] text-text-dim">{t('submit.subtopic')}</label>
+                                <div
+                                    key={selectedTopic}
+                                    className="flex flex-col gap-1.5 -mt-1 ml-3 pl-4 border-l-2 border-primary animate-[fadeUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]"
+                                >
+                                    <label className="text-[13px] font-semibold text-primary">{t('submit.subtopic')}</label>
                                     <select
                                         {...register('subtopic')}
-                                        className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                        className={FIELD}
                                     >
                                         <option value="">{t('submit.subtopicNone')}</option>
                                         {subtopicsForTopic.map(s => (
@@ -333,12 +353,14 @@ export default function SubmitClient() {
                                     )}
                                 </div>
                             )}
+                            </FormSection>
 
+                            <FormSection step={2} title={t('submit.section.when')}>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[13px] text-text-dim">{t('submit.location')}</label>
                                 <input
                                     {...register('location', { required: true })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                    className={FIELD}
                                 />
                                 {errors.location && <span className="text-[13px] text-red-600">{t(isStringKey(errors.location.message) ? errors.location.message : 'error.required')}</span>}
                             </div>
@@ -348,7 +370,7 @@ export default function SubmitClient() {
                                 <input
                                     type="date"
                                     {...register('deadline', { required: true })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none"
+                                    className={FIELD}
                                 />
                                 {errors.deadline && <span className="text-[13px] text-red-600">{t(isStringKey(errors.deadline.message) ? errors.deadline.message : 'error.requiredSelect')}</span>}
                             </div>
@@ -366,7 +388,9 @@ export default function SubmitClient() {
                                     <span className="text-[13px] text-red-600">{t(errors.positions.message)}</span>
                                 )}
                             </div>
+                            </FormSection>
 
+                            <FormSection step={3} title={t('submit.section.details')}>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[13px] text-text-dim">{t('submit.desc')}</label>
                                 <textarea
@@ -375,7 +399,7 @@ export default function SubmitClient() {
                                         required: true,
                                         validate: v => countWords(v) <= MAX_DESC_WORDS,
                                     })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text focus:border-primary outline-none resize-y"
+                                    className={`${FIELD} resize-y`}
                                 />
                                 <span className={`text-[12px] ${countWords(watched.desc) > MAX_DESC_WORDS ? 'text-red-600' : 'text-text-faint'}`}>
                                     {t('submit.wordCount', { count: countWords(watched.desc), max: MAX_DESC_WORDS })}
@@ -405,7 +429,7 @@ export default function SubmitClient() {
                                     <button
                                         type="button"
                                         onClick={() => imageInputRef.current?.click()}
-                                        className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text cursor-pointer hover:border-primary transition-colors duration-150 shrink-0"
+                                        className="bg-[rgba(26,111,208,0.1)] border border-[rgba(26,111,208,0.2)] rounded-[14px] py-2.5 px-[14px] text-[14px] font-semibold text-primary cursor-pointer hover:border-primary transition-colors duration-150 shrink-0"
                                     >
                                         {t('submit.chooseImage')}
                                     </button>
@@ -441,7 +465,7 @@ export default function SubmitClient() {
                                 <input
                                     placeholder="https://..."
                                     {...register('link', { required: true, pattern: /^https?:\/\/.+/ })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text placeholder:text-text-faint focus:border-primary outline-none"
+                                    className={FIELD}
                                 />
                                 {errors.link && (
                                     <span className="text-[13px] text-red-600">
@@ -453,14 +477,16 @@ export default function SubmitClient() {
                                     </span>
                                 )}
                             </div>
+                            </FormSection>
 
+                            <FormSection step={4} title={t('submit.section.contact')}>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[13px] text-text-dim">{t('submit.email')}</label>
                                 <input
                                     type="email"
                                     placeholder="ban@example.com"
                                     {...register('email', { required: true, pattern: EMAIL_RE })}
-                                    className="bg-glass border border-border rounded-[14px] py-2.5 px-[14px] text-[14px] text-text placeholder:text-text-faint focus:border-primary outline-none"
+                                    className={FIELD}
                                 />
                                 <span className="text-[13px] text-text-faint">{t('submit.emailHint')}</span>
                                 {errors.email && (
@@ -475,10 +501,6 @@ export default function SubmitClient() {
                             </div>
 
                             <div ref={mountTurnstile} />
-
-                            {submitErrorKey && (
-                                <span className="text-[13px] text-red-600">{t(submitErrorKey)}</span>
-                            )}
 
                             <div className="flex flex-col gap-1.5">
                                 <label className="flex gap-2.5 items-start cursor-pointer">
@@ -501,11 +523,16 @@ export default function SubmitClient() {
                                 </label>
                                 {errors.consent && <span className="text-[13px] text-red-600">{t('error.consent.required')}</span>}
                             </div>
+                            </FormSection>
+
+                            {submitErrorKey && (
+                                <span className="text-[13px] text-red-600">{t(submitErrorKey)}</span>
+                            )}
 
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-primary text-white rounded-[14px] py-3 px-6 font-semibold text-[14px] mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-default"
+                                className="bg-primary text-white rounded-[14px] py-3 px-6 font-semibold text-[14px] cursor-pointer shadow-[0_6px_18px_rgba(26,111,208,0.3)] hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(26,111,208,0.38)] transition-[transform,box-shadow] duration-150 disabled:opacity-60 disabled:cursor-default disabled:translate-y-0"
                             >
                                 {t(isSubmitting ? 'submit.submitting' : 'submit.submitButton')}
                             </button>
